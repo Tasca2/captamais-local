@@ -1,6 +1,7 @@
 # Isenção de Responsabilidade — CaptaMais Skill
 
-> Modelo informativo; recomenda-se revisão jurídica antes da publicação.
+> Complemento desta skill. Os documentos oficiais estão em https://captamais.me/termos e
+> https://captamais.me/privacidade.
 
 1. **Ferramenta "como está".** A CaptaMais Skill é fornecida "COMO ESTÁ", sem garantias de
    funcionamento ininterrupto, ausência de erros, ou adequação a um fim específico.
@@ -16,8 +17,7 @@
    usar em decisões.
 
 4. **Saídas de IA.** Conteúdos gerados por IA podem conter erros ("alucinações"). **Revise** antes de
-   enviar a clientes ou usar profissionalmente. No modo "traga sua chave", a responsabilidade e os
-   custos do provedor de IA são do usuário.
+   enviar a clientes ou usar profissionalmente.
 
 5. **Responsabilidade do usuário.** Você é responsável pelos dados que insere, por backups, pela
    segurança do seu computador e pela conformidade legal (LGPD/GDPR) em relação aos seus leads
@@ -27,5 +27,6 @@
    não respondem por danos diretos, indiretos, incidentais ou consequentes (incluindo perda de dados
    ou de negócios) decorrentes do uso ou da impossibilidade de uso da skill.
 
-7. **Uso da Plataforma.** O uso de recursos de nuvem está sujeito aos **Termos de Serviço** e à
-   **Política de Privacidade** do CaptaMais.
+7. **Uso da Plataforma.** O uso de recursos de nuvem está sujeito aos
+   [Termos](https://captamais.me/termos), à [Privacidade / LGPD](https://captamais.me/privacidade)
+   e ao [DPA](https://captamais.me/dpa).

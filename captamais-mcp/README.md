@@ -69,7 +69,13 @@ Peça ao seu assistente, por exemplo:
 - "Lista meus leads na etapa MEETING."
 - "Prepara a reunião com o lead 3." *(usa IA — consome tokens)*
 
-## Privacidade
+## Privacidade e termos
 
-O banco local (`~/.captamais/captamais.db`) tem a **mesma estrutura** do CaptaMais na nuvem —
-o que permite, no futuro, sincronizar/importar com precisão. Só as ações de IA saem da sua máquina.
+O banco local (`~/.captamais/captamais.db`) fica **só no seu computador**. Só as ações de IA saem
+da sua máquina, autenticadas na sua conta.
+
+- [Termos de uso](https://captamais.me/termos)
+- [Política de privacidade (LGPD)](https://captamais.me/privacidade)
+- [DPA](https://captamais.me/dpa)
+
+**Copyright © 2026 Henrique Tasca Tedesco.** Licença do repositório: [LICENSE](../LICENSE).

@@ -1,12 +1,9 @@
 Licença de Uso — CaptaMais Skill (Source-Available / Proprietária)
-Copyright (c) 2026 CaptaMais / [PREENCHER: razão social e CNPJ]. Todos os direitos reservados.
-
-> Nota: este é um modelo. Se preferir código aberto, substitua por uma licença MIT/Apache-2.0.
-> Recomenda-se revisão jurídica antes da publicação.
+Copyright (c) 2026 Henrique Tasca Tedesco. Todos os direitos reservados.
 
 1. DEFINIÇÕES
    "Software" = o código desta skill (UI, motor de CRM local e scripts) neste repositório.
-   "Plataforma" = os serviços de nuvem do CaptaMais (IA, dados de mercado, medição, sync).
+   "Plataforma" = os serviços de nuvem do CaptaMais (https://captamais.me).
    "Você" = a pessoa física ou jurídica que baixa e usa o Software.
 
 2. CONCESSÃO DE USO
@@ -17,30 +14,30 @@ Copyright (c) 2026 CaptaMais / [PREENCHER: razão social e CNPJ]. Todos os direi
 3. RESTRIÇÕES
    Você NÃO pode: (a) redistribuir, revender, sublicenciar ou publicar o Software ou obras derivadas;
    (b) remover ou contornar a autenticação, a medição de uso ou avisos de direitos; (c) usar o
-   Software para recriar, concorrer com ou fazer engenharia reversa da Plataforma ou dos seus prompts
-   e integrações; (d) usar marcas, logotipos ou nome CaptaMais sem autorização.
+   Software para recriar, concorrer com ou fazer engenharia reversa da Plataforma; (d) usar marcas,
+   logotipos ou nome CaptaMais sem autorização.
 
 4. DADOS E RESPONSABILIDADE
-   O Software é local: os dados que Você inserir ficam na SUA máquina e são de SUA responsabilidade
-   (ver PRIVACY.md e DISCLAIMER.md). O uso da Plataforma segue os Termos de Serviço e a Política de
-   Privacidade do CaptaMais.
+   O Software é local: os dados que Você inserir ficam na SUA máquina e são de SUA responsabilidade.
+   O uso da Plataforma segue os documentos oficiais:
+   https://captamais.me/termos
+   https://captamais.me/privacidade
+   https://captamais.me/dpa
 
 5. PROPRIEDADE INTELECTUAL
-   O Software e a Plataforma, incluindo prompts, lógica de negócio e integrações, são de propriedade
-   do CaptaMais. Esta licença não transfere titularidade.
+   O Software e a Plataforma são de titularidade de Henrique Tasca Tedesco. Esta licença não
+   transfere titularidade.
 
 6. SEM GARANTIA
-   O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO, EXPRESSAS OU IMPLÍCITAS,
-   INCLUINDO ADEQUAÇÃO A UM FIM ESPECÍFICO E NÃO VIOLAÇÃO.
+   O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO.
 
 7. LIMITAÇÃO DE RESPONSABILIDADE
-   NA MÁXIMA EXTENSÃO PERMITIDA EM LEI, O CAPTAMAIS NÃO SE RESPONSABILIZA POR DANOS DIRETOS,
-   INDIRETOS, INCIDENTAIS OU CONSEQUENTES DECORRENTES DO USO OU IMPOSSIBILIDADE DE USO DO SOFTWARE,
-   INCLUINDO PERDA DE DADOS.
+   NA MÁXIMA EXTENSÃO PERMITIDA EM LEI, O TITULAR NÃO SE RESPONSABILIZA POR DANOS DECORRENTES DO USO.
 
 8. VIGÊNCIA
    Esta licença encerra automaticamente se Você violar qualquer termo. Ao encerrar, cesse o uso e
    remova o Software.
 
 9. LEGISLAÇÃO
-   Regida pelas leis da República Federativa do Brasil, foro da comarca de [PREENCHER].
+   Regida pelas leis da República Federativa do Brasil, foro da Comarca de Porto Alegre/RS,
+   ressalvado foro obrigatório do consumidor.

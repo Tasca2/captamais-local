@@ -43,8 +43,7 @@ você quiser**, e são cobrados por uso.
 
 ## Por que usar
 - 🔒 **Privacidade real:** os dados dos leads não saem do seu computador por padrão.
-- 🧠 **IA de verdade por cima:** prepare reuniões, gere apoio — pela nuvem **ou** com a sua própria chave.
-- 🧩 **Mesma estrutura da plataforma:** funil e dados compatíveis com o CaptaMais (migração futura 1:1).
+- 🧠 **IA quando você quiser:** prepare reuniões pela nuvem CaptaMais (medida na sua conta).
 - 💸 **Pague pelo que usar:** CRM local é grátis; só os recursos de nuvem são medidos.
 
 ## Recursos
@@ -55,7 +54,7 @@ você quiser**, e são cobrados por uso.
 - **Importar/Exportar** (JSON).
 
 **Nuvem (opcional, medido — liberação progressiva):**
-- IA para preparar reunião/relatórios (nuvem ou **sua chave**).
+- IA para preparar reunião (nuvem CaptaMais).
 - Dados de ativos, montagem de carteira, enriquecimento, sincronização. Ver [status](INTEGRATION.md#status-dos-recursos).
 
 ## Requisitos
@@ -95,21 +94,21 @@ importar/exportar.
 - 💡 Recomendação: mantenha a **cifra de disco** ativa (BitLocker/FileVault) no seu computador.
 
 ## Integração com a plataforma
-Como vincular a conta, o que é medido, planos, modo "traga sua chave" e o que sai da máquina em cada
-ação: [`INTEGRATION.md`](INTEGRATION.md).
+Como vincular a conta, o que é medido e o que sai da máquina: [`INTEGRATION.md`](INTEGRATION.md).
 
-## Roadmap
-Veja o quadro de evolução (recursos por fase) no repositório principal do CaptaMais.
-Próximos: analisar ativo, montagem de carteira, sincronização, cifra do banco local.
+Documentos oficiais do CaptaMais (valem sobre qualquer texto deste repositório):
+- [Termos de uso](https://captamais.me/termos)
+- [Política de privacidade (LGPD)](https://captamais.me/privacidade)
+- [DPA — acordo de tratamento de dados](https://captamais.me/dpa)
 
 ## Suporte
-Dúvidas ou problemas: [PREENCHER canal de suporte]. Para **falhas de segurança**, siga
-[`SECURITY.md`](SECURITY.md) (não abra issue pública).
+[contato@henriquetasca.com.br](mailto:contato@henriquetasca.com.br) · [captamais.me](https://captamais.me)  
+Falhas de segurança: [`SECURITY.md`](SECURITY.md) (não abra issue pública).
 
 ## Licença e avisos legais
-- Licença: [`LICENSE`](LICENSE) (source-available / proprietária).
-- Isenção de responsabilidade (não é recomendação de investimento; ferramenta "como está"):
-  [`DISCLAIMER.md`](DISCLAIMER.md).
-- Os documentos legais são **modelos** — recomenda-se **revisão jurídica** antes da publicação.
+**Copyright © 2026 Henrique Tasca Tedesco.** Todos os direitos reservados.
 
-<p align="center"><sub>Capta+Mais · seus dados, na sua máquina.</sub></p>
+- Licença: [`LICENSE`](LICENSE)
+- Avisos: [`DISCLAIMER.md`](DISCLAIMER.md)
+
+<p align="center"><sub>© 2026 Henrique Tasca Tedesco · CaptaMais · captamais.me</sub></p>

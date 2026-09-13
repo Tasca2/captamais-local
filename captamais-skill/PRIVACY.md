@@ -1,8 +1,7 @@
 # Privacidade e Proteção de Dados — CaptaMais Skill (LGPD & GDPR/RGPD)
 
-> **Aviso:** este documento é informativo e serve de modelo. Não é aconselhamento jurídico —
-> recomenda-se revisão por um(a) advogado(a)/DPO antes da publicação.
-> Aplicável à **LGPD** (Lei 13.709/2018 – Brasil) e ao **GDPR/RGPD** (Regulamento (UE) 2016/679).
+> Texto complementar da skill local. A política oficial e vigente está em
+> https://captamais.me/privacidade e no DPA https://captamais.me/dpa (LGPD — Lei 13.709/2018).
 
 ## 1. Resumo em uma frase
 A CaptaMais Skill é um CRM que roda **na sua máquina**: os dados dos seus leads ficam **no seu
@@ -28,10 +27,8 @@ recurso de nuvem/IA — e, mesmo assim, apenas o necessário para aquela ação.
 - **Ações de nuvem/IA acionadas por você:** ao pedir, por exemplo, "preparar reunião com IA" ou
   "buscar dados do ativo", **apenas os dados necessários** daquela ação são enviados à nuvem CaptaMais
   (autenticados e medidos) — para prestar o serviço e faturar o uso.
-- **Modo "traga sua chave" (BYO):** se você configurar seu próprio provedor de IA (ex.: Gemini), a
-  ação usa **a sua chave** e o dado vai ao **seu** provedor, não ao nosso.
 - **Sincronização (opcional):** se você ativar o sync, os dados escolhidos sobem para a sua conta na
-  nuvem CaptaMais. É opt-in.
+  nuvem CaptaMais. É opt-in. Trazer chave própria de IA (BYO) ainda não está disponível.
 
 ## 5. Bases legais (você, como controlador, deve garantir)
 Você deve ter uma base legal para tratar os dados dos seus leads — normalmente **consentimento**
@@ -53,8 +50,7 @@ Como controlador, você deve atender pedidos de acesso, correção, exclusão, p
 
 ## 8. Transferência internacional
 Recursos de IA/nuvem podem processar dados em servidores fora do seu país. Ao usá-los, você reconhece
-essa transferência (LGPD arts. 33–36 / GDPR cap. V). No modo BYO, isso depende do provedor que você
-escolher.
+essa transferência (LGPD arts. 33–36). Detalhes: https://captamais.me/privacidade
 
 ## 9. Retenção e eliminação
 Os dados locais permanecem enquanto você quiser. Você pode exportar e apagar a qualquer momento.
@@ -67,5 +63,6 @@ Dados enviados à nuvem seguem a Política de Privacidade e a retenção do Capt
 - Usar os dados apenas para as finalidades informadas.
 
 ## 11. Contato
-Encarregado/DPO CaptaMais: [PREENCHER e-mail]. Para os dados dos seus leads, o ponto de contato é
-**você** (controlador).
+Encarregado CaptaMais: **contato@henriquetasca.com.br**. Política oficial:
+https://captamais.me/privacidade · DPA: https://captamais.me/dpa  
+Para os dados dos seus leads (CRM local), o ponto de contato é **você** (controlador).

@@ -1,6 +1,6 @@
 # Segurança — CaptaMais Skill
 
-> Modelo informativo. Recomenda-se revisão de segurança/jurídica antes da publicação.
+> Práticas desta skill local. Política oficial: https://captamais.me/privacidade
 
 ## Modelo de segurança (o que já fazemos)
 - **Local-first:** os dados do CRM ficam na sua máquina (`~/.captamais/captamais.db`).
