@@ -47,7 +47,7 @@ Se o usuário preferir pedir por texto em vez de mexer no app, use o CLI:
 
 Depois de qualquer mudança, **regenere o display** (passos 1–3) para refletir o novo estado.
 
-## Etapas do funil (iguais às do CaptaMais)
+## Etapas do funil
 `NEW LEAD` (Novo Lead), `INITIAL CONTACT` (Contato Inicial), `FIRST MEETING` (Primeira Reunião),
 `SECOND MEETING` (Segunda Reunião), `CLOSING` (Fechamento). Use o **id em inglês** nos comandos.
 
