@@ -1,0 +1,46 @@
+Licença de Uso — CaptaMais Skill (Source-Available / Proprietária)
+Copyright (c) 2026 CaptaMais / [PREENCHER: razão social e CNPJ]. Todos os direitos reservados.
+
+> Nota: este é um modelo. Se preferir código aberto, substitua por uma licença MIT/Apache-2.0.
+> Recomenda-se revisão jurídica antes da publicação.
+
+1. DEFINIÇÕES
+   "Software" = o código desta skill (UI, motor de CRM local e scripts) neste repositório.
+   "Plataforma" = os serviços de nuvem do CaptaMais (IA, dados de mercado, medição, sync).
+   "Você" = a pessoa física ou jurídica que baixa e usa o Software.
+
+2. CONCESSÃO DE USO
+   É concedida a Você uma licença pessoal, mundial, não exclusiva, intransferível e revogável para
+   BAIXAR, INSTALAR e USAR o Software na sua própria máquina, para gerir o seu CRM e, mediante conta
+   válida, conectar-se à Plataforma.
+
+3. RESTRIÇÕES
+   Você NÃO pode: (a) redistribuir, revender, sublicenciar ou publicar o Software ou obras derivadas;
+   (b) remover ou contornar a autenticação, a medição de uso ou avisos de direitos; (c) usar o
+   Software para recriar, concorrer com ou fazer engenharia reversa da Plataforma ou dos seus prompts
+   e integrações; (d) usar marcas, logotipos ou nome CaptaMais sem autorização.
+
+4. DADOS E RESPONSABILIDADE
+   O Software é local: os dados que Você inserir ficam na SUA máquina e são de SUA responsabilidade
+   (ver PRIVACY.md e DISCLAIMER.md). O uso da Plataforma segue os Termos de Serviço e a Política de
+   Privacidade do CaptaMais.
+
+5. PROPRIEDADE INTELECTUAL
+   O Software e a Plataforma, incluindo prompts, lógica de negócio e integrações, são de propriedade
+   do CaptaMais. Esta licença não transfere titularidade.
+
+6. SEM GARANTIA
+   O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO, EXPRESSAS OU IMPLÍCITAS,
+   INCLUINDO ADEQUAÇÃO A UM FIM ESPECÍFICO E NÃO VIOLAÇÃO.
+
+7. LIMITAÇÃO DE RESPONSABILIDADE
+   NA MÁXIMA EXTENSÃO PERMITIDA EM LEI, O CAPTAMAIS NÃO SE RESPONSABILIZA POR DANOS DIRETOS,
+   INDIRETOS, INCIDENTAIS OU CONSEQUENTES DECORRENTES DO USO OU IMPOSSIBILIDADE DE USO DO SOFTWARE,
+   INCLUINDO PERDA DE DADOS.
+
+8. VIGÊNCIA
+   Esta licença encerra automaticamente se Você violar qualquer termo. Ao encerrar, cesse o uso e
+   remova o Software.
+
+9. LEGISLAÇÃO
+   Regida pelas leis da República Federativa do Brasil, foro da comarca de [PREENCHER].

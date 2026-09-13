@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CaptaMais — Meu CRM</title>
+<style>
+  :root { --bg:#09090b; --panel:#151518; --panel2:#1c1c21; --border:#27272a; --text:#f4f4f5; --muted:#a1a1aa; --accent:#f59e0b; --shadow:0 10px 30px rgba(0,0,0,.35); }
+  html[data-theme="light"] { --bg:#f4f6f8; --panel:#ffffff; --panel2:#f8fafc; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --accent:#f59e0b; --shadow:0 10px 30px rgba(2,6,23,.08); }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:var(--panel); }
+  .brand { display:flex; align-items:center; gap:11px; }
+  .brand .logo { width:36px; height:36px; }
+  .brand h1 { margin:0; font-size:16px; font-weight:800; } .brand h1 .p{color:var(--accent);}
+  .brand .sub { color:var(--muted); font-size:12px; }
+  .tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .stat { color:var(--muted); font-size:12px; } .stat b{color:var(--text);}
+  button,.btn { font:inherit; cursor:pointer; border-radius:9px; border:1px solid var(--border); background:var(--panel2); color:var(--text); padding:7px 11px; }
+  button.primary { background:var(--accent); color:#1a1206; border-color:transparent; font-weight:700; }
+  button.ghost { background:transparent; } button:hover { border-color:var(--accent); }
+  select,input { font:inherit; background:var(--panel2); border:1px solid var(--border); border-radius:9px; color:var(--text); padding:7px 10px; }
+  .bar { padding:10px 18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--border); background:var(--panel); }
+  .bar .grow{flex:1;} .search{min-width:180px;}
+  .wrap { padding:16px 18px; }
+  .board { display:flex; gap:14px; overflow-x:auto; padding-bottom:10px; align-items:flex-start; }
+  .col { flex:0 0 272px; border-radius:16px; border:1px solid var(--border); background:var(--panel); }
+  .col .head { padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:6px; background:var(--chbg); border-radius:16px 16px 0 0; }
+  .col .head .ttl { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.02em; color:var(--text); text-transform:uppercase; }
+  .cdot { width:10px; height:10px; border-radius:999px; }
+  .cnt { font-size:11px; color:var(--muted); background:var(--panel2); border:1px solid var(--border); border-radius:999px; padding:1px 8px; }
+  .colmenu { border:none; background:transparent; color:var(--muted); padding:2px 6px; font-size:16px; line-height:1; }
+  .bodycol { padding:10px; display:flex; flex-direction:column; gap:9px; min-height:70px; }
+  .bodycol.drop { outline:2px dashed var(--cdotc); outline-offset:-6px; border-radius:12px; }
+  .card { background:var(--panel2); border:1px solid var(--border); border-left:3px solid var(--cdotc); border-radius:11px; padding:10px 12px; cursor:grab; }
+  .card:hover { border-color:var(--accent); } .card.drag{opacity:.5;}
+  .card .nm { font-weight:600; display:flex; align-items:center; gap:6px; }
+  .card .sub { color:var(--muted); font-size:12px; margin-top:2px; }
+  .tag { font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; background:color-mix(in srgb,#8b5cf6 22%,transparent); color:#a78bfa; }
+  .badge { display:inline-flex; gap:5px; margin-top:8px; font-size:11px; padding:2px 9px; border-radius:999px; background:color-mix(in srgb,var(--accent) 15%,transparent); color:var(--accent); border:1px solid color-mix(in srgb,var(--accent) 35%,transparent); }
+  .addcol { flex:0 0 200px; }
+  .addcol button { width:100%; border-style:dashed; color:var(--muted); padding:12px; }
+  .empty { color:var(--muted); font-size:12px; padding:10px; text-align:center; }
+  .agenda { margin-top:22px; } .agenda h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px; }
+  .act { display:flex; gap:11px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:11px; margin-bottom:7px; background:var(--panel); }
+  .act .dot{width:8px;height:8px;border-radius:999px;flex:0 0 8px;} .t-call{background:#38bdf8}.t-followup{background:#f59e0b}.t-meeting{background:#22c55e}.t-task{background:#a1a1aa}
+  .pill{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);} a{color:var(--accent);}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;} .modal.open{display:flex;}
+  .sheet{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:20px;box-shadow:var(--shadow);}
+  .sheet h3{margin:0 0 14px;}
+  .field{margin-bottom:11px;} .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;} .field input,.field select,.field textarea{width:100%;}
+  textarea{background:var(--panel2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font:inherit;}
+  .row{display:flex;gap:10px;} .row>*{flex:1;}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px;} .quick button{font-size:12px;padding:5px 10px;}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px;}
+  .swatch{width:26px;height:26px;border-radius:8px;border:2px solid transparent;cursor:pointer;} .swatch.sel{border-color:var(--text);}
+  .actitem{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;} .grow{flex:1;} .done-btn{font-size:11px;padding:3px 8px;}
+  .end{display:flex;justify-content:space-between;gap:8px;margin-top:10px;}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:13px;opacity:0;transition:opacity .2s;z-index:60;box-shadow:var(--shadow);} .toast.show{opacity:1;}
+  .gear{position:relative;}
+  .menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:6px;min-width:200px;z-index:40;display:flex;flex-direction:column;gap:2px;}
+  .menu button,.menu label{display:block;width:100%;text-align:left;border:none;background:transparent;padding:8px 10px;border-radius:8px;cursor:pointer;font:inherit;color:var(--text);}
+  .menu button:hover,.menu label:hover{background:var(--panel2);border-color:transparent;}
+  .menuhint{font-size:11px;color:var(--muted);padding:4px 10px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+  .menu[hidden]{display:none;}
+  .hamb{font-size:20px;line-height:1;background:transparent;border:1px solid var(--border);border-radius:9px;padding:5px 11px;color:var(--text);cursor:pointer;} .hamb:hover{border-color:var(--accent);}
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;} .backdrop[hidden]{display:none;}
+  .drawer{position:fixed;top:0;left:0;bottom:0;width:284px;max-width:86vw;background:var(--panel);border-right:1px solid var(--border);z-index:71;padding:14px;overflow:auto;box-shadow:var(--shadow);} .drawer[hidden]{display:none;}
+  .dhead{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;padding:2px 2px 12px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+  .dhead .dx{margin-left:auto;background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;}
+  .dsec{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 6px 6px;display:flex;align-items:center;gap:8px;}
+  .prem{font-size:10px;font-weight:700;color:#1a1206;background:var(--accent);border-radius:6px;padding:1px 6px;}
+  .ditem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:10px;border-radius:9px;cursor:pointer;font:inherit;} .ditem:hover{background:var(--panel2);}
+  .dfoot{margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="hamb" onclick="toggleDrawer(event)" title="Menu" aria-label="Menu">☰</button>
+    <div class="brand"><span class="logo"><!--__CM_LOGO__--></span><div><h1>Capta<span class="p">+</span>Mais</h1><div class="sub">Meu CRM · <span style="color:#34d399">🔒 local</span> · <span id="linkStatus" style="color:var(--muted)">não vinculado</span></div></div></div>
+  </div>
+  <div class="tools">
+    <span class="stat"><b id="nleads">0</b> leads · <b id="nacts">0</b> ativ.</span>
+    <button class="ghost" id="themeBtn" title="Tema claro/escuro" onclick="toggleTheme()">🌙</button>
+    <button class="ghost" onclick="syncPlatform()" title="Sincronizar com a plataforma">☁ Sincronizar</button>
+    <button class="primary" onclick="openCreate()">+ Novo lead</button>
+  </div>
+</header>
+<div class="bar">
+  <label style="font-size:12px;color:var(--muted)">Funil</label>
+  <select id="layoutSel" onchange="switchLayout(this.value)"></select>
+  <button class="ghost" onclick="newLayout()" title="Novo funil">＋ funil</button>
+  <button class="ghost" onclick="renameLayout()" title="Renomear funil">✎</button>
+  <button class="ghost" onclick="deleteLayout()" title="Excluir funil">🗑</button>
+  <span class="grow"></span>
+  <input class="search" id="search" placeholder="🔎 Buscar lead…" oninput="renderBoard()">
+  <select id="filterType" onchange="renderBoard()"><option value="">Todos</option><option value="PF">Só PF</option><option value="PJ">Só PJ</option><option value="pend">Com pendência</option></select>
+</div>
+<div class="wrap">
+  <div class="board" id="board"></div>
+  <div class="agenda"><h2>Agenda · atividades em aberto</h2><div id="agenda"></div></div>
+</div>
+
+<!-- Modal lead -->
+<div class="modal" id="mLead"><div class="sheet">
+  <h3 id="mLeadTitle">Novo lead</h3>
+  <div class="row"><div class="field"><label>Nome *</label><input id="fName"></div><div class="field"><label>Tipo</label><select id="fEntity"><option value="PF">Pessoa (PF)</option><option value="PJ">Empresa (PJ)</option></select></div></div>
+  <div class="row"><div class="field"><label>E-mail</label><input id="fEmail"></div><div class="field"><label>Telefone</label><input id="fPhone"></div></div>
+  <div class="row"><div class="field"><label>Cidade</label><input id="fCity"></div><div class="field"><label>Etapa</label><select id="fStage"></select></div></div>
+  <div class="field"><label>Subtítulo (empresa/cargo)</label><input id="fSubtitle"></div>
+  <div class="field"><label>Anotações</label><textarea id="fDesc" rows="3"></textarea></div>
+  <div id="leadExtra" hidden>
+    <p style="font-size:12px;color:var(--muted);margin:4px 0">Continuar atendimento:</p>
+    <div class="quick">
+      <button onclick="quickAct('call')">📞 Ligação</button><button onclick="quickAct('followup')">🔁 Follow-up</button>
+      <button onclick="quickAct('meeting')">📅 Reunião + Meet</button><button onclick="quickAct('task')">✅ Tarefa</button>
+    </div>
+    <div id="actList"></div>
+  </div>
+  <div class="end"><button class="ghost" onclick="closeModal('mLead')">Fechar</button><button class="primary" onclick="saveLead()">Salvar</button></div>
+</div></div>
+
+<!-- Modal atividade -->
+<div class="modal" id="mAct"><div class="sheet" style="max-width:460px">
+  <h3 id="mActTitle">Atividade</h3>
+  <div class="field"><label>Título</label><input id="aTitle"></div>
+  <div class="field"><label>Quando</label><input id="aDue" type="datetime-local"></div>
+  <div class="field" id="aMeetWrap" hidden><label>Link do Meet (opcional)</label><input id="aMeet" placeholder="https://meet.google.com/..."></div>
+  <div class="field"><label>Notas</label><textarea id="aNotes" rows="2"></textarea></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mAct')">Cancelar</button><button class="primary" onclick="saveAct()">Adicionar</button></div>
+</div></div>
+
+<!-- Modal coluna -->
+<div class="modal" id="mCol"><div class="sheet" style="max-width:440px">
+  <h3 id="mColTitle">Coluna</h3>
+  <div class="field"><label>Nome da coluna</label><input id="cTitle"></div>
+  <div class="field"><label>Cor</label><div class="swatches" id="cSwatches"></div></div>
+  <div class="end">
+    <div style="display:flex;gap:6px"><button class="ghost" id="cDel" onclick="deleteCol()">Excluir</button></div>
+    <div style="display:flex;gap:6px"><button class="ghost" onclick="moveCol('left')">◀</button><button class="ghost" onclick="moveCol('right')">▶</button><button class="primary" onclick="saveCol()">Salvar</button></div>
+  </div>
+</div></div>
+
+<!-- Menu lateral (ferramentas + dados) -->
+<div class="backdrop" id="backdrop" hidden onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" hidden>
+  <div class="dhead"><span class="logo" style="width:26px;height:26px"><!--__CM_LOGO__--></span> <b>Capta<span style="color:var(--accent)">+</span>Mais</b><button class="dx" onclick="closeDrawer()">✕</button></div>
+  <div class="dsec">Ferramentas <span class="prem">Premium</span></div>
+  <button class="ditem" onclick="openTool('Calculadora Patrimonial')">📊 Calculadora Patrimonial</button>
+  <button class="ditem" onclick="openTool('Planejamento Financeiro')">🧭 Planejamento Financeiro</button>
+  <button class="ditem" onclick="openTool('Montagem de Carteira')">📁 Montagem de Carteira</button>
+  <button class="ditem" onclick="openTool('Análise de Ativo')">📈 Análise de Ativo</button>
+  <button class="ditem" onclick="openTool('Enriquecimento de Lead')">✨ Enriquecimento de Lead</button>
+  <button class="ditem" onclick="openTool('Gerador de Lead')">🎯 Gerador de Lead</button>
+  <button class="ditem" onclick="openTool('Pesquisar CNPJ')">🏢 Pesquisar CNPJ</button>
+  <div class="dsec">Meus dados</div>
+  <button class="ditem" onclick="backupNow();closeDrawer()">💾 Fazer backup</button>
+  <button class="ditem" onclick="doExportCsv();closeDrawer()">⬇️ Exportar leads (CSV)</button>
+  <label class="ditem">⬆️ Importar arquivo<input type="file" accept=".csv,.json,application/json,text/csv" style="display:none" onchange="doImport(this);closeDrawer()"></label>
+  <div class="dfoot">Backup automático ativo 🔒 · dados no seu computador</div>
+</aside>
+
+<!-- Modal de acesso (sincronizar / ferramenta Premium) -->
+<div class="modal" id="mGate"><div class="sheet" style="max-width:430px;text-align:center">
+  <div style="font-size:36px;margin-bottom:6px" id="gateIco">☁️</div>
+  <h3 style="margin-bottom:8px" id="gateTitle">Conecte sua conta</h3>
+  <p style="color:var(--muted);margin:0 0 6px" id="gateMsg"></p>
+  <p style="color:var(--muted);font-size:12px;margin:0">Seus dados do CRM continuam <b>no seu computador</b>, com backup automático.</p>
+  <div class="end" style="justify-content:center;gap:8px;margin-top:16px"><button class="ghost" onclick="closeModal('mGate')">Agora não</button><button class="primary" onclick="connectAccount()">Conectar conta</button></div>
+</div></div>
+
+<!-- Modal Calculadora Patrimonial (local) -->
+<div class="modal" id="mCalc"><div class="sheet" style="max-width:460px">
+  <h3>📊 Calculadora Patrimonial</h3>
+  <div class="row"><div class="field"><label>Valor inicial (R$)</label><input id="cInit" type="number" value="10000"></div><div class="field"><label>Aporte mensal (R$)</label><input id="cMonth" type="number" value="1000"></div></div>
+  <div class="row"><div class="field"><label>Taxa ao ano (%)</label><input id="cRate" type="number" value="10"></div><div class="field"><label>Prazo (anos)</label><input id="cYears" type="number" value="10"></div></div>
+  <div id="calcResult" style="margin-top:6px"></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mCalc')">Fechar</button><button class="primary" onclick="calcCompute()">Calcular</button></div>
+</div></div>
+
+<!-- Modal Pesquisar CNPJ (nuvem) -->
+<div class="modal" id="mCnpj"><div class="sheet" style="max-width:520px">
+  <h3>🏢 Pesquisar CNPJ</h3>
+  <div class="field"><label>CNPJ (14 dígitos)</label><input id="cnpjInput" placeholder="00.000.000/0000-00"></div>
+  <div id="cnpjResult" style="margin-top:6px;color:var(--muted)"></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mCnpj')">Fechar</button><button class="primary" id="cnpjBtn" onclick="searchCnpj()">Pesquisar</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+const TOKEN = /*__CM_TOKEN__*/ "";
+const COLORS = ['#3b82f6','#8b5cf6','#6366f1','#f59e0b','#10b981','#ef4444','#06b6d4','#ec4899','#84cc16','#71717a'];
+const TLABEL={call:'Ligação',followup:'Follow-up',meeting:'Reunião',task:'Tarefa'};
+const esc=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl=u=>{try{const p=new URL(String(u));return(p.protocol==='http:'||p.protocol==='https:')?p.href:'';}catch{return '';}};
+const fmt=iso=>iso?new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'sem data';
+let STATE={columns:[],openActivities:[],totals:{},layouts:[],layoutId:null};
+let editId=null, actLeadId=null, colModal=null, colColor=COLORS[0];
+
+// Tema
+function applyTheme(t){document.documentElement.dataset.theme=t;document.getElementById('themeBtn').textContent=t==='light'?'☀️':'🌙';try{localStorage.setItem('cm_theme',t);}catch{}}
+function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light');}
+try{applyTheme(localStorage.getItem('cm_theme')||'dark');}catch{applyTheme('dark');}
+
+async function api(path,method='GET',body){const r=await fetch(path,{method,headers:{'Content-Type':'application/json','x-cm-token':TOKEN},body:body?JSON.stringify(body):undefined});return r.json();}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+
+async function load(){
+  const q = STATE.layoutId?`?layout=${STATE.layoutId}`:'';
+  const d=await api('/api/board'+q); if(!d.ok)return; STATE=d;
+  document.getElementById('nleads').textContent=d.totals.leads||0;
+  document.getElementById('nacts').textContent=d.totals.openActivities||0;
+  renderLayoutSel(); renderBoard(); renderAgenda();
+}
+function renderLayoutSel(){
+  const sel=document.getElementById('layoutSel'); sel.innerHTML='';
+  for(const l of STATE.layouts){const o=document.createElement('option');o.value=l.id;o.textContent=l.name;if(l.id===STATE.layoutId)o.selected=true;sel.appendChild(o);}
+}
+async function switchLayout(id){STATE.layoutId=Number(id);await load();}
+async function newLayout(){const n=prompt('Nome do novo funil:');if(!n)return;const d=await api('/api/layouts','POST',{name:n});if(d.ok){STATE.layoutId=d.layout.id;toast('Funil criado');load();}}
+async function renameLayout(){const cur=STATE.layouts.find(l=>l.id===STATE.layoutId);const n=prompt('Renomear funil:',cur?.name||'');if(!n)return;const d=await api(`/api/layouts/${STATE.layoutId}`,'PATCH',{name:n});if(d.ok){toast('Renomeado');load();}}
+async function deleteLayout(){if(!confirm('Excluir este funil? (precisa estar sem leads)'))return;const d=await api(`/api/layouts/${STATE.layoutId}`,'DELETE');if(d.ok){STATE.layoutId=null;toast('Funil excluído');load();}else toast(d.error||'Erro');}
+
+function matchFilter(l){
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  const ft=document.getElementById('filterType').value;
+  if(q){const hay=`${l.name} ${l.email||''} ${l.phone||''} ${l.subtitle||''}`.toLowerCase();if(!hay.includes(q))return false;}
+  if(ft==='PF'&&l.entity_type!=='PF')return false;
+  if(ft==='PJ'&&l.entity_type!=='PJ')return false;
+  if(ft==='pend'&&!(l.openActivities>0))return false;
+  return true;
+}
+function renderBoard(){
+  const board=document.getElementById('board'); board.innerHTML='';
+  for(const col of STATE.columns){
+    const leads=col.leads.filter(matchFilter);
+    const el=document.createElement('div'); el.className='col';
+    el.style.setProperty('--cdotc',col.color); el.style.setProperty('--chbg',`color-mix(in srgb, ${col.color} 12%, transparent)`);
+    const head=document.createElement('div'); head.className='head';
+    head.innerHTML=`<span class="ttl"><span class="cdot" style="background:${col.color};box-shadow:0 0 8px ${col.color}"></span>${esc(col.title)}</span><span style="display:flex;align-items:center;gap:4px"><span class="cnt">${leads.length}</span><button class="colmenu" title="Editar coluna">⋯</button></span>`;
+    head.querySelector('.colmenu').addEventListener('click',()=>openCol(col));
+    el.appendChild(head);
+    const bd=document.createElement('div'); bd.className='bodycol'; bd.dataset.stage=col.stage;
+    bd.addEventListener('dragover',e=>{e.preventDefault();bd.classList.add('drop');});
+    bd.addEventListener('dragleave',()=>bd.classList.remove('drop'));
+    bd.addEventListener('drop',async e=>{e.preventDefault();bd.classList.remove('drop');const id=e.dataTransfer.getData('text/id');if(id){await api(`/api/leads/${id}/stage`,'POST',{stage:col.stage});toast('Movido');load();}});
+    if(!leads.length)bd.innerHTML='<div class="empty">—</div>';
+    for(const l of leads){
+      const c=document.createElement('div'); c.className='card'; c.draggable=true; c.style.setProperty('--cdotc',col.color);
+      const tag=l.entity_type==='PJ'?'<span class="tag">PJ</span>':'';
+      const n=l.openActivities||0; const badge=n>0?`<div><span class="badge">🔔 ${n} ativ.</span></div>`:'';
+      c.innerHTML=`<div class="nm">${esc(l.name)}${tag}</div><div class="sub">${esc(l.subtitle||l.email||l.phone||l.city||'')}</div>${badge}`;
+      c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/id',l.id);c.classList.add('drag');});
+      c.addEventListener('dragend',()=>c.classList.remove('drag'));
+      c.addEventListener('click',()=>openEdit(l.id));
+      bd.appendChild(c);
+    }
+    el.appendChild(bd); board.appendChild(el);
+  }
+  const add=document.createElement('div'); add.className='addcol'; add.innerHTML='<button>＋ Coluna</button>';
+  add.querySelector('button').addEventListener('click',newColumn); board.appendChild(add);
+}
+function renderAgenda(){
+  const ag=document.getElementById('agenda'); ag.innerHTML='';
+  if(!STATE.openActivities.length){ag.innerHTML='<div class="empty" style="text-align:left">Nada pendente. 🎉</div>';return;}
+  for(const a of STATE.openActivities){
+    const meet=safeUrl(a.meet_link); const d=document.createElement('div'); d.className='act';
+    d.innerHTML=`<span class="dot t-${esc(a.type)}"></span><div class="grow"><b>${esc(TLABEL[a.type]||a.type)}</b> — ${esc(a.title||'')} <span class="pill">${esc(a.lead_name||'')}</span> <span class="pill">${esc(fmt(a.due_at))}</span>${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</div><button class="done-btn ghost">Concluir</button>`;
+    d.querySelector('.done-btn').addEventListener('click',async()=>{await api(`/api/activities/${a.id}/done`,'POST');toast('Concluída');load();});
+    ag.appendChild(d);
+  }
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function stageOptions(sel){return STATE.columns.map(c=>`<option value="${esc(c.stage)}"${c.stage===sel?' selected':''}>${esc(c.title)}</option>`).join('');}
+
+function openCreate(){editId=null;document.getElementById('mLeadTitle').textContent='Novo lead';document.getElementById('leadExtra').hidden=true;
+  fName.value='';fEmail.value='';fPhone.value='';fCity.value='';fSubtitle.value='';fDesc.value='';fEntity.value='PF';fStage.innerHTML=stageOptions(STATE.columns[0]?.stage);openModal('mLead');}
+async function openEdit(id){const d=await api(`/api/leads/${id}`);if(!d.ok)return;editId=id;const l=d.lead;
+  document.getElementById('mLeadTitle').textContent='Editar lead';
+  fName.value=l.name||'';fEmail.value=l.email||'';fPhone.value=l.phone||'';fCity.value=l.city||'';fSubtitle.value=l.subtitle||'';fDesc.value=l.description||'';fEntity.value=l.entity_type||'PF';fStage.innerHTML=stageOptions(l.stage);
+  document.getElementById('leadExtra').hidden=false;renderActs(d.activities);openModal('mLead');}
+function renderActs(acts){const box=document.getElementById('actList');if(!acts.length){box.innerHTML='<div class="empty" style="text-align:left">Sem atividades ainda.</div>';return;}box.innerHTML='';
+  for(const a of acts){const meet=safeUrl(a.meet_link);const row=document.createElement('div');row.className='actitem';
+    row.innerHTML=`<span class="dot t-${esc(a.type)}"></span><span class="grow">${esc(TLABEL[a.type]||a.type)} — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${a.done?' ✓':''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</span>${a.done?'':'<button class="done-btn ghost">ok</button>'}`;
+    if(!a.done)row.querySelector('.done-btn').addEventListener('click',async()=>{await api(`/api/activities/${a.id}/done`,'POST');openEdit(editId);load();});box.appendChild(row);}}
+async function saveLead(){const body={name:fName.value,email:fEmail.value,phone:fPhone.value,city:fCity.value,subtitle:fSubtitle.value,description:fDesc.value,entity_type:fEntity.value,stage:fStage.value,layout_id:STATE.layoutId};
+  if(!body.name.trim()){toast('Informe o nome');return;}const d=editId?await api(`/api/leads/${editId}`,'PATCH',body):await api('/api/leads','POST',body);
+  if(d.ok){toast(editId?'Atualizado':'Lead criado');closeModal('mLead');load();}else toast('Erro ao salvar');}
+
+function quickAct(type){if(!editId)return;actLeadId=editId;document.getElementById('mActTitle').textContent='Nova '+(TLABEL[type]||type);aTitle.value=TLABEL[type]||'';aDue.value='';aNotes.value='';aMeet.value='';document.getElementById('aMeetWrap').hidden=type!=='meeting';document.getElementById('mAct').dataset.type=type;openModal('mAct');}
+async function saveAct(){const type=document.getElementById('mAct').dataset.type;const due=aDue.value?new Date(aDue.value).toISOString():null;
+  const body={type,title:aTitle.value,due_at:due,notes:aNotes.value,meet_link:type==='meeting'?(aMeet.value||'https://meet.google.com/new'):null};
+  const d=await api(`/api/leads/${actLeadId}/activities`,'POST',body);if(d.ok){toast('Atividade adicionada');closeModal('mAct');openEdit(actLeadId);load();}else toast(d.error||'Erro');}
+
+// Colunas
+function renderSwatches(){const box=document.getElementById('cSwatches');box.innerHTML='';for(const col of COLORS){const s=document.createElement('div');s.className='swatch'+(col===colColor?' sel':'');s.style.background=col;s.onclick=()=>{colColor=col;renderSwatches();};box.appendChild(s);}}
+function newColumn(){colModal=null;document.getElementById('mColTitle').textContent='Nova coluna';cTitle.value='';colColor=COLORS[0];document.getElementById('cDel').style.display='none';renderSwatches();openModal('mCol');}
+function openCol(col){colModal=col;document.getElementById('mColTitle').textContent='Editar coluna';cTitle.value=col.title;colColor=col.color||COLORS[0];document.getElementById('cDel').style.display='';renderSwatches();openModal('mCol');}
+async function saveCol(){const title=cTitle.value.trim();if(!title){toast('Nome da coluna');return;}
+  if(colModal){await api(`/api/columns/${colModal.id}`,'PATCH',{title,color:colColor});}else{await api('/api/columns','POST',{layout_id:STATE.layoutId,title,color:colColor});}
+  toast('Coluna salva');closeModal('mCol');load();}
+async function moveCol(dir){if(!colModal)return;await api(`/api/columns/${colModal.id}/move`,'POST',{dir});closeModal('mCol');load();}
+async function deleteCol(){if(!colModal)return;if(!confirm('Excluir a coluna? Os leads dela vão para outra coluna.'))return;const d=await api(`/api/columns/${colModal.id}`,'DELETE');if(d.ok){toast('Coluna excluída');closeModal('mCol');load();}else toast(d.error||'Erro');}
+
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+async function doExport(){const d=await api('/api/export');download(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),'captamais-backup.json');toast('Backup JSON exportado');}
+async function doExportCsv(){const r=await fetch(`/api/export.csv?layout=${STATE.layoutId}`,{headers:{'x-cm-token':TOKEN}});const txt=await r.text();download(new Blob([txt],{type:'text/csv;charset=utf-8'}),'captamais-leads.csv');toast('CSV exportado');}
+async function doImport(input){const f=input.files[0];if(!f)return;const txt=await f.text();const isCsv=f.name.toLowerCase().endsWith('.csv')||!/^\s*[[{]/.test(txt);
+  try{let d;if(isCsv){d=await api('/api/import','POST',{csv:txt,layout_id:STATE.layoutId});}else{const data=JSON.parse(txt);d=await api('/api/import','POST',{leads:data.leads||data});}toast(`Importados: ${d.imported||0}`);load();}
+  catch{toast('Arquivo inválido');}input.value='';}
+
+function openDrawer(){document.getElementById('drawer').hidden=false;document.getElementById('backdrop').hidden=false;}
+function closeDrawer(){document.getElementById('drawer').hidden=true;document.getElementById('backdrop').hidden=true;}
+function toggleDrawer(e){if(e)e.stopPropagation();document.getElementById('drawer').hidden?openDrawer():closeDrawer();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+async function backupNow(){const d=await api('/api/backup','POST');toast(d.ok?'Backup salvo':'Falha no backup');}
+function openGate(title,msg,ico){document.getElementById('gateTitle').textContent=title;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateIco').textContent=ico||'☁️';openModal('mGate');}
+async function syncPlatform(){const s=await api('/api/sync/status').catch(()=>({}));if(s&&s.linked){toast('Sincronizando…');/* TODO: push/pull após a vinculação */}else{openGate('Sincronizar com a plataforma','Conecte sua conta CaptaMais para subir e baixar seus dados e usar os recursos da nuvem.','☁️');}}
+let LINK={linked:false,tools:{},plan:'',configured:false};
+async function loadLink(){
+  try{ LINK=await api('/api/link/status'); }catch{ LINK={linked:false,tools:{}}; }
+  const el=document.getElementById('linkStatus');
+  if(LINK.linked && LINK.blocked){ el.textContent='acesso pausado'; el.style.color='#f59e0b'; }
+  else if(LINK.linked){ el.textContent='vinculado ✓'+(LINK.plan?` (${LINK.plan})`:''); el.style.color='#34d399'; }
+  else if(LINK.configured===false){ el.textContent='não vinculado'; el.style.color='var(--muted)'; }
+  else { el.textContent='chave inválida'; el.style.color='#f59e0b'; }
+}
+const TOOL_MAP={
+ 'Calculadora Patrimonial':{key:'calculadora',open:openCalculator},
+ 'Pesquisar CNPJ':{key:'cnpj',open:openCnpj},
+ 'Planejamento Financeiro':{key:'planejamento'},
+ 'Montagem de Carteira':{key:'carteira'},
+ 'Análise de Ativo':{key:'ativos'},
+ 'Enriquecimento de Lead':{key:'enriquecimento'},
+ 'Gerador de Lead':{key:'gerador_lead'},
+};
+function openTool(name){
+  closeDrawer();
+  const t=TOOL_MAP[name]||{};
+  if(LINK.linked && LINK.blocked){ openGate(name, 'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️'); return; }
+  if(LINK.linked && LINK.tools && LINK.tools[t.key]){ if(t.open)t.open(); else toast(`${name}: abrindo na plataforma (em breve)`); return; }
+  if(!LINK.linked){ openGate(name, `${name} precisa da sua conta CaptaMais conectada. Faça seu cadastro/entre e conecte a conta — Calculadora e CNPJ são grátis.`,'🔗'); return; }
+  openGate(name, `${name} é um recurso Premium. Faça upgrade para usar — com os dados sincronizados da sua máquina.`,'🔒');
+}
+function connectAccount(){closeModal('mGate');toast('Vinculação de conta — configure sua chave no cliente (CAPTAMAIS_API_KEY).');}
+
+// Calculadora Patrimonial (local, sem nuvem)
+function openCalculator(){document.getElementById('calcResult').innerHTML='';openModal('mCalc');}
+function calcCompute(){
+  const P=+document.getElementById('cInit').value||0, PMT=+document.getElementById('cMonth').value||0, ry=(+document.getElementById('cRate').value||0)/100, years=+document.getElementById('cYears').value||0;
+  const r=Math.pow(1+ry,1/12)-1, n=Math.round(years*12);
+  let fv=P*Math.pow(1+r,n); fv += r!==0 ? PMT*((Math.pow(1+r,n)-1)/r) : PMT*n;
+  const invested=P+PMT*n, gain=fv-invested, brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('calcResult').innerHTML=`<div style="border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px"><div style="font-size:12px;color:var(--muted)">Patrimônio estimado em ${years} anos</div><div style="font-size:26px;font-weight:800;color:var(--accent)">${brl(fv)}</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Investido: ${brl(invested)} · Rendimento: ${brl(gain)}</div></div>`;
+}
+// Pesquisar CNPJ (nuvem, grátis com cadastro)
+function openCnpj(){document.getElementById('cnpjResult').textContent='';document.getElementById('cnpjInput').value='';openModal('mCnpj');}
+async function searchCnpj(){
+  const btn=document.getElementById('cnpjBtn'), out=document.getElementById('cnpjResult');
+  const digits=(document.getElementById('cnpjInput').value||'').replace(/\D/g,'');
+  if(digits.length!==14){out.textContent='Informe 14 dígitos.';return;}
+  btn.disabled=true; out.textContent='Consultando…';
+  try{ const d=await api('/api/tool/cnpj','POST',{cnpj:digits});
+    if(!d.ok){ out.textContent=d.message||'Não foi possível consultar.'; }
+    else if(d.notFound){ out.textContent='CNPJ não encontrado na fonte.'; }
+    else { out.innerHTML=renderCnpj(d.data); }
+  }catch{ out.textContent='Erro de conexão.'; } finally{ btn.disabled=false; }
+}
+function renderCnpj(data){
+  const o=(data&&typeof data==='object'&&!Array.isArray(data))?data:{resultado:data};
+  const rows=Object.entries(o).slice(0,25).map(([k,v])=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)"><b style="min-width:130px;color:var(--muted);text-transform:capitalize">${esc(k.replace(/_/g,' '))}</b><span style="color:var(--text)">${esc(typeof v==='object'?JSON.stringify(v):String(v))}</span></div>`).join('');
+  return `<div style="max-height:300px;overflow:auto;text-align:left">${rows||'—'}</div>`;
+}
+load();
+loadLink();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+package-lock.json
+
+# Dados LOCAIS do usuário (NUNCA versionar — contêm dados de leads)
+*.db
+*.db-wal
+*.db-shm
+crm-view.html
+crm-view-demo.html
+
+# Segredos / ambiente
+.env
+.env.*
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

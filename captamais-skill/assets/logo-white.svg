@@ -1,0 +1,17 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Capta+Mais">
+  <defs>
+    <filter id="cmGlowW" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round" filter="url(#cmGlowW)">
+    <path d="M299.10 311.16 A70 70 0 1 1 299.10 200.84"/>
+    <path d="M328.65 348.99 A118 118 0 1 1 328.65 163.01"/>
+    <path d="M358.20 386.81 A166 166 0 1 1 358.20 125.19"/>
+    <path d="M387.75 424.63 A214 214 0 1 1 387.75 87.37"/>
+  </g>
+</svg>

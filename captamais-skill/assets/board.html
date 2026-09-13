@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CaptaMais — Meu CRM</title>
+<style>
+  :root { color-scheme: dark; --bg:#09090b; --panel:#151518; --panel2:#1c1c21; --border:#27272a; --text:#f4f4f5; --muted:#a1a1aa; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:16px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:linear-gradient(180deg,#161616,#0d0d0f); }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand .logo { width:40px; height:40px; filter:drop-shadow(0 0 10px rgba(247,138,32,.35)); }
+  .brand .txt h1 { margin:0; font-size:18px; font-weight:800; letter-spacing:-.01em; }
+  .brand .txt h1 .p { color:#f59e0b; }
+  .brand .txt .sub { color:var(--muted); font-size:12px; }
+  .stats { text-align:right; font-size:12px; color:var(--muted); }
+  .stats b { color:var(--text); }
+  .lock { display:inline-flex; align-items:center; gap:5px; margin-top:3px; color:#34d399; font-size:11px; }
+  .wrap { padding:18px 22px; }
+  .board { display:flex; gap:14px; overflow-x:auto; padding-bottom:10px; }
+  .col { flex:0 0 268px; border-radius:16px; border:1px solid var(--col-bd,var(--border)); background:var(--panel); overflow:hidden; }
+  .col .head { padding:11px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--col-bg,transparent); }
+  .col .head .ttl { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--col-fg,var(--muted)); }
+  .col .head .cdot { width:9px; height:9px; border-radius:999px; background:var(--col-dot,#71717a); box-shadow:0 0 8px var(--col-dot,#71717a); }
+  .col .head .cnt { font-size:11px; color:var(--muted); background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:999px; padding:1px 8px; }
+  .col .body { padding:10px; display:flex; flex-direction:column; gap:9px; min-height:56px; }
+  .card { background:var(--panel2); border:1px solid var(--border); border-left:3px solid var(--col-dot,#71717a); border-radius:11px; padding:11px 12px; cursor:pointer; transition:border-color .15s,transform .05s; }
+  .card:hover { border-color:#3f3f46; }
+  .card:active { transform:scale(.995); }
+  .card .nm { font-weight:600; display:flex; align-items:center; gap:6px; }
+  .card .sub { color:var(--muted); font-size:12px; margin-top:2px; }
+  .tag { font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; background:#2a2540; color:#c4b5fd; }
+  .badge { display:inline-flex; align-items:center; gap:5px; margin-top:9px; font-size:11px; padding:2px 9px; border-radius:999px; background:rgba(245,158,11,.12); color:#fbbf24; border:1px solid rgba(245,158,11,.28); }
+  .empty { color:#52525b; font-size:12px; padding:10px; text-align:center; }
+  .agenda { margin-top:24px; }
+  .agenda h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px; }
+  .act { display:flex; gap:11px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:11px; margin-bottom:7px; background:var(--panel); }
+  .act .dot { width:8px; height:8px; border-radius:999px; flex:0 0 8px; }
+  .t-call{background:#38bdf8}.t-followup{background:#f59e0b}.t-meeting{background:#22c55e}.t-task{background:#a1a1aa}
+  .pill { display:inline-block; font-size:11px; padding:1px 7px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+  a { color:#fbbf24; }
+  dialog { background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:16px; max-width:520px; width:92%; padding:20px; }
+  dialog::backdrop { background:rgba(0,0,0,.6); }
+  dialog h3 { margin:0 0 8px; }
+  dialog button { background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:7px 14px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-label="Capta+Mais">
+      <defs>
+        <linearGradient id="cmGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#F6C64E"/><stop offset="0.5" stop-color="#F7A22B"/><stop offset="1" stop-color="#F26522"/>
+        </linearGradient>
+      </defs>
+      <g fill="none" stroke="url(#cmGrad)" stroke-width="32" stroke-linecap="round">
+        <path d="M299.10 311.16 A70 70 0 1 1 299.10 200.84"/>
+        <path d="M328.65 348.99 A118 118 0 1 1 328.65 163.01"/>
+        <path d="M358.20 386.81 A166 166 0 1 1 358.20 125.19"/>
+        <path d="M387.75 424.63 A214 214 0 1 1 387.75 87.37"/>
+      </g>
+    </svg>
+    <div class="txt">
+      <h1>Capta<span class="p">+</span>Mais</h1>
+      <div class="sub">Meu CRM — prospecção</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div><b id="nleads">0</b> leads · <b id="nacts">0</b> atividades abertas</div>
+    <div class="lock">🔒 dados locais, no seu computador</div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="board" id="board"></div>
+  <div class="agenda">
+    <h2>Agenda · atividades em aberto</h2>
+    <div id="agenda"></div>
+  </div>
+</div>
+<dialog id="dlg"><h3 id="dlgName"></h3><div id="dlgBody"></div>
+  <div style="margin-top:14px;text-align:right"><button onclick="document.getElementById('dlg').close()">Fechar</button></div>
+</dialog>
+
+<script>
+// A skill substitui o marcador abaixo (comando `crm.mjs render`, com escape seguro de `<`). Fica tudo LOCAL.
+const CRM = /*__CRM_DATA__*/ { "columns": [], "openActivities": [], "totals": { "leads": 0, "openActivities": 0 } };
+
+// Cores por etapa — mesmas do CaptaMais (NOVO LEAD azul, CONTATO INICIAL violeta, etc.).
+const STAGE = {
+  'NEW LEAD':        { dot:'#3b82f6', bg:'rgba(59,130,246,.10)', bd:'rgba(59,130,246,.30)', fg:'#bfdbfe' },
+  'INITIAL CONTACT': { dot:'#8b5cf6', bg:'rgba(139,92,246,.10)', bd:'rgba(139,92,246,.30)', fg:'#ddd6fe' },
+  'FIRST MEETING':   { dot:'#6366f1', bg:'rgba(99,102,241,.10)', bd:'rgba(99,102,241,.30)', fg:'#c7d2fe' },
+  'SECOND MEETING':  { dot:'#f59e0b', bg:'rgba(245,158,11,.10)', bd:'rgba(245,158,11,.30)', fg:'#fde68a' },
+  'CLOSING':         { dot:'#10b981', bg:'rgba(16,185,129,.10)', bd:'rgba(16,185,129,.30)', fg:'#a7f3d0' },
+};
+const TLABEL = { call:'Ligação', followup:'Follow-up', meeting:'Reunião', task:'Tarefa' };
+const esc = (s) => String(s ?? '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = (u) => { try { const p = new URL(String(u)); return (p.protocol==='http:'||p.protocol==='https:') ? p.href : ''; } catch { return ''; } };
+const fmt = (iso) => iso ? new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : 'sem data';
+
+document.getElementById('nleads').textContent = CRM.totals?.leads || 0;
+document.getElementById('nacts').textContent = CRM.totals?.openActivities || 0;
+
+const board = document.getElementById('board');
+for (const col of (CRM.columns||[])) {
+  const dot = col.color || (STAGE[col.stage] && STAGE[col.stage].dot) || '#71717a';
+  const el = document.createElement('div'); el.className = 'col';
+  el.style.setProperty('--col-dot', dot);
+  el.style.setProperty('--col-bg', `color-mix(in srgb, ${dot} 12%, transparent)`);
+  el.style.setProperty('--col-bd', `color-mix(in srgb, ${dot} 30%, transparent)`);
+  el.style.setProperty('--col-fg', dot);
+  el.innerHTML = `<div class="head"><span class="ttl"><span class="cdot"></span>${esc(col.title || col.stage)}</span><span class="cnt">${col.leads.length}</span></div>`;
+  const body = document.createElement('div'); body.className = 'body';
+  if (!col.leads.length) body.innerHTML = `<div class="empty">—</div>`;
+  for (const l of col.leads) {
+    const c = document.createElement('div'); c.className = 'card';
+    const tag = l.entity_type === 'PJ' ? '<span class="tag">PJ</span>' : '';
+    const n = Number(l.openActivities) || 0;
+    const badge = n > 0 ? `<div><span class="badge">🔔 ${n} atividade${n>1?'s':''}</span></div>` : '';
+    c.innerHTML = `<div class="nm">${esc(l.name)}${tag}</div><div class="sub">${esc(l.subtitle||l.email||l.phone||l.city||'')}</div>${badge}`;
+    c.onclick = () => openLead(l);
+    body.appendChild(c);
+  }
+  el.appendChild(body);
+  board.appendChild(el);
+}
+
+const ag = document.getElementById('agenda');
+const acts = CRM.openActivities || [];
+if (!acts.length) ag.innerHTML = `<div class="empty" style="text-align:left">Nada pendente. 🎉</div>`;
+for (const a of acts) {
+  const meet = safeUrl(a.meet_link);
+  const d = document.createElement('div'); d.className = 'act';
+  d.innerHTML = `<span class="dot t-${esc(a.type)}"></span><div><b>${esc(TLABEL[a.type]||a.type)}</b> — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener noreferrer">Meet</a>`:''}</div>`;
+  ag.appendChild(d);
+}
+
+function openLead(l) {
+  document.getElementById('dlgName').textContent = l.name;
+  document.getElementById('dlgBody').innerHTML =
+    `<p style="color:var(--muted)">${esc(l.email||'')} ${l.phone?'· '+esc(l.phone):''} ${l.city?'· '+esc(l.city):''}</p>`+
+    `<p><span class="pill">${esc(l.stage)}</span></p>`+
+    (l.description?`<p>${esc(l.description)}</p>`:'');
+  document.getElementById('dlg').showModal();
+}
+</script>
+</body>
+</html>
