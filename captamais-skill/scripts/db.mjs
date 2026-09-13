@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import Database from 'better-sqlite3';
 
-// Colunas-padrão (iguais ao CaptaMais) usadas ao semear o layout inicial.
+// Colunas-padrão do funil inicial.
 const DEFAULT_COLUMNS = [
   { col_key: 'NEW LEAD', title: 'NOVO LEAD', color: '#3b82f6' },
   { col_key: 'INITIAL CONTACT', title: 'CONTATO INICIAL', color: '#8b5cf6' },

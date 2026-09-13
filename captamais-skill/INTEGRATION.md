@@ -30,10 +30,9 @@ os recursos vão sendo liberados.
 Os recursos vão **abrindo conforme o seu plano**. Ao acionar algo não incluído, a skill informa e
 oferece upgrade. A nuvem decide o que está liberado para a sua conta.
 
-## Dois modos de IA
-1. **Nuvem CaptaMais** (metrada) — nada a configurar.
-2. **Traga sua chave (BYO)** — configure seu provedor (ex.: Gemini); usamos **nossos prompts** + a
-   **sua chave**. O dado vai ao **seu** provedor, é privado e **não consome nossos tokens**.
+## IA
+Hoje a IA do conector roda **só na nuvem CaptaMais** (medida na sua conta). Trazer chave própria
+(BYO) ainda não está disponível.
 
 ## Como cada recurso avançado aparece (2 tiers)
 - **Tier 1 — tela local + dado da nuvem:** ex.: **analisar ativo** (você pesquisa, o dado vem da

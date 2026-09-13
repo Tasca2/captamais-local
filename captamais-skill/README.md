@@ -38,8 +38,8 @@ reuniões (com Google Meet)** e acompanha sua **agenda** — tudo com os dados *
 Recursos avançados (IA, dados de mercado, montagem de carteira) conectam-se à nuvem CaptaMais **quando
 você quiser**, e são cobrados por uso.
 
-> Para desenvolvedores: a skill é **local-first e híbrida** — só a UI e o CRM local ficam no seu PC;
-> lógica sensível, prompts e medição permanecem na nuvem. Veja [`INTEGRATION.md`](INTEGRATION.md).
+> A skill é **local-first**: CRM e interface rodam no seu PC. Recursos avançados e a cobrança
+> ficam na nuvem CaptaMais. Veja [`INTEGRATION.md`](INTEGRATION.md).
 
 ## Por que usar
 - 🔒 **Privacidade real:** os dados dos leads não saem do seu computador por padrão.

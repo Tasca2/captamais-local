@@ -16,14 +16,13 @@ export type Lead = {
   updated_at: string | null;
 };
 
-/** Etapas padrão do funil (compatíveis com o CaptaMais da VPS). */
+/** Etapas padrão do funil local. */
 export const DEFAULT_STAGES = ['NEW LEAD', 'CONTACTED', 'MEETING', 'PROPOSAL', 'WON', 'LOST'] as const;
 
 let db: Database.Database | null = null;
 
 /**
- * Abre (e cria/migra) o banco LOCAL do usuário. Schema compatível com a tabela `leads` da VPS,
- * para permitir migração 1:1 no futuro. Dados ficam na máquina do usuário.
+ * Abre (e cria/migra) o banco LOCAL do usuário. Os dados ficam só na máquina dele.
  */
 export function openDb(config: CaptaMaisConfig): Database.Database {
   if (db) return db;

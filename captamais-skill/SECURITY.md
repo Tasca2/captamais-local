@@ -35,7 +35,7 @@
 
 ## Como reportar uma vulnerabilidade (divulgação coordenada)
 - **NÃO** abra issue pública para falhas de segurança.
-- Envie para **[PREENCHER: security@seu-dominio]** com passos de reprodução e impacto.
+- Envie para **contato@henriquetasca.com.br** com passos de reprodução e impacto.
 - Meta de resposta: até **5 dias úteis**; correção conforme severidade. Pedimos um prazo de
   divulgação coordenada de **até 90 dias** antes de tornar público.
 - Agradecemos relatos responsáveis e podemos creditar quem reportar (se desejar).
