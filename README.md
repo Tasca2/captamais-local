@@ -1,5 +1,7 @@
 # CaptaMais local — Skill e MCP
 
+**Versão 1.02** (metadados npm: `1.0.2`).
+
 CRM de prospecção **no seu computador**, para usar com Claude, Cursor e outros assistentes.
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.

@@ -8,6 +8,12 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronização
   local ↔ nuvem, cifra do banco local em repouso.
 
+## [1.0.2] — 2026-09-15 (identificação: 1.02)
+### Alterado
+- As colunas do funil ocupam a altura disponível da tela no app interativo e no display estático.
+- Colunas com muitos leads têm rolagem interna; a altura se ajusta ao redimensionar a janela.
+- Identificação visível da versão 1.02 no CRM e na documentação.
+
 ## [0.1.0] — 2026-09-10
 ### Adicionado
 - **CRM local interativo** (app em `127.0.0.1`): funil de prospecção (etapas iguais às da plataforma),

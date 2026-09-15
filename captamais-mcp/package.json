@@ -1,6 +1,6 @@
 {
   "name": "captamais-mcp",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "description": "CaptaMais local-first — CRM na sua máquina via MCP. CRUD local (grátis) + ações de IA medidas na nuvem.",
   "type": "module",
   "bin": {

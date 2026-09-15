@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-0.1.0-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.02-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />

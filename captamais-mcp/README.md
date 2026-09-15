@@ -1,5 +1,7 @@
 # CaptaMais MCP — seu CRM na sua máquina
 
+**Versão 1.02** (metadados npm: `1.0.2`).
+
 Rode o **CaptaMais como um CRM local**, direto no seu computador, e opere pelo seu
 assistente de IA (Cursor, Claude Desktop, etc.) via **MCP**.
 

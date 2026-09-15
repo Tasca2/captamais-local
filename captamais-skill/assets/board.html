@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CaptaMais — Meu CRM</title>
+<title>CaptaMais — Meu CRM v1.02</title>
 <style>
   :root { color-scheme: dark; --bg:#09090b; --panel:#151518; --panel2:#1c1c21; --border:#27272a; --text:#f4f4f5; --muted:#a1a1aa; }
   * { box-sizing: border-box; }
@@ -18,14 +18,14 @@
   .stats b { color:var(--text); }
   .lock { display:inline-flex; align-items:center; gap:5px; margin-top:3px; color:#34d399; font-size:11px; }
   .wrap { padding:18px 22px; }
-  .board { display:flex; gap:14px; overflow-x:auto; padding-bottom:10px; }
-  .col { flex:0 0 268px; border-radius:16px; border:1px solid var(--col-bd,var(--border)); background:var(--panel); overflow:hidden; }
-  .col .head { padding:11px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--col-bg,transparent); }
+  .board { display:flex; gap:14px; overflow-x:auto; padding-bottom:10px; align-items:stretch; }
+  .col { flex:0 0 268px; min-height:0; display:flex; flex-direction:column; border-radius:16px; border:1px solid var(--col-bd,var(--border)); background:var(--panel); overflow:hidden; }
+  .col .head { flex-shrink:0; padding:11px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--col-bg,transparent); }
   .col .head .ttl { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--col-fg,var(--muted)); }
   .col .head .cdot { width:9px; height:9px; border-radius:999px; background:var(--col-dot,#71717a); box-shadow:0 0 8px var(--col-dot,#71717a); }
   .col .head .cnt { font-size:11px; color:var(--muted); background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:999px; padding:1px 8px; }
-  .col .body { padding:10px; display:flex; flex-direction:column; gap:9px; min-height:56px; }
-  .card { background:var(--panel2); border:1px solid var(--border); border-left:3px solid var(--col-dot,#71717a); border-radius:11px; padding:11px 12px; cursor:pointer; transition:border-color .15s,transform .05s; }
+  .col .body { flex:1; min-height:0; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:9px; }
+  .card { flex-shrink:0; background:var(--panel2); border:1px solid var(--border); border-left:3px solid var(--col-dot,#71717a); border-radius:11px; padding:11px 12px; cursor:pointer; transition:border-color .15s,transform .05s; }
   .card:hover { border-color:#3f3f46; }
   .card:active { transform:scale(.995); }
   .card .nm { font-weight:600; display:flex; align-items:center; gap:6px; }
@@ -64,7 +64,7 @@
     </svg>
     <div class="txt">
       <h1>Capta<span class="p">+</span>Mais</h1>
-      <div class="sub">Meu CRM — prospecção</div>
+      <div class="sub">Meu CRM — prospecção · v1.02</div>
     </div>
   </div>
   <div class="stats">
@@ -104,6 +104,14 @@ document.getElementById('nleads').textContent = CRM.totals?.leads || 0;
 document.getElementById('nacts').textContent = CRM.totals?.openActivities || 0;
 
 const board = document.getElementById('board');
+function fitBoardToViewport() {
+  const top = board.getBoundingClientRect().top + window.scrollY;
+  board.style.height = `${Math.max(240, window.innerHeight - top - 22)}px`;
+}
+window.addEventListener('resize', fitBoardToViewport);
+window.visualViewport?.addEventListener('resize', fitBoardToViewport);
+new ResizeObserver(fitBoardToViewport).observe(document.querySelector('header'));
+fitBoardToViewport();
 for (const col of (CRM.columns||[])) {
   const dot = col.color || (STAGE[col.stage] && STAGE[col.stage].dot) || '#71717a';
   const el = document.createElement('div'); el.className = 'col';
