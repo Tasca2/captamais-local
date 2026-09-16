@@ -15,6 +15,11 @@ export type Lead = {
   created_at: string;
   updated_at: string | null;
 };
+export type Activity = {
+  id: number; lead_id: number; type: string; title: string | null; due_at: string | null;
+  done: number; notes: string | null; meet_link: string | null; created_at: string;
+  google_event_id: string | null; google_event_url: string | null; calendar_sync_status: string | null;
+};
 
 /** Etapas padrão do funil local. */
 export const DEFAULT_STAGES = ['NEW LEAD', 'CONTACTED', 'MEETING', 'PROPOSAL', 'WON', 'LOST'] as const;
@@ -44,7 +49,16 @@ export function openDb(config: CaptaMaisConfig): Database.Database {
       updated_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_leads_stage ON leads(stage);
+    CREATE TABLE IF NOT EXISTS activities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, lead_id INTEGER NOT NULL, type TEXT NOT NULL, title TEXT,
+      due_at TEXT, done INTEGER NOT NULL DEFAULT 0, notes TEXT, meet_link TEXT, created_at TEXT NOT NULL,
+      google_event_id TEXT, google_event_url TEXT, calendar_sync_status TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_act_lead ON activities(lead_id);
   `);
+  try { db.exec('ALTER TABLE activities ADD COLUMN google_event_id TEXT'); } catch {}
+  try { db.exec('ALTER TABLE activities ADD COLUMN google_event_url TEXT'); } catch {}
+  try { db.exec('ALTER TABLE activities ADD COLUMN calendar_sync_status TEXT'); } catch {}
   return db;
 }
 
@@ -105,4 +119,29 @@ export function moveStage(config: CaptaMaisConfig, leadId: number, stage: string
 export function getLead(config: CaptaMaisConfig, leadId: number): Lead | null {
   const conn = openDb(config);
   return (conn.prepare('SELECT * FROM leads WHERE id = ?').get(leadId) as Lead | undefined) || null;
+}
+
+export function createActivity(
+  config: CaptaMaisConfig,
+  leadId: number,
+  input: { type: string; title?: string; dueAt: string; notes?: string },
+): Activity {
+  const conn = openDb(config);
+  if (!getLead(config, leadId)) throw new Error('Lead não encontrado.');
+  const type = input.type.toLowerCase();
+  if (!['call', 'followup', 'meeting', 'task'].includes(type)) throw new Error('Tipo de atividade inválido.');
+  const info = conn.prepare(`INSERT INTO activities (lead_id,type,title,due_at,notes,created_at) VALUES (?,?,?,?,?,?)`)
+    .run(leadId, type, input.title?.trim() || null, input.dueAt, input.notes?.trim() || null, new Date().toISOString());
+  return conn.prepare('SELECT * FROM activities WHERE id=?').get(Number(info.lastInsertRowid)) as Activity;
+}
+
+export function setActivityGoogleEvent(
+  config: CaptaMaisConfig,
+  activityId: number,
+  event: { eventId?: string; htmlLink?: string; meetLink?: string } | null,
+): Activity {
+  const conn = openDb(config);
+  conn.prepare(`UPDATE activities SET google_event_id=?,google_event_url=?,meet_link=?,calendar_sync_status=? WHERE id=?`)
+    .run(event?.eventId || null, event?.htmlLink || null, event?.meetLink || null, event ? 'synced' : 'error', activityId);
+  return conn.prepare('SELECT * FROM activities WHERE id=?').get(activityId) as Activity;
 }

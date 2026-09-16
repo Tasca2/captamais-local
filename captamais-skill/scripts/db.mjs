@@ -51,10 +51,14 @@ export function openDb() {
       created_at TEXT NOT NULL, updated_at TEXT);
     CREATE TABLE IF NOT EXISTS activities (
       id INTEGER PRIMARY KEY AUTOINCREMENT, lead_id INTEGER NOT NULL, type TEXT NOT NULL, title TEXT,
-      due_at TEXT, done INTEGER NOT NULL DEFAULT 0, notes TEXT, meet_link TEXT, created_at TEXT NOT NULL);
+      due_at TEXT, done INTEGER NOT NULL DEFAULT 0, notes TEXT, meet_link TEXT, created_at TEXT NOT NULL,
+      google_event_id TEXT, google_event_url TEXT, calendar_sync_status TEXT);
     CREATE INDEX IF NOT EXISTS idx_act_lead ON activities(lead_id);
   `);
   try { _db.exec('ALTER TABLE leads ADD COLUMN layout_id INTEGER'); } catch (_) {}
+  try { _db.exec('ALTER TABLE activities ADD COLUMN google_event_id TEXT'); } catch (_) {}
+  try { _db.exec('ALTER TABLE activities ADD COLUMN google_event_url TEXT'); } catch (_) {}
+  try { _db.exec('ALTER TABLE activities ADD COLUMN calendar_sync_status TEXT'); } catch (_) {}
   seed();
   return _db;
 }
@@ -198,6 +202,14 @@ export function addActivity(leadId, input) {
   const info = db.prepare('INSERT INTO activities (lead_id,type,title,due_at,notes,meet_link,created_at) VALUES (?,?,?,?,?,?,?)')
     .run(Number(leadId), type, clean(input.title) || ACTIVITY_LABEL[type], clean(input.due_at), clean(input.notes), meet, now());
   return db.prepare('SELECT * FROM activities WHERE id=?').get(info.lastInsertRowid);
+}
+export function getActivity(id) { return openDb().prepare('SELECT * FROM activities WHERE id=?').get(Number(id)) || null; }
+export function setActivityCalendarResult(id, result) {
+  const db = openDb();
+  const status = result?.error ? 'error' : 'synced';
+  db.prepare(`UPDATE activities SET google_event_id=?, google_event_url=?, meet_link=COALESCE(?,meet_link), calendar_sync_status=? WHERE id=?`)
+    .run(clean(result?.eventId), safeHttpUrl(result?.eventUrl), safeHttpUrl(result?.meetLink), status, Number(id));
+  return getActivity(id);
 }
 export function doneActivity(id) { return openDb().prepare('UPDATE activities SET done=1 WHERE id=?').run(Number(id)).changes > 0; }
 export function agenda(days = 7) {

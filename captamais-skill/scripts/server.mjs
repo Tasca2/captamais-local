@@ -20,11 +20,15 @@ const API_KEY = (process.env.CAPTAMAIS_API_KEY || '').trim();
 const CLOUD_URL = (process.env.CAPTAMAIS_CLOUD_URL || 'https://captamais.me').trim().replace(/\/+$/, '');
 
 /** Chama a nuvem CaptaMais autenticando pela chave do usuário. Ferramentas de nuvem passam por aqui. */
-async function cloud(path, body) {
+async function cloud(path, body, method = 'POST') {
   if (!API_KEY) return { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais (defina CAPTAMAIS_API_KEY).' };
   try {
-    const r = await fetch(`${CLOUD_URL}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-captamais-key': API_KEY }, body: JSON.stringify(body || {}) });
-    return await r.json().catch(() => ({ ok: false, message: 'Resposta inválida da nuvem.' }));
+    const options = { method, headers: { 'Content-Type': 'application/json', 'x-captamais-key': API_KEY } };
+    if (method !== 'GET' && method !== 'HEAD') options.body = JSON.stringify(body || {});
+    const r = await fetch(`${CLOUD_URL}${path}`, options);
+    const data = await r.json().catch(() => ({ ok: false, message: 'Resposta inválida da nuvem.' }));
+    if (!r.ok && data.ok !== false) return { ...data, ok: false, message: data.message || `Falha na nuvem (HTTP ${r.status}).` };
+    return data;
   } catch { return { ok: false, code: 'network', message: 'Sem conexão com a nuvem.' }; }
 }
 
@@ -86,6 +90,19 @@ async function handle(req, res) {
       const d = await cloud('/api/mcp/link/status', {});
       return json(res, 200, { ...d, configured: true });
     }
+    if (p === '/api/integrations/google/status' && method === 'GET') {
+      if (!API_KEY) return json(res, 200, { ok: true, configured: false, connected: false, gmail: false, calendar: false });
+      const d = await cloud('/api/mcp/integrations/google/status', null, 'GET');
+      return json(res, d.ok ? 200 : 400, { ...d, ...(d.data || {}), configured: true });
+    }
+    if (p === '/api/integrations/google/connect' && method === 'POST') {
+      const d = await cloud('/api/mcp/integrations/google/connect', { services: ['gmail', 'calendar'] });
+      return json(res, d.ok ? 200 : 400, d);
+    }
+    if (p === '/api/integrations/google/disconnect' && method === 'POST') {
+      const d = await cloud('/api/mcp/integrations/google/disconnect', {});
+      return json(res, d.ok ? 200 : 400, d);
+    }
     if (p === '/api/tool/cnpj' && method === 'POST') {
       const b = await readBody(req);
       const d = await cloud('/api/mcp/tool/cnpj', { cnpj: b.cnpj });
@@ -130,7 +147,25 @@ async function handle(req, res) {
     }
     if ((m = p.match(/^\/api\/leads\/(\d+)\/activities$/)) && method === 'POST') {
       const body = await readBody(req);
-      try { return json(res, 200, { ok: true, activity: db.addActivity(Number(m[1]), body) }); }
+      try {
+        const leadId = Number(m[1]);
+        if (body.sync_calendar && !body.due_at) return json(res, 400, { ok: false, error: 'Informe data e hora para adicionar ao Google Agenda.' });
+        const activity = db.addActivity(leadId, body);
+        let calendar = null;
+        if (body.sync_calendar) {
+          const lead = db.getLead(leadId).lead;
+          const d = await cloud('/api/mcp/integrations/google/calendar/events', {
+            activity: { localId: activity.id, type: activity.type, title: activity.title, startAt: activity.due_at, notes: activity.notes },
+            lead: { name: lead.name, email: lead.email, phone: lead.phone },
+            createMeet: activity.type === 'meeting',
+          });
+          calendar = d;
+          db.setActivityCalendarResult(activity.id, d.ok ? {
+            eventId: d.data?.eventId, eventUrl: d.data?.htmlLink, meetLink: d.data?.meetLink,
+          } : { error: d.message || 'Não foi possível criar o evento.' });
+        }
+        return json(res, 200, { ok: true, activity: db.getActivity(activity.id), calendar });
+      }
       catch (e) { return json(res, 400, { ok: false, error: e.message }); }
     }
     if ((m = p.match(/^\/api\/activities\/(\d+)\/done$/)) && method === 'POST') {

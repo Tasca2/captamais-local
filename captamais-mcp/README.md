@@ -63,6 +63,10 @@ Aponte o servidor para `node CAMINHO/ATE/captamais-mcp/dist/index.js` com as mes
 | `captamais_create_lead` | Cria um lead | Não (local) |
 | `captamais_move_stage` | Move o lead de etapa | Não (local) |
 | `captamais_prepare_meeting` | IA prepara uma reunião a partir do lead | **Sim** (nuvem) |
+| `captamais_google_status` | Verifica a conexão com Gmail e Google Agenda | Não |
+| `captamais_schedule_activity` | Agenda atividade local e, opcionalmente, cria evento/Meet no Google Agenda | Não* |
+
+\* A sincronização do Google passa pela conta CaptaMais conectada, mas não usa tokens de IA.
 
 ## Como usar
 

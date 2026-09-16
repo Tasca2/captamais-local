@@ -29,6 +29,10 @@ recurso de nuvem/IA — e, mesmo assim, apenas o necessário para aquela ação.
   (autenticados e medidos) — para prestar o serviço e faturar o uso.
 - **Sincronização (opcional):** se você ativar o sync, os dados escolhidos sobem para a sua conta na
   nuvem CaptaMais. É opt-in. Trazer chave própria de IA (BYO) ainda não está disponível.
+- **Google (opcional):** ao conectar Gmail/Google Agenda, a autorização e os tokens OAuth ficam na
+  plataforma CaptaMais. Ao marcar a sincronização de uma atividade, título, data, notas e dados
+  mínimos do lead necessários para o convite são enviados ao Google. O app local não lê a caixa de
+  entrada e não armazena tokens OAuth.
 
 ## 5. Bases legais (você, como controlador, deve garantir)
 Você deve ter uma base legal para tratar os dados dos seus leads — normalmente **consentimento**

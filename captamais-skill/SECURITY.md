@@ -13,6 +13,8 @@
 - **Dados de lead tratados como não confiáveis** (proteção contra prompt-injection quando operado por
   IA — conteúdo de lead nunca é executado como instrução).
 - **Medição/cobrança no servidor** (o cliente local não é fonte da verdade de cobrança).
+- **OAuth Google na plataforma:** o app local recebe somente estado, URL de autorização e links de
+  evento; tokens OAuth devem ser cifrados no backend, rotacionados e revogados na desconexão.
 
 ## ⚠️ Riscos que você (usuário) deve conhecer
 1. **Banco local não é cifrado por padrão (nesta versão).** Quem tiver acesso ao seu computador pode

@@ -54,6 +54,14 @@ só, **não envia** nada. Sync é **opt-in**. Ver `PRIVACY.md`.
 | Analisar ativo (Tier 1) | 🔧 Em desenvolvimento |
 | Consolidador/montagem de carteira (Tier 2) | 🔧 Em desenvolvimento |
 | Sincronização local ↔ nuvem | 🔧 Em desenvolvimento |
-| Google Meet (criação real) / Agenda | 🔧 Em desenvolvimento |
+| Conexão Gmail / Google Agenda no app local | ✅ Cliente disponível; requer endpoints OAuth na plataforma |
+| Evento no Google Agenda / criação de Meet | ✅ Cliente disponível; requer endpoints OAuth na plataforma |
+
+## Contrato da integração Google
+
+O app local nunca recebe `client_secret`, `access_token` ou `refresh_token` do Google. Ele chama a
+plataforma com `x-captamais-key`; a plataforma associa a autorização Google à conta autenticada e
+mantém os tokens cifrados no servidor. O contrato completo para implementar o backend está em
+[`GOOGLE_INTEGRATION.md`](GOOGLE_INTEGRATION.md).
 
 > Recursos "em desenvolvimento" ainda não estão ativos nesta versão; entram por liberação progressiva.

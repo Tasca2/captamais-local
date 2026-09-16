@@ -3,8 +3,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { loadConfig } from './config.js';
-import { createLead, DEFAULT_STAGES, getLead, listLeads, moveStage } from './db.js';
-import { prepareMeeting } from './cloud.js';
+import { createActivity, createLead, DEFAULT_STAGES, getLead, listLeads, moveStage, setActivityGoogleEvent } from './db.js';
+import { createGoogleCalendarEvent, googleStatus, prepareMeeting } from './cloud.js';
 
 const config = loadConfig();
 
@@ -75,6 +75,42 @@ server.tool(
     if (!result.ok) return text(`Não foi possível preparar (IA): ${result.error}`);
     const usage = result.usage ? `\n\n_(uso: ${result.usage.tokens} tokens${result.usage.balanceLeft != null ? `, saldo restante ${result.usage.balanceLeft}` : ''})_` : '';
     return text(`${result.data.prep}${usage}`);
+  },
+);
+
+server.tool(
+  'captamais_google_status',
+  'Verifica se Gmail e Google Agenda estão conectados à conta CaptaMais.',
+  {},
+  async () => {
+    const result = await googleStatus(config);
+    if (!result.ok) return text(`Não foi possível verificar a conexão Google: ${result.error}`);
+    return jsonText(result.data);
+  },
+);
+
+server.tool(
+  'captamais_schedule_activity',
+  'Agenda uma tarefa, ligação, follow-up ou reunião no CRM local e, opcionalmente, no Google Agenda. Reuniões sincronizadas recebem Google Meet.',
+  {
+    leadId: z.number().int().describe('ID do lead.'),
+    type: z.enum(['call', 'followup', 'meeting', 'task']).describe('Tipo da atividade.'),
+    title: z.string().min(1).describe('Título da atividade.'),
+    dueAt: z.string().datetime().describe('Data e hora em ISO 8601 com fuso horário.'),
+    notes: z.string().optional().describe('Notas opcionais.'),
+    syncGoogleCalendar: z.boolean().optional().describe('Cria também no Google Agenda (padrão false).'),
+  },
+  async ({ leadId, type, title, dueAt, notes, syncGoogleCalendar }) => {
+    const lead = getLead(config, leadId);
+    if (!lead) return text(`Lead ${leadId} não encontrado no CRM local.`);
+    const activity = createActivity(config, leadId, { type, title, dueAt, notes });
+    if (!syncGoogleCalendar) return jsonText({ created: true, activity, googleCalendar: false });
+    const result = await createGoogleCalendarEvent(config, lead, {
+      localId: activity.id, type, title: activity.title, startAt: dueAt, notes: activity.notes,
+    });
+    const saved = setActivityGoogleEvent(config, activity.id, result.ok ? result.data : null);
+    if (!result.ok) return jsonText({ created: true, activity: saved, googleCalendar: false, warning: result.error });
+    return jsonText({ created: true, activity: saved, googleCalendar: true });
   },
 );
 

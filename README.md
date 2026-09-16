@@ -1,8 +1,21 @@
-# CaptaMais local — Skill e MCP
+<p align="center">
+  <img src="docs/assets/capita-plus-logo.png" alt="Logo Capita+" width="148">
+</p>
+
+<h1 align="center">CaptaMais local — Skill e MCP</h1>
+
+<p align="center">
+  <strong>Seu CRM de prospecção no seu computador.</strong><br>
+  Uma solução da <strong>Capita+®</strong> para usar com Claude, Cursor e outros assistentes.
+</p>
+
+<p align="center">
+  <a href="https://captamais.me"><strong>Conhecer a plataforma</strong></a> ·
+  <a href="docs/apresentacao-capta-mais.pdf"><strong>Abrir apresentação</strong></a> ·
+  <a href="https://github.com/Tasca2/captamais-local/raw/main/docs/apresentacao-capta-mais.pdf"><strong>Baixar PDF</strong></a>
+</p>
 
 **Versão 1.02** (metadados npm: `1.0.2`).
-
-CRM de prospecção **no seu computador**, para usar com Claude, Cursor e outros assistentes.
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 
@@ -11,8 +24,24 @@ Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) pas
 | [`captamais-skill/`](captamais-skill/) | Skill do Claude (`/captamais`) — funil, leads, agenda |
 | [`captamais-mcp/`](captamais-mcp/) | Servidor MCP — Cursor, Claude Desktop e outros clientes |
 
+## Conheça o ecossistema CaptaMais
+
+Da prospecção ao relacionamento e às ferramentas de apoio, o CaptaMais conecta a operação comercial
+em um só lugar. Veja alguns destaques da apresentação institucional:
+
+<p align="center">
+  <a href="docs/apresentacao-capta-mais.pdf"><img src="docs/screenshots/apresentacao-capa.png" alt="Capa da apresentação CaptaMais" width="30%"></a>
+  <a href="docs/apresentacao-capta-mais.pdf"><img src="docs/screenshots/apresentacao-operacao.png" alt="Mapa da operação CaptaMais" width="30%"></a>
+  <a href="docs/apresentacao-capta-mais.pdf"><img src="docs/screenshots/apresentacao-ferramentas.png" alt="Ferramentas da plataforma CaptaMais" width="30%"></a>
+</p>
+
+<p align="center">
+  <a href="docs/apresentacao-capta-mais.pdf"><strong>📖 Abrir a apresentação completa</strong></a> ·
+  <a href="https://github.com/Tasca2/captamais-local/raw/main/docs/apresentacao-capta-mais.pdf"><strong>⬇️ Baixar em PDF</strong></a>
+</p>
+
 **Copyright © 2026 Henrique Tasca Tedesco.** Todos os direitos reservados.  
-CaptaMais — [captamais.me](https://captamais.me)
+Capita+® é uma marca registrada. CaptaMais — [captamais.me](https://captamais.me)
 
 ---
 
@@ -159,7 +188,8 @@ Todos os direitos reservados.
 
 O código deste repositório é **source-available**: você pode baixar e usar na sua máquina. Não pode republicar, revender nem usar para copiar a plataforma. Licença completa: [LICENSE](LICENSE).
 
-Marca, identidade visual e plataforma CaptaMais pertencem a Henrique Tasca Tedesco.
+Capita+® é uma marca registrada de Henrique Tasca Tedesco. A marca, a identidade visual e a
+plataforma CaptaMais pertencem a Henrique Tasca Tedesco.
 
 ---
 

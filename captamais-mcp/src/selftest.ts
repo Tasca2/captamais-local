@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import type { CaptaMaisConfig } from './config.js';
-import { createLead, listLeads, moveStage, getLead } from './db.js';
+import { createActivity, createLead, listLeads, moveStage, getLead, setActivityGoogleEvent } from './db.js';
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'captamais-mcp-test-'));
 const config: CaptaMaisConfig = {
@@ -42,6 +42,11 @@ assert(getLead(config, a.id)?.stage === 'WON', 'persistiu a etapa WON');
 
 const missing = moveStage(config, 99999, 'WON');
 assert(missing === null, 'mover lead inexistente retorna null');
+
+const activity = createActivity(config, a.id, { type: 'meeting', title: 'Diagnóstico', dueAt: '2026-09-18T14:00:00.000Z' });
+assert(activity.lead_id === a.id && activity.type === 'meeting', 'criar atividade local');
+const synced = setActivityGoogleEvent(config, activity.id, { eventId: 'evt-1', htmlLink: 'https://calendar.google.com/event/1', meetLink: 'https://meet.google.com/abc-defg-hij' });
+assert(synced.calendar_sync_status === 'synced' && synced.google_event_id === 'evt-1', 'persistir vínculo com evento Google');
 
 console.log('\n✅ CRM local OK. Banco:', config.dbPath);
 try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch { /* noop */ }

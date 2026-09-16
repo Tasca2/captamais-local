@@ -72,6 +72,10 @@
   .prem{font-size:10px;font-weight:700;color:#1a1206;background:var(--accent);border-radius:6px;padding:1px 6px;}
   .ditem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:10px;border-radius:9px;cursor:pointer;font:inherit;} .ditem:hover{background:var(--panel2);}
   .dfoot{margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+  .integration{border:1px solid var(--border);border-radius:13px;padding:14px;margin:10px 0;background:var(--panel2);}
+  .integration-head{display:flex;align-items:center;gap:10px}.integration-head .grow{min-width:0}.integration-head b{display:block}.integration-head small{color:var(--muted)}
+  .service-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.service{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:4px 9px;color:var(--muted)}.service.on{color:#34d399;border-color:color-mix(in srgb,#34d399 45%,var(--border));}
+  .checkrow{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted)}.checkrow input{width:auto;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -127,6 +131,7 @@
   <div class="field"><label>Título</label><input id="aTitle"></div>
   <div class="field"><label>Quando</label><input id="aDue" type="datetime-local"></div>
   <div class="field" id="aMeetWrap" hidden><label>Link do Meet (opcional)</label><input id="aMeet" placeholder="https://meet.google.com/..."></div>
+  <div class="field" id="aGoogleWrap"><label class="checkrow"><input id="aGoogle" type="checkbox"><span id="aGoogleText">Adicionar ao Google Agenda</span></label></div>
   <div class="field"><label>Notas</label><textarea id="aNotes" rows="2"></textarea></div>
   <div class="end"><button class="ghost" onclick="closeModal('mAct')">Cancelar</button><button class="primary" onclick="saveAct()">Adicionar</button></div>
 </div></div>
@@ -155,11 +160,25 @@
   <button class="ditem" onclick="openTool('Gerador de Lead')">🎯 Gerador de Lead</button>
   <button class="ditem" onclick="openTool('Pesquisar CNPJ')">🏢 Pesquisar CNPJ</button>
   <div class="dsec">Meus dados</div>
+  <button class="ditem" onclick="openSettings();closeDrawer()">⚙️ Configurações</button>
   <button class="ditem" onclick="backupNow();closeDrawer()">💾 Fazer backup</button>
   <button class="ditem" onclick="doExportCsv();closeDrawer()">⬇️ Exportar leads (CSV)</button>
   <label class="ditem">⬆️ Importar arquivo<input type="file" accept=".csv,.json,application/json,text/csv" style="display:none" onchange="doImport(this);closeDrawer()"></label>
   <div class="dfoot">Backup automático ativo 🔒 · dados no seu computador</div>
 </aside>
+
+<!-- Modal configurações e integrações -->
+<div class="modal" id="mSettings"><div class="sheet" style="max-width:520px">
+  <h3>⚙️ Configurações</h3>
+  <p style="font-size:12px;color:var(--muted);margin:-4px 0 14px">Conecte serviços à sua conta CaptaMais. As credenciais do Google ficam protegidas na plataforma, nunca neste navegador local.</p>
+  <div class="integration">
+    <div class="integration-head"><span style="font-size:28px">G</span><div class="grow"><b>Google Workspace</b><small id="googleAccount">Verificando conexão…</small></div><span class="pill" id="googleStatus">—</span></div>
+    <div class="service-list"><span class="service" id="gmailService">✉ Gmail</span><span class="service" id="calendarService">▣ Google Agenda</span></div>
+    <p style="font-size:12px;color:var(--muted);margin:12px 0">O Agenda cria eventos para tarefas e reuniões; o Gmail identifica a conta conectada e permite convites e comunicações quando o recurso estiver habilitado.</p>
+    <div class="end"><button class="ghost" id="googleDisconnectBtn" onclick="disconnectGoogle()" hidden>Desconectar</button><button class="primary" id="googleConnectBtn" onclick="connectGoogle()">Conectar Google</button></div>
+  </div>
+  <div class="end"><span></span><button class="ghost" onclick="closeModal('mSettings')">Fechar</button></div>
+</div></div>
 
 <!-- Modal de acesso (sincronizar / ferramenta Premium) -->
 <div class="modal" id="mGate"><div class="sheet" style="max-width:430px;text-align:center">
@@ -197,6 +216,7 @@ const safeUrl=u=>{try{const p=new URL(String(u));return(p.protocol==='http:'||p.
 const fmt=iso=>iso?new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'sem data';
 let STATE={columns:[],openActivities:[],totals:{},layouts:[],layoutId:null};
 let editId=null, actLeadId=null, colModal=null, colColor=COLORS[0];
+let GOOGLE={connected:false,gmail:false,calendar:false,email:''};
 
 // Tema
 function applyTheme(t){document.documentElement.dataset.theme=t;document.getElementById('themeBtn').textContent=t==='light'?'☀️':'🌙';try{localStorage.setItem('cm_theme',t);}catch{}}
@@ -275,8 +295,8 @@ function renderAgenda(){
   const ag=document.getElementById('agenda'); ag.innerHTML='';
   if(!STATE.openActivities.length){ag.innerHTML='<div class="empty" style="text-align:left">Nada pendente. 🎉</div>';return;}
   for(const a of STATE.openActivities){
-    const meet=safeUrl(a.meet_link); const d=document.createElement('div'); d.className='act';
-    d.innerHTML=`<span class="dot t-${esc(a.type)}"></span><div class="grow"><b>${esc(TLABEL[a.type]||a.type)}</b> — ${esc(a.title||'')} <span class="pill">${esc(a.lead_name||'')}</span> <span class="pill">${esc(fmt(a.due_at))}</span>${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</div><button class="done-btn ghost">Concluir</button>`;
+    const meet=safeUrl(a.meet_link), eventUrl=safeUrl(a.google_event_url); const d=document.createElement('div'); d.className='act';
+    d.innerHTML=`<span class="dot t-${esc(a.type)}"></span><div class="grow"><b>${esc(TLABEL[a.type]||a.type)}</b> — ${esc(a.title||'')} <span class="pill">${esc(a.lead_name||'')}</span> <span class="pill">${esc(fmt(a.due_at))}</span>${eventUrl?` · <a href="${esc(eventUrl)}" target="_blank" rel="noopener">Agenda</a>`:''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}${a.calendar_sync_status==='error'?' · <span style="color:#f59e0b">falha no Agenda</span>':''}</div><button class="done-btn ghost">Concluir</button>`;
     d.querySelector('.done-btn').addEventListener('click',async()=>{await api(`/api/activities/${a.id}/done`,'POST');toast('Concluída');load();});
     ag.appendChild(d);
   }
@@ -292,17 +312,18 @@ async function openEdit(id){const d=await api(`/api/leads/${id}`);if(!d.ok)retur
   fName.value=l.name||'';fEmail.value=l.email||'';fPhone.value=l.phone||'';fCity.value=l.city||'';fSubtitle.value=l.subtitle||'';fDesc.value=l.description||'';fEntity.value=l.entity_type||'PF';fStage.innerHTML=stageOptions(l.stage);
   document.getElementById('leadExtra').hidden=false;renderActs(d.activities);openModal('mLead');}
 function renderActs(acts){const box=document.getElementById('actList');if(!acts.length){box.innerHTML='<div class="empty" style="text-align:left">Sem atividades ainda.</div>';return;}box.innerHTML='';
-  for(const a of acts){const meet=safeUrl(a.meet_link);const row=document.createElement('div');row.className='actitem';
-    row.innerHTML=`<span class="dot t-${esc(a.type)}"></span><span class="grow">${esc(TLABEL[a.type]||a.type)} — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${a.done?' ✓':''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</span>${a.done?'':'<button class="done-btn ghost">ok</button>'}`;
+  for(const a of acts){const meet=safeUrl(a.meet_link),eventUrl=safeUrl(a.google_event_url);const row=document.createElement('div');row.className='actitem';
+    row.innerHTML=`<span class="dot t-${esc(a.type)}"></span><span class="grow">${esc(TLABEL[a.type]||a.type)} — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${a.done?' ✓':''}${eventUrl?` · <a href="${esc(eventUrl)}" target="_blank" rel="noopener">Agenda</a>`:''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</span>${a.done?'':'<button class="done-btn ghost">ok</button>'}`;
     if(!a.done)row.querySelector('.done-btn').addEventListener('click',async()=>{await api(`/api/activities/${a.id}/done`,'POST');openEdit(editId);load();});box.appendChild(row);}}
 async function saveLead(){const body={name:fName.value,email:fEmail.value,phone:fPhone.value,city:fCity.value,subtitle:fSubtitle.value,description:fDesc.value,entity_type:fEntity.value,stage:fStage.value,layout_id:STATE.layoutId};
   if(!body.name.trim()){toast('Informe o nome');return;}const d=editId?await api(`/api/leads/${editId}`,'PATCH',body):await api('/api/leads','POST',body);
   if(d.ok){toast(editId?'Atualizado':'Lead criado');closeModal('mLead');load();}else toast('Erro ao salvar');}
 
-function quickAct(type){if(!editId)return;actLeadId=editId;document.getElementById('mActTitle').textContent='Nova '+(TLABEL[type]||type);aTitle.value=TLABEL[type]||'';aDue.value='';aNotes.value='';aMeet.value='';document.getElementById('aMeetWrap').hidden=type!=='meeting';document.getElementById('mAct').dataset.type=type;openModal('mAct');}
+function quickAct(type){if(!editId)return;actLeadId=editId;document.getElementById('mActTitle').textContent='Nova '+(TLABEL[type]||type);aTitle.value=TLABEL[type]||'';aDue.value='';aNotes.value='';aMeet.value='';document.getElementById('aMeetWrap').hidden=type!=='meeting';aGoogle.checked=!!GOOGLE.calendar;aGoogle.disabled=!GOOGLE.calendar;document.getElementById('aGoogleText').textContent=GOOGLE.calendar?'Adicionar ao Google Agenda'+(type==='meeting'?' e gerar Google Meet':''):'Conecte o Google Agenda em Configurações';document.getElementById('mAct').dataset.type=type;openModal('mAct');}
 async function saveAct(){const type=document.getElementById('mAct').dataset.type;const due=aDue.value?new Date(aDue.value).toISOString():null;
-  const body={type,title:aTitle.value,due_at:due,notes:aNotes.value,meet_link:type==='meeting'?(aMeet.value||'https://meet.google.com/new'):null};
-  const d=await api(`/api/leads/${actLeadId}/activities`,'POST',body);if(d.ok){toast('Atividade adicionada');closeModal('mAct');openEdit(actLeadId);load();}else toast(d.error||'Erro');}
+  if(aGoogle.checked&&!due){toast('Informe data e hora para usar o Google Agenda');return;}
+  const body={type,title:aTitle.value,due_at:due,notes:aNotes.value,meet_link:type==='meeting'&&!aGoogle.checked?(aMeet.value||'https://meet.google.com/new'):null,sync_calendar:aGoogle.checked};
+  const d=await api(`/api/leads/${actLeadId}/activities`,'POST',body);if(d.ok){toast(d.calendar?.ok?'Atividade e evento criados':d.calendar&&!d.calendar.ok?'Atividade salva; Agenda não sincronizou':'Atividade adicionada');closeModal('mAct');openEdit(actLeadId);load();}else toast(d.error||'Erro');}
 
 // Colunas
 function renderSwatches(){const box=document.getElementById('cSwatches');box.innerHTML='';for(const col of COLORS){const s=document.createElement('div');s.className='swatch'+(col===colColor?' sel':'');s.style.background=col;s.onclick=()=>{colColor=col;renderSwatches();};box.appendChild(s);}}
@@ -336,6 +357,42 @@ async function loadLink(){
   else if(LINK.linked){ el.textContent='vinculado ✓'+(LINK.plan?` (${LINK.plan})`:''); el.style.color='#34d399'; }
   else if(LINK.configured===false){ el.textContent='não vinculado'; el.style.color='var(--muted)'; }
   else { el.textContent='chave inválida'; el.style.color='#f59e0b'; }
+}
+function normalizeGoogle(d){
+  const services=d.services||{};
+  return {connected:!!d.connected,gmail:!!(d.gmail??services.gmail),calendar:!!(d.calendar??services.calendar),email:String(d.email||d.accountEmail||'')};
+}
+async function loadGoogle(render=true){
+  try{const d=await api('/api/integrations/google/status');GOOGLE=d.ok?normalizeGoogle(d):{connected:false,gmail:false,calendar:false,email:''};}
+  catch{GOOGLE={connected:false,gmail:false,calendar:false,email:''};}
+  if(render)renderGoogleSettings();
+  return GOOGLE;
+}
+function renderGoogleSettings(){
+  const status=document.getElementById('googleStatus');if(!status)return;
+  status.textContent=GOOGLE.connected?'Conectado':'Não conectado';status.style.color=GOOGLE.connected?'#34d399':'var(--muted)';
+  document.getElementById('googleAccount').textContent=GOOGLE.connected?(GOOGLE.email||'Conta Google conectada'):'Gmail e Google Agenda';
+  document.getElementById('gmailService').classList.toggle('on',GOOGLE.gmail);
+  document.getElementById('calendarService').classList.toggle('on',GOOGLE.calendar);
+  document.getElementById('googleConnectBtn').textContent=GOOGLE.connected?'Reconectar Google':'Conectar Google';
+  document.getElementById('googleDisconnectBtn').hidden=!GOOGLE.connected;
+}
+async function openSettings(){openModal('mSettings');document.getElementById('googleAccount').textContent='Verificando conexão…';await loadGoogle();}
+async function connectGoogle(){
+  const popup=window.open('about:blank','captamais-google','width=560,height=720');
+  const btn=document.getElementById('googleConnectBtn');btn.disabled=true;
+  try{
+    const d=await api('/api/integrations/google/connect','POST');const url=safeUrl(d.authorizationUrl||d.data?.authorizationUrl);
+    if(!d.ok||!url){if(popup)popup.close();toast(d.message||'Não foi possível iniciar a conexão');return;}
+    if(popup)popup.location.href=url;else window.open(url,'_blank','noopener');
+    toast('Conclua a autorização do Google');
+    const started=Date.now();const timer=setInterval(async()=>{const state=await loadGoogle();if(state.connected||Date.now()-started>120000){clearInterval(timer);if(state.connected)toast('Google conectado');}},2500);
+  }catch{if(popup)popup.close();toast('Erro ao conectar o Google');}finally{btn.disabled=false;}
+}
+async function disconnectGoogle(){
+  if(!confirm('Desconectar Gmail e Google Agenda desta conta?'))return;
+  const d=await api('/api/integrations/google/disconnect','POST');
+  if(d.ok){GOOGLE={connected:false,gmail:false,calendar:false,email:''};renderGoogleSettings();toast('Google desconectado');}else toast(d.message||'Não foi possível desconectar');
 }
 const TOOL_MAP={
  'Calculadora Patrimonial':{key:'calculadora',open:openCalculator},
@@ -385,6 +442,7 @@ function renderCnpj(data){
 }
 load();
 loadLink();
+loadGoogle(false);
 </script>
 </body>
 </html>
