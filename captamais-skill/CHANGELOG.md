@@ -10,6 +10,16 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.4] — 2026-09-28 (identificação: 1.04)
+### Adicionado
+- **Abrir sem o assistente:** `Abrir CaptaMais.bat` (Windows) e `Abrir CaptaMais.command` (Mac) — duplo clique abre o CRM,
+  instalam o que falta na primeira vez e (Windows) oferecem um **atalho com ícone** na Área de Trabalho
+  (`node scripts/atalho.mjs`). Serve de plano B quando o assistente não consegue rodar comandos (ex.: bloqueio do modo
+  automático).
+- `SKILL.md` usa `${CLAUDE_SKILL_DIR}` (caminho real da skill) e orienta parar após uma tentativa bloqueada,
+  indicando o duplo clique.
+- Ícone (favicon) na janela do aplicativo.
+
 ## [1.0.3] — 2026-09-28 (identificação: 1.03)
 ### Adicionado
 - **Sincronização local → nuvem (leads):** o botão ☁ Sincronizar **envia** os leads para a conta. Fase 1 só

@@ -1,5 +1,6 @@
 ---
 name: captamais
+allowed-tools: Bash(node *scripts/server.mjs*) Bash(node *scripts/crm.mjs*)
 description: >-
   CaptaMais — CRM local do assessor/consultor, rodando no computador dele pelo Claude. Use quando a
   pessoa quiser abrir ou gerenciar o CRM dela (leads, funil de prospecção), cadastrar um lead, mover
@@ -10,35 +11,44 @@ description: >-
 
 # CaptaMais — seu CRM local no Claude
 
-**Versão 1.03** (metadados npm: `1.0.3`).
+**Versão 1.04** (metadados npm: `1.0.4`).
 
 Isto é um **CRM que roda na máquina do usuário**. Os dados (leads, atividades) ficam num banco local
 em `~/.captamais/captamais.db` — **privado**. Só saem do computador se a pessoa sincronizar ou abrir
 um recurso de nuvem. Você (Claude) opera o CRM
 chamando o motor `scripts/crm.mjs` e mostra um **display local** (arquivo HTML aberto no navegador).
 
-> `SKILL_DIR` abaixo = a pasta desta skill. Rode os comandos com o caminho absoluto do motor:
-> `node "SKILL_DIR/scripts/crm.mjs" <comando> ...`
+> `${CLAUDE_SKILL_DIR}` = a pasta desta skill (o Claude Code já troca pelo caminho real; se aparecer escrito assim, use a
+> pasta onde está este SKILL.md). Rode os comandos com o caminho absoluto do motor:
+> `node "${CLAUDE_SKILL_DIR}/scripts/crm.mjs" <comando> ...`
 
 ## Preparo (uma vez)
-Se for o primeiro uso e faltar dependência, rode `npm install` dentro de `SKILL_DIR` (instala o
+Só se **não existir** a pasta `node_modules` dentro da skill, rode `npm install` nela (instala o
 `better-sqlite3`). Node 18+ necessário.
+
+**A pessoa também pode abrir o CRM sem você**, com duplo clique em `Abrir CaptaMais.bat` (Windows) ou
+`Abrir CaptaMais.command` (Mac), na pasta da skill. No primeiro uso o arquivo instala tudo sozinho e oferece
+um atalho na Área de Trabalho. Isso é o plano B sempre que rodar comandos pelo assistente não funcionar.
 
 ## Ao abrir o CRM ("/captamais", "abrir meu CRM", "meus leads")
 O jeito principal é o **app local interativo** (arrastar cards, criar lead, pop-up de atendimento):
-1. Rode **uma vez**: `node "SKILL_DIR/scripts/server.mjs"`. O próprio app **abre sozinho como janela de
+1. Rode **uma vez**: `node "${CLAUDE_SKILL_DIR}/scripts/server.mjs"`. O próprio app **abre sozinho como janela de
    aplicativo** no Chrome/Edge da pessoa (sem abas nem barra de endereço; senão, no navegador padrão), fica
    rodando **solto do terminal** (não morre ao fechar o editor) e se encerra sozinho após muito tempo sem
    uso. Se já estiver aberto, só traz a janela de volta (nunca abre duas cópias). Ele escuta só em
    `127.0.0.1` e imprime um JSON `{"ok":true,"url":"http://127.0.0.1:PORT/","reused":false,"opened":true}`.
-2. **Não abra a `url` você mesmo** nem em navegador embutido/preview do Cursor ou do Claude — o app já abriu
+2. **Se o comando for bloqueado ou falhar** (permissão, modo automático, etc.): faça **uma** tentativa e pare —
+   não insista por outros caminhos. Diga à pessoa, em uma frase, para dar duplo clique em `Abrir CaptaMais.bat`
+   (Windows) ou `Abrir CaptaMais.command` (Mac) na pasta `${CLAUDE_SKILL_DIR}`, ou rodar
+   `node "${CLAUDE_SKILL_DIR}/scripts/server.mjs"` num terminal.
+3. **Não abra a `url` você mesmo** nem em navegador embutido/preview do Cursor ou do Claude — o app já abriu
    na janela do computador dela. Só se o JSON trouxer `"opened":false` peça que ela abra o endereço no
    navegador. A partir daí a pessoa trabalha direto no app: **criar lead, arrastar entre etapas, abrir o
    card, registrar ligação/follow-up/reunião (com Meet)/tarefa, editar, agenda, importar/exportar** — tudo
    gravando no banco local. Você (Claude) não precisa ficar regenerando nada.
-3. Nunca exponha o servidor fora de `127.0.0.1` nem publique os dados — a proposta é privacidade.
+4. Nunca exponha o servidor fora de `127.0.0.1` nem publique os dados — a proposta é privacidade.
 
-Alternativa **offline/snapshot** (sem servidor): `node "SKILL_DIR/scripts/crm.mjs" render` gera
+Alternativa **offline/snapshot** (sem servidor): `node "${CLAUDE_SKILL_DIR}/scripts/crm.mjs" render` gera
 `~/.captamais/crm-view.html` (estático, injeção segura). Útil para uma foto rápida do funil.
 
 ## Ações por conversa (opcional — via `scripts/crm.mjs`)

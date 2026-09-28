@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.03-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.04-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />
@@ -85,6 +85,15 @@ lead 3 e cria o Meet"**, **"o que tenho na agenda?"**.
 O Claude **sobe o app local** (`http://127.0.0.1:…`, só na sua máquina), que **abre sozinho numa janela própria do seu Chrome/Edge** (como um aplicativo, sem abas nem barra de endereço) e continua rodando mesmo que você feche o editor. A partir
 daí você trabalha direto: arrastar cards, criar/editar leads, registrar atendimento, agenda,
 importar/exportar.
+
+### Abrir sem o Claude (duplo clique)
+O CRM não depende do assistente para abrir. Na pasta da skill:
+- **Windows:** dê duplo clique em **`Abrir CaptaMais.bat`**.
+- **Mac:** dê duplo clique em **`Abrir CaptaMais.command`** (na primeira vez, se o Mac reclamar, clique com o botão direito → Abrir).
+
+Na **primeira vez** o arquivo instala o que falta sozinho (leva cerca de um minuto, precisa de internet) e, no Windows,
+oferece um **atalho "CaptaMais" na Área de Trabalho** com o ícone. Depois é só abrir o atalho — a janela do CRM aparece sozinha.
+Precisa apenas do [Node.js](https://nodejs.org) (versão LTS) instalado.
 
 ## Privacidade e segurança
 - Servidor local escuta **só em `127.0.0.1`** + **token anti-CSRF**; nada exposto na rede.
