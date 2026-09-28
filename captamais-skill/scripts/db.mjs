@@ -59,6 +59,10 @@ export function openDb() {
   try { _db.exec('ALTER TABLE activities ADD COLUMN google_event_id TEXT'); } catch (_) {}
   try { _db.exec('ALTER TABLE activities ADD COLUMN google_event_url TEXT'); } catch (_) {}
   try { _db.exec('ALTER TABLE activities ADD COLUMN calendar_sync_status TEXT'); } catch (_) {}
+  // Vínculo com a nuvem (sincronização): id do lead lá, quando foi sincronizado aqui e a versão da nuvem vista.
+  try { _db.exec('ALTER TABLE leads ADD COLUMN cloud_id INTEGER'); } catch (_) {}
+  try { _db.exec('ALTER TABLE leads ADD COLUMN local_synced_at TEXT'); } catch (_) {}
+  try { _db.exec('ALTER TABLE leads ADD COLUMN cloud_seen_at TEXT'); } catch (_) {}
   seed();
   return _db;
 }
@@ -302,4 +306,75 @@ export function importLeadsCsv(text, layoutId) {
     try { createLead({ ...obj, entityType: obj.entity_type, layout_id: layoutId }); n++; } catch { /* pula inválidos */ }
   }
   return n;
+}
+
+// ── Sincronização local ↔ nuvem (a orquestração fica em sync.mjs) ──
+/** Leads + nome do funil, com os campos de vínculo. */
+export function listLeadsForSync() {
+  return openDb().prepare('SELECT l.*, y.name AS layout_name FROM leads l LEFT JOIN layouts y ON y.id = l.layout_id ORDER BY l.id').all();
+}
+/** Funis com colunas no formato que a nuvem entende ({ id: col_key, title }). */
+export function layoutsForSync() {
+  const defId = getDefaultLayoutId();
+  return listLayouts().map((l) => ({
+    name: l.name, isDefault: l.id === defId,
+    columns: listColumns(l.id).map((c) => ({ id: c.col_key, title: c.title })),
+  }));
+}
+/** Um lead mudou aqui desde a última sincronização? (nunca sincronizado também conta) */
+export function isLeadDirty(l) {
+  if (!l.local_synced_at) return true;
+  return String(l.updated_at || l.created_at || '') > String(l.local_synced_at);
+}
+/** Grava o vínculo com a nuvem e marca o lead como em dia (aqui e lá). */
+export function markLeadSynced(id, cloudId, cloudSeenAt) {
+  openDb().prepare('UPDATE leads SET cloud_id=?, cloud_seen_at=?, local_synced_at=? WHERE id=?').run(Number(cloudId), String(cloudSeenAt || ''), now(), Number(id));
+}
+/** Vincula sem marcar como em dia: as duas pontas ficam "sujas" e a mais recente vence no próximo passo. */
+export function linkLeadPending(id, cloudId) {
+  openDb().prepare('UPDATE leads SET cloud_id=?, cloud_seen_at=NULL, local_synced_at=NULL WHERE id=?').run(Number(cloudId), Number(id));
+}
+/** Resumo barato (sem rede) para a tela: quantos leads, quantos já vinculados, quantos pendentes. */
+export function syncSummary() {
+  const leads = listLeadsForSync();
+  return { total: leads.length, linked: leads.filter((l) => l.cloud_id).length, pending: leads.filter((l) => !l.cloud_id || isLeadDirty(l)).length };
+}
+
+/** Garante, no app local, o funil da nuvem (casa pelo padrão ou pelo nome) e as colunas dele. Devolve id local. */
+export function ensureLayoutFromCloud(cl) {
+  const db = openDb();
+  let layout = cl.isDefault ? db.prepare('SELECT * FROM layouts WHERE id=?').get(getDefaultLayoutId())
+    : db.prepare('SELECT * FROM layouts WHERE LOWER(TRIM(name)) = ? ORDER BY id LIMIT 1').get(String(cl.name || '').trim().toLowerCase());
+  const cols = Array.isArray(cl.columns) ? cl.columns : [];
+  if (!layout) {
+    layout = db.prepare('INSERT INTO layouts (name, position, created_at) VALUES (?,?,?)').run(
+      String(cl.name || 'Funil').trim() || 'Funil', (db.prepare('SELECT MAX(position) m FROM layouts').get().m ?? -1) + 1, now());
+    layout = db.prepare('SELECT * FROM layouts WHERE id=?').get(layout.lastInsertRowid);
+  }
+  const have = new Set(listColumns(layout.id).map((c) => c.col_key));
+  let pos = (db.prepare('SELECT MAX(position) m FROM columns WHERE layout_id=?').get(layout.id).m ?? -1) + 1;
+  for (const c of cols) {
+    const key = clean(c?.id); if (!key || have.has(key)) continue;
+    db.prepare('INSERT INTO columns (layout_id,col_key,title,color,position) VALUES (?,?,?,?,?)').run(layout.id, key, clean(c.title) || key, COLUMN_COLORS[pos % COLUMN_COLORS.length], pos++);
+    have.add(key);
+  }
+  return layout.id;
+}
+
+/** Cria ou atualiza um lead local a partir de um lead da nuvem e já o marca como em dia. */
+export function applyCloudLead(existingId, c, layoutId) {
+  const db = openDb();
+  const keys = new Set(listColumns(layoutId).map((x) => x.col_key));
+  const stage = keys.has(c.stage) ? c.stage : firstColKey(layoutId);
+  const entity = String(c.entityType).toUpperCase() === 'PJ' ? 'PJ' : 'PF';
+  let id = existingId;
+  if (id) {
+    db.prepare('UPDATE leads SET name=?,email=?,phone=?,city=?,description=?,subtitle=?,entity_type=?,stage=?,layout_id=?,updated_at=? WHERE id=?')
+      .run(String(c.name).trim() || 'Sem nome', clean(c.email), clean(c.phone), clean(c.city), clean(c.description), clean(c.subtitle), entity, stage, layoutId, now(), id);
+  } else {
+    id = db.prepare(`INSERT INTO leads (name,email,phone,city,stage,description,subtitle,entity_type,custom_fields,layout_id,created_at)
+      VALUES (?,?,?,?,?,?,?,?,'{}',?,?)`).run(String(c.name).trim() || 'Sem nome', clean(c.email), clean(c.phone), clean(c.city), stage, clean(c.description), clean(c.subtitle), entity, layoutId, now()).lastInsertRowid;
+  }
+  markLeadSynced(id, c.cloudId, c.updatedAt);
+  return Number(id);
 }

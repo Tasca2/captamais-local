@@ -27,8 +27,9 @@ recurso de nuvem/IA — e, mesmo assim, apenas o necessário para aquela ação.
 - **Ações de nuvem/IA acionadas por você:** ao pedir, por exemplo, "preparar reunião com IA" ou
   "buscar dados do ativo", **apenas os dados necessários** daquela ação são enviados à nuvem CaptaMais
   (autenticados e medidos) — para prestar o serviço e faturar o uso.
-- **Sincronização (opcional):** se você ativar o sync, os dados escolhidos sobem para a sua conta na
-  nuvem CaptaMais. É opt-in. Trazer chave própria de IA (BYO) ainda não está disponível.
+- **Sincronização (opcional):** se você clicar em ☁ Sincronizar, os contatos e a etapa dos seus leads
+  sobem para a sua conta na nuvem CaptaMais. É opt-in e **só sobe**: nenhum dado da plataforma é baixado
+  para o seu computador. Trazer chave própria de IA (BYO) ainda não está disponível.
 - **Google (opcional):** ao conectar Gmail/Google Agenda, a autorização e os tokens OAuth ficam na
   plataforma CaptaMais. Ao marcar a sincronização de uma atividade, título, data, notas e dados
   mínimos do lead necessários para o convite são enviados ao Google. O app local não lê a caixa de

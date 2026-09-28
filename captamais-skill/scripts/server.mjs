@@ -10,20 +10,53 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as db from './db.mjs';
+import { runSync, ensureLeadInCloud } from './sync.mjs';
+import { openApp, findRunning } from './open.mjs';
+import { spawn } from 'node:child_process';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ASSETS = path.join(SCRIPT_DIR, '..', 'assets');
 const HOST = '127.0.0.1';
+// Modos de execução: (padrão) lança o CRM solto do terminal, abre a janela e sai; --child é o CRM em si;
+// --foreground roda aqui mesmo (depuração). --no-open (ou CAPTAMAIS_NO_OPEN=1) não abre janela.
+const ARGS = new Set(process.argv.slice(2));
+const IS_CHILD = ARGS.has('--child');
+const FOREGROUND = ARGS.has('--foreground') || process.env.CAPTAMAIS_FOREGROUND === '1';
+if (ARGS.has('--no-open')) process.env.CAPTAMAIS_NO_OPEN = '1';
+// Solto do terminal, o CRM se encerra sozinho após muito tempo sem uso (a aba aberta avisa que está viva).
+const IDLE_MIN = process.env.CAPTAMAIS_IDLE_MIN === undefined ? 720 : Number(process.env.CAPTAMAIS_IDLE_MIN);
+let lastActivity = Date.now();
+process.stdout.on('error', () => {}); // o terminal que iniciou pode fechar; não derrubar o CRM por isso
 const START_PORT = Number(process.env.CAPTAMAIS_PORT) || 4599;
 const TOKEN = crypto.randomBytes(16).toString('hex');
-const API_KEY = (process.env.CAPTAMAIS_API_KEY || '').trim();
+// A chave vem da variável de ambiente OU do arquivo local (~/.captamais/config.json), gravado pela tela
+// "Conectar conta". Nunca é devolvida ao navegador; só o servidor local a usa para falar com a nuvem.
+const CONFIG_FILE = path.join(db.dataDir(), 'config.json');
+function readConfig() { try { return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) || {}; } catch { return {}; } }
+function writeConfig(cfg) {
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2), { mode: 0o600 });
+  try { fs.chmodSync(CONFIG_FILE, 0o600); } catch (_) {}
+}
+const ENV_KEY = (process.env.CAPTAMAIS_API_KEY || '').trim();
+let API_KEY = ENV_KEY || String(readConfig().apiKey || '').trim();
+const KEY_FORMAT = /^ctm_[a-f0-9]{48}$/;
 const CLOUD_URL = (process.env.CAPTAMAIS_CLOUD_URL || 'https://captamais.me').trim().replace(/\/+$/, '');
+// A chave viaja em cada chamada: só HTTPS (http só para testes em localhost). Nunca em texto puro pela rede.
+try {
+  const u = new URL(CLOUD_URL);
+  const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  if (u.protocol !== 'https:' && !(u.protocol === 'http:' && local)) throw new Error('inseguro');
+} catch {
+  console.error('[captamais-crm] CAPTAMAIS_CLOUD_URL precisa ser HTTPS (ex.: https://captamais.me). Encerrando para não expor sua chave.');
+  process.exit(1);
+}
 
 /** Chama a nuvem CaptaMais autenticando pela chave do usuário. Ferramentas de nuvem passam por aqui. */
-async function cloud(path, body, method = 'POST') {
-  if (!API_KEY) return { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais (defina CAPTAMAIS_API_KEY).' };
+async function cloud(path, body, method = 'POST', key = API_KEY) {
+  if (!key) return { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais (defina CAPTAMAIS_API_KEY).' };
   try {
-    const options = { method, headers: { 'Content-Type': 'application/json', 'x-captamais-key': API_KEY } };
+    // redirect:'error' — um redirecionamento reenviaria a chave (cabeçalho customizado) ao destino; recusa.
+    const options = { method, redirect: 'error', signal: AbortSignal.timeout(45000), headers: { 'Content-Type': 'application/json', 'x-captamais-key': key } };
     if (method !== 'GET' && method !== 'HEAD') options.body = JSON.stringify(body || {});
     const r = await fetch(`${CLOUD_URL}${path}`, options);
     const data = await r.json().catch(() => ({ ok: false, message: 'Resposta inválida da nuvem.' }));
@@ -61,6 +94,10 @@ async function handle(req, res) {
   const p = u.pathname;
   const method = req.method || 'GET';
 
+  // Identificação (sem dados): permite reaproveitar um CRM já aberto em vez de subir outro.
+  if (p === '/__captamais' && method === 'GET') return json(res, 200, { app: 'captamais-crm', dbDir: db.dataDir() });
+  lastActivity = Date.now();
+
   // Página inicial (shell) — injeta token + logo. Não expõe dados.
   if (p === '/' && method === 'GET') {
     let html = fs.readFileSync(path.join(ASSETS, 'app.html'), 'utf8');
@@ -77,18 +114,69 @@ async function handle(req, res) {
   if (req.headers['x-cm-token'] !== TOKEN) return json(res, 403, { ok: false, error: 'token inválido' });
 
   try {
+    if (p === '/api/ping' && method === 'GET') return json(res, 200, { ok: true });
     if (p === '/api/board' && method === 'GET') return json(res, 200, { ok: true, ...db.computeBoard(u.searchParams.get('layout')) });
     if (p === '/api/agenda' && method === 'GET') return json(res, 200, { ok: true, items: db.agenda(Number(u.searchParams.get('days')) || 7) });
     if (p === '/api/export' && method === 'GET') return json(res, 200, { ok: true, ...db.exportAll() });
     if (p === '/api/export.csv' && method === 'GET') return send(res, 200, db.exportLeadsCsv(u.searchParams.get('layout')), { 'Content-Type': 'text/csv; charset=utf-8' });
     if (p === '/api/backup' && method === 'POST') { const f = db.writeBackup(); return json(res, 200, { ok: !!f }); }
-    if (p === '/api/sync/status' && method === 'GET') return json(res, 200, { ok: true, linked: false });
+
+    // ── Sincronização local ↔ nuvem (a pessoa escolhe o modo na tela) ──
+    if (p === '/api/sync/status' && method === 'GET') {
+      return json(res, 200, { ok: true, configured: !!API_KEY, ...db.syncSummary() });
+    }
+    if (p === '/api/sync/run' && method === 'POST') {
+      const b = await readBody(req);
+      if (!API_KEY) return json(res, 400, { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais primeiro.' });
+      try { db.writeBackup(); } catch (_) {} // rede de segurança antes de mexer nos dados
+      try { return json(res, 200, { ok: true, stats: await runSync(cloud, b.mode), ...db.syncSummary() }); }
+      catch (e) { return json(res, 400, { ok: false, message: String(e?.message || 'Falha ao sincronizar.') }); }
+    }
+    // Abre o Planejamento Financeiro do SITE (com o lead escolhido, já enviado à nuvem).
+    if (p === '/api/planning/url' && method === 'POST') {
+      const b = await readBody(req);
+      if (!API_KEY) return json(res, 400, { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais primeiro.' });
+      if (!b.lead_id) return json(res, 200, { ok: true, url: `${CLOUD_URL}/financial-planning` });
+      try {
+        const cloudId = await ensureLeadInCloud(cloud, Number(b.lead_id));
+        const planId = Number(b.plan_id);
+        // Com plano informado abre aquele planejamento; senão começa um novo para o lead. (O site só aplica se for da conta.)
+        const q = Number.isInteger(planId) && planId > 0 ? `planId=${planId}` : `leadId=${cloudId}`;
+        return json(res, 200, { ok: true, url: `${CLOUD_URL}/financial-planning?${q}` });
+      } catch (e) { return json(res, 400, { ok: false, message: String(e?.message || 'Não foi possível abrir o planejamento.') }); }
+    }
+    // Atalho na ficha do lead: quantos planejamentos existem na nuvem e quando foi o último (só ids e datas).
+    const plansMatch = p.match(/^\/api\/leads\/(\d+)\/plans$/);
+    if (plansMatch && method === 'GET') {
+      const lead = db.getLead(Number(plansMatch[1])).lead;
+      if (!lead) return json(res, 404, { ok: false, error: 'lead não encontrado' });
+      if (!API_KEY || !lead.cloud_id) return json(res, 200, { ok: true, count: 0, plans: [], synced: !!lead.cloud_id });
+      const d = await cloud('/api/mcp/lead/plans', { cloudId: lead.cloud_id });
+      return json(res, 200, d.ok ? { ok: true, count: d.count, plans: d.plans, synced: true } : { ok: false, message: d.message });
+    }
+
+    // ── Conectar / desconectar a conta (a chave nunca volta para o navegador) ──
+    if (p === '/api/link/connect' && method === 'POST') {
+      const b = await readBody(req);
+      const key = String(b.key || '').trim();
+      if (!KEY_FORMAT.test(key)) return json(res, 400, { ok: false, message: 'Chave inválida. Copie-a inteira em Minha Conta → Conector.' });
+      const d = await cloud('/api/mcp/link/status', {}, 'POST', key);
+      if (!d.linked) return json(res, 400, { ok: false, message: d.code === 'network' ? 'Sem conexão com a nuvem.' : 'A nuvem não reconheceu essa chave. Gere ou rotacione a chave em Minha Conta.' });
+      writeConfig({ ...readConfig(), apiKey: key });
+      API_KEY = key;
+      return json(res, 200, { ok: true, name: d.name || '', plan: d.plan || '' });
+    }
+    if (p === '/api/link/disconnect' && method === 'POST') {
+      const cfg = readConfig(); delete cfg.apiKey; writeConfig(cfg);
+      API_KEY = ENV_KEY;
+      return json(res, 200, { ok: true, stillLinkedByEnv: !!ENV_KEY });
+    }
 
     // ── Vinculação + ferramentas de nuvem (proxy autenticado pela chave) ──
     if (p === '/api/link/status' && method === 'GET') {
-      if (!API_KEY) return json(res, 200, { ok: true, linked: false, configured: false });
+      if (!API_KEY) return json(res, 200, { ok: true, linked: false, configured: false, cloudUrl: CLOUD_URL });
       const d = await cloud('/api/mcp/link/status', {});
-      return json(res, 200, { ...d, configured: true });
+      return json(res, 200, { ...d, configured: true, cloudUrl: CLOUD_URL });
     }
     if (p === '/api/integrations/google/status' && method === 'GET') {
       if (!API_KEY) return json(res, 200, { ok: true, configured: false, connected: false, gmail: false, calendar: false });
@@ -186,10 +274,40 @@ function listen(port, tries = 8) {
   server.listen(port, HOST, () => {
     try { db.writeBackup(); } catch (_) {} // backup automático (silencioso) a cada abertura
     const url = `http://${HOST}:${port}/`;
-    // stdout em JSON para a skill/CLI capturar o endereço; log humano em stderr.
+    // stdout em JSON (1ª linha) para a skill/CLI capturar o endereço; log humano em stderr.
     process.stdout.write(JSON.stringify({ ok: true, url, dbDir: db.dataDir() }) + '\n');
     console.error(`[captamais-crm] CRM local rodando em ${url}  (dados: ${db.dataDir()})`);
+    // Solto do terminal (--child), some sozinho depois de muito tempo sem uso.
+    if (IS_CHILD && IDLE_MIN > 0) {
+      const every = Math.min(60000, Math.max(500, (IDLE_MIN * 60000) / 2));
+      setInterval(() => { if (Date.now() - lastActivity > IDLE_MIN * 60000) process.exit(0); }, every).unref();
+    }
+    // Rodando em primeiro plano (depuração): abre a janela daqui mesmo.
+    if (FOREGROUND && !IS_CHILD) openApp(url).catch(() => {});
   });
 }
 
-listen(START_PORT);
+/** Modo padrão: reaproveita um CRM já aberto ou sobe um solto do terminal; abre a janela e sai. */
+async function launch() {
+  const report = (url, reused, opened) => {
+    process.stdout.write(JSON.stringify({ ok: true, url, dbDir: db.dataDir(), reused, opened: !!opened.opened, window: opened.kind || null }) + '\n');
+    console.error(`[captamais-crm] ${reused ? 'CRM já estava aberto' : 'CRM iniciado'} em ${url}` + (opened.opened ? (opened.kind === 'app' ? ' (janela de aplicativo)' : ' (navegador padrão)') : ' — abra este endereço no navegador'));
+  };
+  const running = await findRunning(START_PORT, db.dataDir());
+  if (running) { report(running.url, true, await openApp(running.url)); return process.exit(0); }
+  const child = spawn(process.execPath, [fileURLToPath(import.meta.url), '--child'], { detached: true, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true, env: process.env });
+  const url = await new Promise((resolve, reject) => {
+    let buf = '';
+    const t = setTimeout(() => reject(new Error('O CRM demorou para iniciar.')), 15000);
+    child.stdout.on('data', (d) => { buf += d; const i = buf.indexOf('\n'); if (i >= 0) { clearTimeout(t); try { resolve(JSON.parse(buf.slice(0, i)).url); } catch (e) { reject(e); } } });
+    child.on('exit', (c) => reject(new Error(`O CRM encerrou ao iniciar (código ${c}).`)));
+    child.on('error', reject);
+  }).catch((e) => { console.error('[captamais-crm] erro:', e.message); process.exit(1); });
+  child.stdout.destroy();
+  child.unref();
+  report(url, false, await openApp(url));
+  process.exit(0);
+}
+
+if (IS_CHILD || FOREGROUND) listen(START_PORT);
+else launch();

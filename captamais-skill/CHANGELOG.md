@@ -5,8 +5,30 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
-- Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronização
-  local ↔ nuvem, cifra do banco local em repouso.
+### Planejado
+- Baixar leads da nuvem (desligado por enquanto, por privacidade).
+- Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
+  cifra do banco local em repouso.
+
+## [1.0.3] — 2026-09-28 (identificação: 1.03)
+### Adicionado
+- **Sincronização local → nuvem (leads):** o botão ☁ Sincronizar **envia** os leads para a conta. Fase 1 só
+  sobe: nada da plataforma é baixado (LGPD/RGPD) e a nuvem só devolve id + data de alteração. Sem duplicar
+  (casa por e-mail/telefone), o mais recente vence, exclusões não se propagam, backup antes de enviar.
+- **Conectar conta pela tela** (chave salva só em `~/.captamais/config.json`), sem depender de variável
+  de ambiente.
+- **Planejamento Financeiro:** abre a ferramenta do site, e o botão dentro do lead já a abre com esse lead.
+- **Bloco «Planejamentos deste lead»** na ficha: mostra quantos existem e quando foi o último, com «Abrir último» e
+  «Novo planejamento» (só ids e datas; os valores ficam na plataforma).
+- O Planejamento Financeiro é do plano Premium ou Max; quem é Free vê «Ver planos», que abre a plataforma.
+- **Abre como aplicativo:** o CRM abre sozinho numa janela própria do Chrome/Edge/Brave (sem abas nem barra de
+  endereço; senão, navegador padrão) em vez de depender de uma aba embutida no Cursor/Claude. Roda solto do
+  terminal, não abre duas cópias e se encerra sozinho após 12 h sem uso (`CAPTAMAIS_IDLE_MIN`). Opções:
+  `--no-open` (não abre janela), `--foreground` (roda no terminal), `CAPTAMAIS_BROWSER=<caminho>`.
+### Segurança
+- O app só fala com a nuvem por **HTTPS** (http só em localhost), não segue redirecionamentos com a chave e tem tempo limite.
+### Corrigido
+- Ao vincular um lead que já existia na nuvem (mesmo e-mail ou telefone), se a cópia local for mais recente ela é enviada. Antes o vínculo marcava o lead como sincronizado sem subir essa versão.
 
 ## [1.0.2] — 2026-09-15 (identificação: 1.02)
 ### Alterado

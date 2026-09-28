@@ -4,16 +4,17 @@ description: >-
   CaptaMais — CRM local do assessor/consultor, rodando no computador dele pelo Claude. Use quando a
   pessoa quiser abrir ou gerenciar o CRM dela (leads, funil de prospecção), cadastrar um lead, mover
   de etapa, marcar uma ligação, follow-up, reunião, conectar um Google Meet, ou ver a agenda de
-  atividades. Os dados ficam NA MÁQUINA dela (~/.captamais) — nada de lead vai para a nuvem. Também
-  responde a pedidos como "abrir meu CRM", "meus leads", "/captamais".
+  atividades. Os dados ficam NA MÁQUINA dela (~/.captamais). Só vão para a nuvem se ela sincronizar
+  de propósito. Também responde a pedidos como "abrir meu CRM", "meus leads", "/captamais".
 ---
 
 # CaptaMais — seu CRM local no Claude
 
-**Versão 1.02** (metadados npm: `1.0.2`).
+**Versão 1.03** (metadados npm: `1.0.3`).
 
 Isto é um **CRM que roda na máquina do usuário**. Os dados (leads, atividades) ficam num banco local
-em `~/.captamais/captamais.db` — **privado, nunca sai do computador dele**. Você (Claude) opera o CRM
+em `~/.captamais/captamais.db` — **privado**. Só saem do computador se a pessoa sincronizar ou abrir
+um recurso de nuvem. Você (Claude) opera o CRM
 chamando o motor `scripts/crm.mjs` e mostra um **display local** (arquivo HTML aberto no navegador).
 
 > `SKILL_DIR` abaixo = a pasta desta skill. Rode os comandos com o caminho absoluto do motor:
@@ -25,12 +26,16 @@ Se for o primeiro uso e faltar dependência, rode `npm install` dentro de `SKILL
 
 ## Ao abrir o CRM ("/captamais", "abrir meu CRM", "meus leads")
 O jeito principal é o **app local interativo** (arrastar cards, criar lead, pop-up de atendimento):
-1. Suba o servidor local: `node "SKILL_DIR/scripts/server.mjs"` (deixe rodando em background). Ele
-   escuta só em `127.0.0.1`, imprime no stdout um JSON `{"ok":true,"url":"http://127.0.0.1:PORT/"}`.
-2. **Abra essa `url` no navegador** do usuário (`start`/`open`/`xdg-open`). A partir daí a pessoa
-   trabalha direto no app: **criar lead, arrastar entre etapas, abrir o card, registrar
-   ligação/follow-up/reunião (com Meet)/tarefa, editar, agenda, importar/exportar** — tudo gravando
-   no banco local. Você (Claude) não precisa ficar regenerando nada.
+1. Rode **uma vez**: `node "SKILL_DIR/scripts/server.mjs"`. O próprio app **abre sozinho como janela de
+   aplicativo** no Chrome/Edge da pessoa (sem abas nem barra de endereço; senão, no navegador padrão), fica
+   rodando **solto do terminal** (não morre ao fechar o editor) e se encerra sozinho após muito tempo sem
+   uso. Se já estiver aberto, só traz a janela de volta (nunca abre duas cópias). Ele escuta só em
+   `127.0.0.1` e imprime um JSON `{"ok":true,"url":"http://127.0.0.1:PORT/","reused":false,"opened":true}`.
+2. **Não abra a `url` você mesmo** nem em navegador embutido/preview do Cursor ou do Claude — o app já abriu
+   na janela do computador dela. Só se o JSON trouxer `"opened":false` peça que ela abra o endereço no
+   navegador. A partir daí a pessoa trabalha direto no app: **criar lead, arrastar entre etapas, abrir o
+   card, registrar ligação/follow-up/reunião (com Meet)/tarefa, editar, agenda, importar/exportar** — tudo
+   gravando no banco local. Você (Claude) não precisa ficar regenerando nada.
 3. Nunca exponha o servidor fora de `127.0.0.1` nem publique os dados — a proposta é privacidade.
 
 Alternativa **offline/snapshot** (sem servidor): `node "SKILL_DIR/scripts/crm.mjs" render` gera
@@ -56,7 +61,14 @@ Depois de qualquer mudança, **regenere o display** (passos 1–3) para refletir
 ## Tipos de atividade
 `call` (ligação), `followup`, `meeting` (reunião), `task` (tarefa).
 
-## Recursos de nuvem / IA (em breve — liberação progressiva)
+## Sincronizar com a nuvem e Planejamento Financeiro
+- **☁ Sincronizar** (no app local): **só envia** os leads para a nuvem (nada da plataforma é baixado, por
+  privacidade); a conta é conectada por uma tela (chave em `~/.captamais`), sem variável de ambiente. Só
+  leads de prospecção.
+- **Planejamento Financeiro** é a ferramenta do site: o botão 🧭 dentro do lead (ou o menu) abre o site
+  com o lead. Exige conta conectada e plano Premium (quem é Free vê "Ver planos", que abre a plataforma). Não recrie o planejamento dentro da skill.
+
+## Recursos de nuvem / IA (liberação progressiva)
 Ações que dependem de IA ou da plataforma CaptaMais (ex.: preparar reunião com IA, criar o Meet de
 verdade no Google, planejamento financeiro, montagem de carteira, enriquecer lead) passam pela nuvem
 e **consomem tokens**, liberadas conforme o plano do usuário. Isso é feito pelo conector MCP

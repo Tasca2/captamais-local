@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.02-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.03-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />
@@ -82,7 +82,7 @@ No Claude, chame:
 …ou peça em linguagem natural: **"abre meu CRM"**, **"cria um lead"**, **"marca uma reunião com o
 lead 3 e cria o Meet"**, **"o que tenho na agenda?"**.
 
-O Claude **sobe o app local** (`http://127.0.0.1:…`, só na sua máquina) e abre no navegador. A partir
+O Claude **sobe o app local** (`http://127.0.0.1:…`, só na sua máquina), que **abre sozinho numa janela própria do seu Chrome/Edge** (como um aplicativo, sem abas nem barra de endereço) e continua rodando mesmo que você feche o editor. A partir
 daí você trabalha direto: arrastar cards, criar/editar leads, registrar atendimento, agenda,
 importar/exportar.
 

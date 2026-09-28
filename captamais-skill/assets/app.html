@@ -3,13 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CaptaMais — Meu CRM v1.02</title>
+<title>CaptaMais — Meu CRM v1.03</title>
 <style>
   :root { --bg:#09090b; --panel:#151518; --panel2:#1c1c21; --border:#27272a; --text:#f4f4f5; --muted:#a1a1aa; --accent:#f59e0b; --shadow:0 10px 30px rgba(0,0,0,.35); }
   html[data-theme="light"] { --bg:#f4f6f8; --panel:#ffffff; --panel2:#f8fafc; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --accent:#f59e0b; --shadow:0 10px 30px rgba(2,6,23,.08); }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  header { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:var(--panel); }
+  html, body { height:100%; }
+  /* A página ocupa exatamente a janela: cabeçalho e barra fixos, colunas de ponta a ponta, agenda numa faixa embaixo. */
+  body { margin:0; background:var(--bg); color:var(--text); font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; flex-direction:column; height:100vh; height:100dvh; overflow:hidden; }
+  header { flex-shrink:0; padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:var(--panel); }
   .brand { display:flex; align-items:center; gap:11px; }
   .brand .logo { width:36px; height:36px; }
   .brand h1 { margin:0; font-size:16px; font-weight:800; } .brand h1 .p{color:var(--accent);}
@@ -20,10 +22,10 @@
   button.primary { background:var(--accent); color:#1a1206; border-color:transparent; font-weight:700; }
   button.ghost { background:transparent; } button:hover { border-color:var(--accent); }
   select,input { font:inherit; background:var(--panel2); border:1px solid var(--border); border-radius:9px; color:var(--text); padding:7px 10px; }
-  .bar { padding:10px 18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--border); background:var(--panel); }
+  .bar { flex-shrink:0; padding:10px 18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--border); background:var(--panel); }
   .bar .grow{flex:1;} .search{min-width:180px;}
-  .wrap { padding:16px 18px; }
-  .board { display:flex; gap:14px; overflow-x:auto; padding-bottom:10px; align-items:stretch; }
+  .wrap { padding:16px 18px; flex:1; min-height:0; display:flex; flex-direction:column; }
+  .board { flex:1; min-height:0; display:flex; gap:14px; overflow-x:auto; overflow-y:hidden; padding-bottom:10px; align-items:stretch; }
   .col { flex:0 0 272px; min-height:0; display:flex; flex-direction:column; border-radius:16px; border:1px solid var(--border); background:var(--panel); }
   .col .head { flex-shrink:0; padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:6px; background:var(--chbg); border-radius:16px 16px 0 0; }
   .col .head .ttl { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.02em; color:var(--text); text-transform:uppercase; }
@@ -41,7 +43,7 @@
   .addcol { flex:0 0 200px; }
   .addcol button { width:100%; border-style:dashed; color:var(--muted); padding:12px; }
   .empty { color:var(--muted); font-size:12px; padding:10px; text-align:center; }
-  .agenda { margin-top:22px; } .agenda h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px; }
+  .agenda { flex:0 0 auto; max-height:28vh; overflow-y:auto; margin-top:12px; } .agenda h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px; }
   .act { display:flex; gap:11px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:11px; margin-bottom:7px; background:var(--panel); }
   .act .dot{width:8px;height:8px;border-radius:999px;flex:0 0 8px;} .t-call{background:#38bdf8}.t-followup{background:#f59e0b}.t-meeting{background:#22c55e}.t-task{background:#a1a1aa}
   .pill{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);} a{color:var(--accent);}
@@ -75,6 +77,10 @@
   .integration{border:1px solid var(--border);border-radius:13px;padding:14px;margin:10px 0;background:var(--panel2);}
   .integration-head{display:flex;align-items:center;gap:10px}.integration-head .grow{min-width:0}.integration-head b{display:block}.integration-head small{color:var(--muted)}
   .service-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.service{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:4px 9px;color:var(--muted)}.service.on{color:#34d399;border-color:color-mix(in srgb,#34d399 45%,var(--border));}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  .syncopt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;cursor:pointer;background:var(--panel2);}
+  .syncopt:has(input:checked){border-color:var(--accent);}
+  .syncopt input{width:auto;margin-top:3px;}.syncopt span{display:flex;flex-direction:column;gap:2px;}.syncopt small{color:var(--muted);font-size:12px;line-height:1.4;}
   .checkrow{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted)}.checkrow input{width:auto;margin-top:2px;}
 </style>
 </head>
@@ -82,7 +88,7 @@
 <header>
   <div style="display:flex;align-items:center;gap:12px">
     <button class="hamb" onclick="toggleDrawer(event)" title="Menu" aria-label="Menu">☰</button>
-    <div class="brand"><span class="logo"><!--__CM_LOGO__--></span><div><h1>Capta<span class="p">+</span>Mais</h1><div class="sub">Meu CRM · v1.02 · <span style="color:#34d399">🔒 local</span> · <span id="linkStatus" style="color:var(--muted)">não vinculado</span></div></div></div>
+    <div class="brand"><span class="logo"><!--__CM_LOGO__--></span><div><h1>Capta<span class="p">+</span>Mais</h1><div class="sub">Meu CRM · v1.03 · <span style="color:#34d399">🔒 local</span> · <span id="linkStatus" style="color:var(--muted)">não vinculado</span></div></div></div>
   </div>
   <div class="tools">
     <span class="stat"><b id="nleads">0</b> leads · <b id="nacts">0</b> ativ.</span>
@@ -119,7 +125,9 @@
     <div class="quick">
       <button onclick="quickAct('call')">📞 Ligação</button><button onclick="quickAct('followup')">🔁 Follow-up</button>
       <button onclick="quickAct('meeting')">📅 Reunião + Meet</button><button onclick="quickAct('task')">✅ Tarefa</button>
+      <button onclick="openPlanningForLead()" title="Abre o Planejamento Financeiro no site, já com este lead">🧭 Novo planejamento</button>
     </div>
+    <div id="planBox" style="font-size:12px;margin:8px 0"></div>
     <div id="actList"></div>
   </div>
   <div class="end"><button class="ghost" onclick="closeModal('mLead')">Fechar</button><button class="primary" onclick="saveLead()">Salvar</button></div>
@@ -160,6 +168,8 @@
   <button class="ditem" onclick="openTool('Gerador de Lead')">🎯 Gerador de Lead</button>
   <button class="ditem" onclick="openTool('Pesquisar CNPJ')">🏢 Pesquisar CNPJ</button>
   <div class="dsec">Meus dados</div>
+  <button class="ditem" onclick="closeDrawer();syncPlatform()">☁ Sincronizar com a nuvem</button>
+  <button class="ditem" onclick="closeDrawer();openConnect()">🔗 Conta CaptaMais</button>
   <button class="ditem" onclick="openSettings();closeDrawer()">⚙️ Configurações</button>
   <button class="ditem" onclick="backupNow();closeDrawer()">💾 Fazer backup</button>
   <button class="ditem" onclick="doExportCsv();closeDrawer()">⬇️ Exportar leads (CSV)</button>
@@ -186,7 +196,29 @@
   <h3 style="margin-bottom:8px" id="gateTitle">Conecte sua conta</h3>
   <p style="color:var(--muted);margin:0 0 6px" id="gateMsg"></p>
   <p style="color:var(--muted);font-size:12px;margin:0">Seus dados do CRM continuam <b>no seu computador</b>, com backup automático.</p>
-  <div class="end" style="justify-content:center;gap:8px;margin-top:16px"><button class="ghost" onclick="closeModal('mGate')">Agora não</button><button class="primary" onclick="connectAccount()">Conectar conta</button></div>
+  <div class="end" style="justify-content:center;gap:8px;margin-top:16px"><button class="ghost" onclick="closeModal('mGate')">Agora não</button><button class="primary" id="gateBtn" onclick="gateAction()">Conectar conta</button></div>
+</div></div>
+
+<!-- Modal sincronizar (fase 1: só envia para a nuvem; nada desce para o computador) -->
+<div class="modal" id="mSync"><div class="sheet" style="max-width:500px">
+  <h3>☁ Enviar leads para a nuvem</h3>
+  <p id="syncInfo" style="color:var(--muted);margin:0 0 12px"></p>
+  <div class="syncopt" style="cursor:default;border-color:var(--accent)"><span><b>Só enviar para a nuvem</b><small>Os leads daqui sobem para a sua conta na plataforma. <b>Nada da plataforma é baixado</b> para o seu computador.</small></span></div>
+  <p style="color:var(--muted);font-size:12px;margin:10px 0 0">Não duplica leads que já existem na nuvem (mesmo e-mail ou telefone) e nada é apagado em nenhum dos lados. Um backup local é salvo antes de enviar. Baixar leads da nuvem para cá: em breve.</p>
+  <div id="syncResult" style="margin-top:10px"></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mSync')">Fechar</button><button class="primary" id="syncBtn" onclick="doSync()">Enviar para a nuvem</button></div>
+</div></div>
+
+<!-- Modal conectar conta CaptaMais (a chave fica só neste computador) -->
+<div class="modal" id="mConnect"><div class="sheet" style="max-width:480px">
+  <h3>🔗 Conectar sua conta CaptaMais</h3>
+  <p style="color:var(--muted);margin:0 0 8px"><b>1.</b> Entre no Capta+ (se ainda não tem conta, é só cadastrar) e abra <b>Minha Conta → Conector</b> para gerar sua chave.</p>
+  <p style="margin:0 0 12px"><a id="connLink" class="ghost" target="_blank" rel="noopener" style="display:inline-block;padding:8px 14px;border:1px solid var(--border);border-radius:10px;color:var(--accent);text-decoration:none">Abrir o Capta+ ↗</a></p>
+  <p style="color:var(--muted);margin:0 0 6px"><b>2.</b> Cole a chave abaixo.</p>
+  <div class="field"><label>Chave de API</label><input id="connKey" type="password" autocomplete="off" placeholder="ctm_…"></div>
+  <p style="color:var(--muted);font-size:12px;margin:0">A chave fica salva só neste computador e nunca volta para o navegador.</p>
+  <div id="connMsg" style="margin-top:8px"></div>
+  <div class="end"><button class="ghost" id="connOff" onclick="disconnectAccount()" hidden>Desconectar</button><span style="display:flex;gap:6px"><button class="ghost" onclick="closeModal('mConnect')">Cancelar</button><button class="primary" id="connBtn" onclick="saveConnect()">Conectar</button></span></div>
 </div></div>
 
 <!-- Modal Calculadora Patrimonial (local) -->
@@ -265,7 +297,7 @@ function renderBoard(){
     bd.addEventListener('dragover',e=>{e.preventDefault();bd.classList.add('drop');});
     bd.addEventListener('dragleave',()=>bd.classList.remove('drop'));
     bd.addEventListener('drop',async e=>{e.preventDefault();bd.classList.remove('drop');const id=e.dataTransfer.getData('text/id');if(id){await api(`/api/leads/${id}/stage`,'POST',{stage:col.stage});toast('Movido');load();}});
-    if(!leads.length)bd.innerHTML='<div class="empty">—</div>';
+    if(!leads.length)bd.innerHTML='<div class="empty">Nenhum lead aqui.<br>Arraste um card para esta coluna.</div>';
     for(const l of leads){
       const c=document.createElement('div'); c.className='card'; c.draggable=true; c.style.setProperty('--cdotc',col.color);
       const tag=l.entity_type==='PJ'?'<span class="tag">PJ</span>':'';
@@ -310,7 +342,7 @@ function openCreate(){editId=null;document.getElementById('mLeadTitle').textCont
 async function openEdit(id){const d=await api(`/api/leads/${id}`);if(!d.ok)return;editId=id;const l=d.lead;
   document.getElementById('mLeadTitle').textContent='Editar lead';
   fName.value=l.name||'';fEmail.value=l.email||'';fPhone.value=l.phone||'';fCity.value=l.city||'';fSubtitle.value=l.subtitle||'';fDesc.value=l.description||'';fEntity.value=l.entity_type||'PF';fStage.innerHTML=stageOptions(l.stage);
-  document.getElementById('leadExtra').hidden=false;renderActs(d.activities);openModal('mLead');}
+  document.getElementById('leadExtra').hidden=false;loadPlans(id);renderActs(d.activities);openModal('mLead');}
 function renderActs(acts){const box=document.getElementById('actList');if(!acts.length){box.innerHTML='<div class="empty" style="text-align:left">Sem atividades ainda.</div>';return;}box.innerHTML='';
   for(const a of acts){const meet=safeUrl(a.meet_link),eventUrl=safeUrl(a.google_event_url);const row=document.createElement('div');row.className='actitem';
     row.innerHTML=`<span class="dot t-${esc(a.type)}"></span><span class="grow">${esc(TLABEL[a.type]||a.type)} — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${a.done?' ✓':''}${eventUrl?` · <a href="${esc(eventUrl)}" target="_blank" rel="noopener">Agenda</a>`:''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</span>${a.done?'':'<button class="done-btn ghost">ok</button>'}`;
@@ -347,8 +379,83 @@ function closeDrawer(){document.getElementById('drawer').hidden=true;document.ge
 function toggleDrawer(e){if(e)e.stopPropagation();document.getElementById('drawer').hidden?openDrawer():closeDrawer();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 async function backupNow(){const d=await api('/api/backup','POST');toast(d.ok?'Backup salvo':'Falha no backup');}
-function openGate(title,msg,ico){document.getElementById('gateTitle').textContent=title;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateIco').textContent=ico||'☁️';openModal('mGate');}
-async function syncPlatform(){const s=await api('/api/sync/status').catch(()=>({}));if(s&&s.linked){toast('Sincronizando…');/* TODO: push/pull após a vinculação */}else{openGate('Sincronizar com a plataforma','Conecte sua conta CaptaMais para subir e baixar seus dados e usar os recursos da nuvem.','☁️');}}
+let GATE_ACT='connect';
+function openGate(title,msg,ico,act='connect'){document.getElementById('gateTitle').textContent=title;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateIco').textContent=ico||'☁️';
+  GATE_ACT=act;const b=document.getElementById('gateBtn');b.hidden=act==='none';b.textContent=act==='plans'?'Ver planos':'Conectar conta';openModal('mGate');}
+function gateAction(){closeModal('mGate');if(GATE_ACT==='plans')openPlans();else openConnect();}
+// Free: leva para a página inicial da plataforma, onde a pessoa escolhe o plano.
+function openPlans(){const url=safeUrl((LINK.cloudUrl||'https://captamais.me')+'/');if(url&&!window.open(url,'_blank','noopener'))toast('O navegador bloqueou a nova aba — permita pop-ups para este endereço.');}
+// Sincronizar: a pessoa escolhe entre "só enviar" e "enviar e baixar". Sem conta vinculada, abre a conexão.
+async function syncPlatform(){
+  if(!LINK.linked){openConnect('Conecte sua conta CaptaMais para sincronizar seus leads com a plataforma.');return;}
+  if(LINK.blocked){openGate('Enviar para a nuvem','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
+  const s=await api('/api/sync/status').catch(()=>({}));
+  syncInfo.textContent=`${s.total??0} lead(s) aqui · ${s.linked??0} já ligado(s) à nuvem · ${s.pending??0} com envio pendente.`;
+  syncResult.innerHTML='';syncBtn.disabled=false;openModal('mSync');
+}
+async function doSync(){
+  const mode='up';
+  syncBtn.disabled=true;syncResult.innerHTML='<span style="color:var(--muted)">Sincronizando…</span>';
+  const d=await api('/api/sync/run','POST',{mode}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  syncBtn.disabled=false;
+  if(!d.ok){syncResult.innerHTML=`<div style="color:#f87171">${esc(d.message||'Não foi possível sincronizar.')}</div>`;return;}
+  syncInfo.textContent=`${d.total} lead(s) aqui · ${d.linked} já ligado(s) à nuvem · ${d.pending} com envio pendente.`;
+  const s=d.stats,u=s.up,L=[];
+  const sent=u.created+u.updated;
+  L.push(`⬆️ Enviados para a nuvem: <b>${u.created}</b> novo(s), <b>${u.updated}</b> atualizado(s)${u.linked?`, ${u.linked} já existia(m) na nuvem`:''}.`);
+  if(!sent&&!u.linked&&!u.limit)L.push('Tudo já estava em dia.');
+  if(u.limit)L.push(`<span style="color:#f59e0b">${u.limit} lead(s) não subiram: o limite do seu plano na nuvem foi atingido.</span>`);
+  if(s.keptCloudNewer)L.push(`${s.keptCloudNewer} lead(s) foram alterados na plataforma depois da sua última edição aqui — a versão da plataforma foi mantida.`);
+  if(s.missingInCloud)L.push(`${s.missingInCloud} lead(s) daqui não estão mais na nuvem (foram mantidos aqui).`);
+  if(s.truncated)L.push('<span style="color:#f59e0b">Sua conta tem muitos leads; rode a sincronização de novo para continuar.</span>');
+  syncResult.innerHTML=`<div style="border:1px solid var(--border);border-radius:12px;padding:12px;line-height:1.7">${L.join('<br>')}</div>`;
+  toast('Leads enviados para a nuvem');load();
+}
+// Conectar conta: a chave vai para o app local (arquivo em ~/.captamais) e nunca volta para o navegador.
+function openConnect(msg){
+  connKey.value='';connMsg.innerHTML=msg?`<span style="color:var(--muted)">${esc(msg)}</span>`:'';
+  connLink.href=safeUrl((LINK.cloudUrl||'https://captamais.me')+'/my-account')||'#';
+  connOff.hidden=!LINK.configured;closeModal('mGate');openModal('mConnect');
+}
+async function saveConnect(){
+  const key=connKey.value.trim();if(!key)return;
+  connBtn.disabled=true;connMsg.innerHTML='<span style="color:var(--muted)">Verificando…</span>';
+  const d=await api('/api/link/connect','POST',{key}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  connBtn.disabled=false;
+  if(!d.ok){connMsg.innerHTML=`<span style="color:#f87171">${esc(d.message||'Não foi possível conectar.')}</span>`;return;}
+  closeModal('mConnect');toast('Conta conectada'+(d.name?` — ${d.name}`:''));await loadLink();
+}
+async function disconnectAccount(){
+  if(!confirm('Desconectar a conta? Seus leads continuam aqui; só a sincronização e as ferramentas da nuvem deixam de funcionar.'))return;
+  const d=await api('/api/link/disconnect','POST').catch(()=>({ok:false}));
+  closeModal('mConnect');toast(d.stillLinkedByEnv?'A chave também está definida por variável de ambiente.':'Conta desconectada');await loadLink();
+}
+// Planejamento Financeiro: é a ferramenta do site; aqui abrimos ela (com o lead, se houver) numa nova aba.
+async function openPlanning(leadId,planId){
+  const d=await api('/api/planning/url','POST',leadId?{lead_id:leadId,plan_id:planId||undefined}:{}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  const url=d.ok?safeUrl(d.url):'';
+  if(!url){toast(d.message||'Não foi possível abrir o planejamento.');return;}
+  if(!window.open(url,'_blank','noopener'))toast('O navegador bloqueou a nova aba — permita pop-ups para este endereço.');
+}
+function toolAllowed(name,key){
+  if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return false;}
+  if(!LINK.linked){openGate(name,`${name} precisa da sua conta CaptaMais conectada. Faça seu cadastro/entre e conecte a conta — Calculadora e CNPJ são grátis.`,'🔗');return false;}
+  if(!(LINK.tools&&LINK.tools[key])){openGate(name,`${name} é um recurso Premium. Veja os planos na plataforma para liberar.`,'🔒','plans');return false;}
+  return true;
+}
+function openPlanningForLead(planId){if(toolAllowed('Planejamento Financeiro','planejamento'))openPlanning(editId,planId);}
+// Atalho na ficha: só ids e datas dos planejamentos (os valores ficam na plataforma, nunca descem para cá).
+async function loadPlans(id){
+  const box=document.getElementById('planBox');box.innerHTML='';
+  if(!LINK.linked||LINK.blocked)return;
+  const d=await api(`/api/leads/${id}/plans`).catch(()=>null);
+  if(editId!==id||!d)return;
+  if(!d.ok){box.innerHTML=`<span style="color:var(--muted)">Não foi possível consultar os planejamentos agora.</span>`;return;}
+  if(!d.synced){box.innerHTML='<span style="color:var(--muted)">Este lead ainda não foi enviado à nuvem — ao abrir o planejamento ele é enviado automaticamente.</span>';return;}
+  if(!d.count){box.innerHTML='<span style="color:var(--muted)">Nenhum planejamento financeiro criado para este lead.</span>';return;}
+  const last=d.plans[0];
+  box.innerHTML=`🧭 <b>${d.count}</b> planejamento(s) na plataforma · último em ${esc(fmt(last.updatedAt))} <button class="ghost" style="margin-left:6px" onclick="openPlanningForLead(${Number(last.id)})">Abrir último ↗</button>`;
+}
 let LINK={linked:false,tools:{},plan:'',configured:false};
 async function loadLink(){
   try{ LINK=await api('/api/link/status'); }catch{ LINK={linked:false,tools:{}}; }
@@ -397,7 +504,7 @@ async function disconnectGoogle(){
 const TOOL_MAP={
  'Calculadora Patrimonial':{key:'calculadora',open:openCalculator},
  'Pesquisar CNPJ':{key:'cnpj',open:openCnpj},
- 'Planejamento Financeiro':{key:'planejamento'},
+ 'Planejamento Financeiro':{key:'planejamento',open:()=>openPlanning()},
  'Montagem de Carteira':{key:'carteira'},
  'Análise de Ativo':{key:'ativos'},
  'Enriquecimento de Lead':{key:'enriquecimento'},
@@ -406,12 +513,10 @@ const TOOL_MAP={
 function openTool(name){
   closeDrawer();
   const t=TOOL_MAP[name]||{};
-  if(LINK.linked && LINK.blocked){ openGate(name, 'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️'); return; }
-  if(LINK.linked && LINK.tools && LINK.tools[t.key]){ if(t.open)t.open(); else toast(`${name}: abrindo na plataforma (em breve)`); return; }
-  if(!LINK.linked){ openGate(name, `${name} precisa da sua conta CaptaMais conectada. Faça seu cadastro/entre e conecte a conta — Calculadora e CNPJ são grátis.`,'🔗'); return; }
-  openGate(name, `${name} é um recurso Premium. Faça upgrade para usar — com os dados sincronizados da sua máquina.`,'🔒');
+  if(!toolAllowed(name,t.key))return;
+  if(t.open)t.open(); else toast(`${name}: abrindo na plataforma (em breve)`);
 }
-function connectAccount(){closeModal('mGate');toast('Vinculação de conta — configure sua chave no cliente (CAPTAMAIS_API_KEY).');}
+function connectAccount(){openConnect();}
 
 // Calculadora Patrimonial (local, sem nuvem)
 function openCalculator(){document.getElementById('calcResult').innerHTML='';openModal('mCalc');}
@@ -442,6 +547,8 @@ function renderCnpj(data){
 }
 load();
 loadLink();
+// Avisa o app local que a janela segue aberta (ele se encerra sozinho se ficar muito tempo sem uso).
+setInterval(()=>{api('/api/ping').catch(()=>{});},300000);
 loadGoogle(false);
 </script>
 </body>
