@@ -35,6 +35,8 @@ const START_PORT = Number(process.env.CAPTAMAIS_PORT) || 4599;
 // Identificação enviada à nuvem em cada chamada (cliente, versão e sistema): a plataforma usa para saber qual versão está em uso.
 const PACKAGE_VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(SKILL_ROOT, 'package.json'), 'utf8')).version || '?'; } catch { return '?'; } })();
 const CLIENT_ID = `skill/${PACKAGE_VERSION} ${process.platform}`;
+// Versão como aparece para a pessoa: 1.0.7 → 1.07 (o npm/semver segue 1.0.7).
+const DISPLAY_VERSION = (() => { const m = PACKAGE_VERSION.match(/^(\d+)\.(\d+)\.(\d+)$/); return m ? `${m[1]}.${m[2]}${m[3]}` : PACKAGE_VERSION; })();
 const TOKEN = crypto.randomBytes(16).toString('hex');
 // A chave vem da variável de ambiente OU do arquivo local (~/.captamais/config.json), gravado pela tela
 // "Conectar conta". Nunca é devolvida ao navegador; só o servidor local a usa para falar com a nuvem.
@@ -130,7 +132,7 @@ async function handle(req, res) {
   if (p === '/' && method === 'GET') {
     let html = fs.readFileSync(path.join(ASSETS, 'app.html'), 'utf8');
     const logo = fs.readFileSync(path.join(ASSETS, 'logo.svg'), 'utf8');
-    html = html.replace('/*__CM_TOKEN__*/ ""', JSON.stringify(TOKEN)).replace('<!--__CM_LOGO__-->', logo).replaceAll('<!--__CM_VERSION__-->', PACKAGE_VERSION);
+    html = html.replace('/*__CM_TOKEN__*/ ""', JSON.stringify(TOKEN)).replace('<!--__CM_LOGO__-->', logo).replaceAll('<!--__CM_VERSION__-->', DISPLAY_VERSION);
     return send(res, 200, html, { 'Content-Type': 'text/html; charset=utf-8' });
   }
   if (p === '/assets/logo.svg' && method === 'GET') {

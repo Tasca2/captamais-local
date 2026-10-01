@@ -11,7 +11,7 @@ description: >-
 
 # CaptaMais — seu CRM local no Claude
 
-**Versão 1.0.7** (metadados npm: `1.0.7`).
+**Versão 1.07** (metadados npm: `1.0.7`).
 
 Isto é um **CRM que roda na máquina do usuário**. Os dados (leads, atividades) ficam num banco local
 em `~/.captamais/captamais.db` — **privado**. Só saem do computador se a pessoa sincronizar ou abrir

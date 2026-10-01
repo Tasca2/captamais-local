@@ -10,13 +10,13 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
-## [1.0.7] — 2026-10-01
+## [1.0.7] — 2026-10-01 (identificação: 1.07)
 ### Alterado
 - Calculadora Patrimonial e pesquisa de CNPJ agora aparecem e são autorizadas somente para Premium ou Max.
 - Contas recebem 10.000 créditos na primeira vinculação, com concessão única por conta validada no servidor.
 - A oferta do bônus aparece no saldo, no menu de créditos e no fluxo de conexão para usuários ainda não vinculados.
 
-## [1.0.6] — 2026-10-01
+## [1.0.6] — 2026-10-01 (identificação: 1.06)
 ### Adicionado
 - Verificação automática e manual de versões da skill e do MCP no GitHub oficial, sem instalação automática.
 - Modal com versões instalada/publicada e prompt seguro pronto para pedir a atualização à IA.
