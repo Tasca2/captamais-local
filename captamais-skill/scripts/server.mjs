@@ -11,10 +11,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as db from './db.mjs';
 import { runSync, ensureLeadInCloud } from './sync.mjs';
+import * as leadlists from './leadlists.mjs';
+import { parseDelimited, rowsFromXlsx } from './lead-import.mjs';
+import { checkForUpdates } from './update-check.mjs';
 import { openApp, findRunning } from './open.mjs';
 import { spawn } from 'node:child_process';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const SKILL_ROOT = path.join(SCRIPT_DIR, '..');
 const ASSETS = path.join(SCRIPT_DIR, '..', 'assets');
 const HOST = '127.0.0.1';
 // Modos de execução: (padrão) lança o CRM solto do terminal, abre a janela e sai; --child é o CRM em si;
@@ -28,10 +32,13 @@ const IDLE_MIN = process.env.CAPTAMAIS_IDLE_MIN === undefined ? 720 : Number(pro
 let lastActivity = Date.now();
 process.stdout.on('error', () => {}); // o terminal que iniciou pode fechar; não derrubar o CRM por isso
 const START_PORT = Number(process.env.CAPTAMAIS_PORT) || 4599;
+// Identificação enviada à nuvem em cada chamada (cliente, versão e sistema): a plataforma usa para saber qual versão está em uso.
+const PACKAGE_VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(SKILL_ROOT, 'package.json'), 'utf8')).version || '?'; } catch { return '?'; } })();
+const CLIENT_ID = `skill/${PACKAGE_VERSION} ${process.platform}`;
 const TOKEN = crypto.randomBytes(16).toString('hex');
 // A chave vem da variável de ambiente OU do arquivo local (~/.captamais/config.json), gravado pela tela
 // "Conectar conta". Nunca é devolvida ao navegador; só o servidor local a usa para falar com a nuvem.
-const CONFIG_FILE = path.join(db.dataDir(), 'config.json');
+const CONFIG_FILE = path.join(db.baseDataDir(), 'config.json');
 function readConfig() { try { return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) || {}; } catch { return {}; } }
 function writeConfig(cfg) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2), { mode: 0o600 });
@@ -44,25 +51,46 @@ const CLOUD_URL = (process.env.CAPTAMAIS_CLOUD_URL || 'https://captamais.me').tr
 // A chave viaja em cada chamada: só HTTPS (http só para testes em localhost). Nunca em texto puro pela rede.
 try {
   const u = new URL(CLOUD_URL);
-  const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
-  if (u.protocol !== 'https:' && !(u.protocol === 'http:' && local)) throw new Error('inseguro');
+  const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1' || u.hostname === '::1';
+  const official = u.protocol === 'https:' && (u.hostname === 'captamais.me' || u.hostname.endsWith('.captamais.me'));
+  if (!official && !(local && (u.protocol === 'http:' || u.protocol === 'https:'))) throw new Error('inseguro');
 } catch {
-  console.error('[captamais-crm] CAPTAMAIS_CLOUD_URL precisa ser HTTPS (ex.: https://captamais.me). Encerrando para não expor sua chave.');
+  console.error('[captamais-crm] CAPTAMAIS_CLOUD_URL precisa usar HTTPS no domínio captamais.me (HTTP só em localhost). Encerrando para não expor sua chave.');
   process.exit(1);
 }
 
 /** Chama a nuvem CaptaMais autenticando pela chave do usuário. Ferramentas de nuvem passam por aqui. */
-async function cloud(path, body, method = 'POST', key = API_KEY) {
-  if (!key) return { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais (defina CAPTAMAIS_API_KEY).' };
+async function cloud(path, body, method = 'POST', key = API_KEY, anon = false) {
+  if (!key && !anon) return { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais (defina CAPTAMAIS_API_KEY).' };
   try {
     // redirect:'error' — um redirecionamento reenviaria a chave (cabeçalho customizado) ao destino; recusa.
-    const options = { method, redirect: 'error', signal: AbortSignal.timeout(45000), headers: { 'Content-Type': 'application/json', 'x-captamais-key': key } };
+    const options = { method, redirect: 'error', signal: AbortSignal.timeout(45000), headers: { 'Content-Type': 'application/json', 'x-captamais-client': CLIENT_ID, ...(key ? { 'x-captamais-key': key } : {}) } };
     if (method !== 'GET' && method !== 'HEAD') options.body = JSON.stringify(body || {});
     const r = await fetch(`${CLOUD_URL}${path}`, options);
     const data = await r.json().catch(() => ({ ok: false, message: 'Resposta inválida da nuvem.' }));
     if (!r.ok && data.ok !== false) return { ...data, ok: false, message: data.message || `Falha na nuvem (HTTP ${r.status}).` };
     return data;
   } catch { return { ok: false, code: 'network', message: 'Sem conexão com a nuvem.' }; }
+}
+
+/**
+ * O site pode ser mostrado dentro do CRM (aba "Capta+") só se ele permitir ser embutido por este endereço local.
+ * Lê os cabeçalhos do próprio site (sem enviar a chave) e guarda o resultado por alguns minutos.
+ */
+let embedCache = { at: 0, ok: false };
+async function siteEmbeddable() {
+  if (Date.now() - embedCache.at < 10 * 60000) return embedCache.ok;
+  let ok = false;
+  try {
+    const r = await fetch(`${CLOUD_URL}/my-account`, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(8000) });
+    const xfo = r.headers.get('x-frame-options');
+    const csp = r.headers.get('content-security-policy') || ''; // só a política em vigor (report-only não bloqueia)
+    const fa = csp.split(';').map((s) => s.trim()).find((s) => /^frame-ancestors\s/i.test(s));
+    const faOk = !fa || /(^|\s)(\*|http:|http:\/\/(127\.0\.0\.1|localhost)(:\*|:\d+)?)(\s|$)/i.test(fa);
+    ok = r.ok && !xfo && faOk;
+  } catch { ok = false; }
+  embedCache = { at: Date.now(), ok };
+  return ok;
 }
 
 const send = (res, code, body, headers = {}) => {
@@ -74,7 +102,7 @@ const json = (res, code, obj) => send(res, code, JSON.stringify(obj), { 'Content
 function readBody(req) {
   return new Promise((resolve) => {
     let d = '';
-    req.on('data', (c) => { d += c; if (d.length > 5e6) req.destroy(); });
+    req.on('data', (c) => { d += c; if (d.length > 6e6) req.destroy(); });
     req.on('end', () => { try { resolve(d ? JSON.parse(d) : {}); } catch { resolve({}); } });
   });
 }
@@ -102,7 +130,7 @@ async function handle(req, res) {
   if (p === '/' && method === 'GET') {
     let html = fs.readFileSync(path.join(ASSETS, 'app.html'), 'utf8');
     const logo = fs.readFileSync(path.join(ASSETS, 'logo.svg'), 'utf8');
-    html = html.replace('/*__CM_TOKEN__*/ ""', JSON.stringify(TOKEN)).replace('<!--__CM_LOGO__-->', logo);
+    html = html.replace('/*__CM_TOKEN__*/ ""', JSON.stringify(TOKEN)).replace('<!--__CM_LOGO__-->', logo).replaceAll('<!--__CM_VERSION__-->', PACKAGE_VERSION);
     return send(res, 200, html, { 'Content-Type': 'text/html; charset=utf-8' });
   }
   if (p === '/assets/logo.svg' && method === 'GET') {
@@ -115,6 +143,10 @@ async function handle(req, res) {
 
   try {
     if (p === '/api/ping' && method === 'GET') return json(res, 200, { ok: true });
+    if (p === '/api/update/check' && method === 'GET') {
+      try { return json(res, 200, await checkForUpdates(SKILL_ROOT)); }
+      catch (error) { return json(res, 502, { ok: false, updateAvailable: false, message: String(error?.message || 'Não foi possível consultar o GitHub.') }); }
+    }
     if (p === '/api/board' && method === 'GET') return json(res, 200, { ok: true, ...db.computeBoard(u.searchParams.get('layout')) });
     if (p === '/api/agenda' && method === 'GET') return json(res, 200, { ok: true, items: db.agenda(Number(u.searchParams.get('days')) || 7) });
     if (p === '/api/export' && method === 'GET') return json(res, 200, { ok: true, ...db.exportAll() });
@@ -162,9 +194,32 @@ async function handle(req, res) {
       if (!KEY_FORMAT.test(key)) return json(res, 400, { ok: false, message: 'Chave inválida. Copie-a inteira em Minha Conta → Conector.' });
       const d = await cloud('/api/mcp/link/status', {}, 'POST', key);
       if (!d.linked) return json(res, 400, { ok: false, message: d.code === 'network' ? 'Sem conexão com a nuvem.' : 'A nuvem não reconheceu essa chave. Gere ou rotacione a chave em Minha Conta.' });
-      writeConfig({ ...readConfig(), apiKey: key });
+      const accountRef = String(d.accountRef || '').trim();
+      if (!/^acct_[a-f0-9]{24}$/.test(accountRef)) return json(res, 400, { ok: false, message: 'A nuvem não devolveu uma identidade segura para esta conta.' });
+
+      // Migração segura de instalações antigas: antes de trocar para outra chave,
+      // atribui o banco legado à conta que já estava conectada. Assim, a conta
+      // nova nunca pode herdar os leads locais da anterior.
+      if (db.activeProfileId() === 'anonymous' && API_KEY && API_KEY !== key) {
+        const previous = await cloud('/api/mcp/link/status', {}, 'POST', API_KEY);
+        const previousRef = String(previous.accountRef || '').trim();
+        if (!previous.linked || !/^acct_[a-f0-9]{24}$/.test(previousRef)) {
+          return json(res, 409, { ok: false, message: 'Reconecte primeiro a conta atual para proteger os dados locais antes de trocar de conta.' });
+        }
+        db.switchProfile(previousRef, { claimAnonymous: true });
+        writeConfig({ ...readConfig(), activeProfile: previousRef });
+      }
+      const switched = db.switchProfile(accountRef, { claimAnonymous: db.activeProfileId() === 'anonymous' });
+      writeConfig({ ...readConfig(), apiKey: key, activeProfile: accountRef });
       API_KEY = key;
-      return json(res, 200, { ok: true, name: d.name || '', plan: d.plan || '' });
+      return json(res, 200, {
+        ok: true,
+        name: d.name || '',
+        plan: d.plan || '',
+        profileChanged: switched.profileId === accountRef,
+        firstLinkBonusGranted: d.firstLinkBonusGranted === true,
+        firstLinkBonusCredits: Number(d.firstLinkBonusCredits) || 0,
+      });
     }
     if (p === '/api/link/disconnect' && method === 'POST') {
       const cfg = readConfig(); delete cfg.apiKey; writeConfig(cfg);
@@ -172,12 +227,67 @@ async function handle(req, res) {
       return json(res, 200, { ok: true, stillLinkedByEnv: !!ENV_KEY });
     }
 
+    // ── Resgate de créditos comprados sem conta: o código chega por e-mail; a nuvem devolve uma chave de carteira ──
+    if (p === '/api/credits/redeem' && method === 'POST') {
+      const b = await readBody(req);
+      const code = String(b.code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9][A-Z0-9-]{6,39}$/.test(code)) return json(res, 400, { ok: false, message: 'Código inválido. Confira o e-mail da compra.' });
+      const d = await cloud('/api/mcp/credits/redeem', { code }, 'POST', API_KEY, true);
+      if (!d.ok) return json(res, 400, { ok: false, message: d.message || 'Não foi possível resgatar o código.' });
+      const k = String(d.apiKey || '').trim();
+      // Sem conta vinculada, a chave da carteira passa a identificar esta pessoa. Nunca troca uma chave de conta já existente.
+      if (!API_KEY && KEY_FORMAT.test(k)) { writeConfig({ ...readConfig(), apiKey: k }); API_KEY = k; }
+      return json(res, 200, { ok: true, balance: Number(d.balance) || 0, expiresAt: String(d.expiresAt || ''), accountExists: d.accountExists === true });
+    }
+
     // ── Vinculação + ferramentas de nuvem (proxy autenticado pela chave) ──
     if (p === '/api/link/status' && method === 'GET') {
       if (!API_KEY) return json(res, 200, { ok: true, linked: false, configured: false, cloudUrl: CLOUD_URL });
       const d = await cloud('/api/mcp/link/status', {});
+      const accountRef = String(d.accountRef || '').trim();
+      if (d.linked && db.activeProfileId() === 'anonymous' && /^acct_[a-f0-9]{24}$/.test(accountRef)) {
+        db.switchProfile(accountRef, { claimAnonymous: true });
+        writeConfig({ ...readConfig(), activeProfile: accountRef });
+      }
       return json(res, 200, { ...d, configured: true, cloudUrl: CLOUD_URL });
     }
+    // ── Pesquisar / Gerar leads (busca e créditos na nuvem; a lista comprada fica aqui) ──
+    if (p.startsWith('/api/leadlists') || p.startsWith('/api/leadmarket')) {
+      const needKey = () => json(res, 400, { ok: false, code: 'no_key', message: 'Conecte sua conta CaptaMais primeiro.' });
+      const fail = (e) => json(res, 400, { ok: false, message: String(e?.message || 'Não foi possível concluir.') });
+      let lm;
+      try {
+        if (p === '/api/leadmarket/credits' && method === 'GET') { if (!API_KEY) return needKey(); return json(res, 200, { ok: true, ...(await leadlists.credits(cloud)) }); }
+        if (p === '/api/leadmarket/filters' && method === 'GET') { if (!API_KEY) return needKey(); return json(res, 200, { ok: true, ...(await leadlists.filterOptions(cloud)) }); }
+        if (p === '/api/leadmarket/municipios' && method === 'GET') { if (!API_KEY) return needKey(); return json(res, 200, { ok: true, municipios: await leadlists.municipios(cloud, u.searchParams.get('uf')) }); }
+        if (p === '/api/leadmarket/search' && method === 'POST') { if (!API_KEY) return needKey(); return json(res, 200, { ok: true, ...(await leadlists.search(cloud, await readBody(req))) }); }
+        if (p === '/api/leadmarket/buy' && method === 'POST') {
+          if (!API_KEY) return needKey();
+          const b = await readBody(req);
+          try { db.writeBackup(); } catch (_) {}
+          return json(res, 200, { ok: true, ...(await leadlists.buy(cloud, b)) });
+        }
+        if (p === '/api/leadlists' && method === 'GET') return json(res, 200, { ok: true, lists: leadlists.getLists() });
+        if ((lm = p.match(/^\/api\/leadlists\/(\d+)$/)) && method === 'GET') {
+          const r = leadlists.getList(Number(lm[1]), 100);
+          return r ? json(res, 200, { ok: true, ...r }) : json(res, 404, { ok: false, error: 'lista não encontrada' });
+        }
+        if ((lm = p.match(/^\/api\/leadlists\/(\d+)\/export\.xlsx$/)) && method === 'GET') {
+          const x = leadlists.listToXlsx(Number(lm[1]));
+          if (!x) return json(res, 404, { ok: false, error: 'lista não encontrada' });
+          return send(res, 200, x.buffer, { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'X-Filename': x.filename, 'Access-Control-Expose-Headers': 'X-Filename' });
+        }
+        if (p === '/api/leadlists/enrich' && method === 'POST') {
+          const b = await readBody(req);
+          return json(res, 200, { ok: true, ...leadlists.enrichLead(b.market_lead_id, b.lead_id) });
+        }
+        if ((lm = p.match(/^\/api\/leadlists\/(\d+)\/import$/)) && method === 'POST') {
+          const b = await readBody(req);
+          return json(res, 200, { ok: true, ...leadlists.importToCrm(Number(lm[1]), b.layout_id) });
+        }
+      } catch (e) { return fail(e); }
+    }
+    if (p === '/api/site/embeddable' && method === 'GET') return json(res, 200, { ok: true, embeddable: await siteEmbeddable(), cloudUrl: CLOUD_URL });
     if (p === '/api/integrations/google/status' && method === 'GET') {
       if (!API_KEY) return json(res, 200, { ok: true, configured: false, connected: false, gmail: false, calendar: false });
       const d = await cloud('/api/mcp/integrations/google/status', null, 'GET');
@@ -217,9 +327,25 @@ async function handle(req, res) {
       const body = await readBody(req);
       return json(res, 200, { ok: true, lead: db.createLead(body) });
     }
+    if (p === '/api/import/preview' && method === 'POST') {
+      const body = await readBody(req);
+      let rows;
+      if (typeof body.csv === 'string') rows = parseDelimited(body.csv);
+      else if (typeof body.xlsxBase64 === 'string') {
+        const buffer = Buffer.from(body.xlsxBase64.replace(/^data:[^;]+;base64,/, ''), 'base64');
+        if (buffer.subarray(0, 2).toString() !== 'PK') return json(res, 400, { ok: false, message: 'Arquivo Excel inválido.' });
+        rows = await rowsFromXlsx(buffer);
+      } else return json(res, 400, { ok: false, message: 'Envie um arquivo CSV ou XLSX.' });
+      return json(res, 200, { ok: true, ...db.previewLeadsImport(rows) });
+    }
     if (p === '/api/import' && method === 'POST') {
       const body = await readBody(req);
-      if (typeof body.csv === 'string') return json(res, 200, { ok: true, imported: db.importLeadsCsv(body.csv, body.layout_id) });
+      if (typeof body.csv === 'string') return json(res, 200, { ok: true, ...db.importLeadsCsv(body.csv, body.layout_id) });
+      if (typeof body.xlsxBase64 === 'string') {
+        const buffer = Buffer.from(body.xlsxBase64.replace(/^data:[^;]+;base64,/, ''), 'base64');
+        if (buffer.subarray(0, 2).toString() !== 'PK') return json(res, 400, { ok: false, message: 'Arquivo Excel inválido.' });
+        return json(res, 200, { ok: true, ...db.importLeadRows(await rowsFromXlsx(buffer), body.layout_id) });
+      }
       return json(res, 200, { ok: true, imported: db.importLeads(body.leads || body) });
     }
 
@@ -245,7 +371,7 @@ async function handle(req, res) {
           const d = await cloud('/api/mcp/integrations/google/calendar/events', {
             activity: { localId: activity.id, type: activity.type, title: activity.title, startAt: activity.due_at, notes: activity.notes },
             lead: { name: lead.name, email: lead.email, phone: lead.phone },
-            createMeet: activity.type === 'meeting',
+            createMeet: ['meeting', 'r1', 'r2', 'r3'].includes(activity.type),
           });
           calendar = d;
           db.setActivityCalendarResult(activity.id, d.ok ? {

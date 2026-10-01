@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CaptaMais — Meu CRM v1.04</title>
+<title>CaptaMais — Meu CRM v<!--__CM_VERSION__--></title>
 <style>
   :root { --bg:#09090b; --panel:#151518; --panel2:#1c1c21; --border:#27272a; --text:#f4f4f5; --muted:#a1a1aa; --accent:#f59e0b; --shadow:0 10px 30px rgba(0,0,0,.35); }
   html[data-theme="light"] { --bg:#f4f6f8; --panel:#ffffff; --panel2:#f8fafc; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --accent:#f59e0b; --shadow:0 10px 30px rgba(2,6,23,.08); }
@@ -46,7 +46,7 @@
   .empty { color:var(--muted); font-size:12px; padding:10px; text-align:center; }
   .agenda { flex:0 0 auto; max-height:28vh; overflow-y:auto; margin-top:12px; } .agenda h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px; }
   .act { display:flex; gap:11px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:11px; margin-bottom:7px; background:var(--panel); }
-  .act .dot{width:8px;height:8px;border-radius:999px;flex:0 0 8px;} .t-call{background:#38bdf8}.t-followup{background:#f59e0b}.t-meeting{background:#22c55e}.t-task{background:#a1a1aa}
+  .act .dot{width:8px;height:8px;border-radius:999px;flex:0 0 8px;} .t-call,.t-call_attempt{background:#38bdf8}.t-followup{background:#f59e0b}.t-meeting,.t-r1,.t-r2,.t-r3{background:#22c55e}.t-task{background:#a1a1aa}.t-whatsapp{background:#25d366}
   .pill{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);} a{color:var(--accent);}
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;} .modal.open{display:flex;}
   .sheet{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:20px;box-shadow:var(--shadow);}
@@ -79,26 +79,56 @@
   .integration-head{display:flex;align-items:center;gap:10px}.integration-head .grow{min-width:0}.integration-head b{display:block}.integration-head small{color:var(--muted)}
   .service-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.service{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:4px 9px;color:var(--muted)}.service.on{color:#34d399;border-color:color-mix(in srgb,#34d399 45%,var(--border));}
   button:disabled{opacity:.45;cursor:not-allowed;}
+  .seg{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:3px;margin:0 0 14px;}
+  .seg button{flex:1;border:none;background:transparent;padding:8px;border-radius:8px;color:var(--muted);font-weight:600;} .seg button.on{background:var(--accent);color:#1a1206;} .seg button:hover{border-color:transparent;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;} .grid3 .field{margin-bottom:0;}
+  @media(max-width:560px){.grid3{grid-template-columns:1fr 1fr;}}
+  .mkbox{border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;background:var(--panel2);line-height:1.6}
+  .mktable{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;} .mktable th,.mktable td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);} .mktable th{color:var(--muted);font-weight:600;}
+  .mkdesc{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+  .pills{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px} .pillbtn{border-radius:999px;padding:5px 13px;font-size:12.5px} .pillbtn.on{background:var(--accent);color:#1a1206;border-color:transparent;font-weight:700}
+  #mkQuery{width:100%}
+  details.fgroup{border:1px solid var(--border);border-radius:12px;padding:0 12px;margin:0 0 10px;background:var(--panel2)} details.fgroup>summary{cursor:pointer;padding:10px 0;font-weight:700;font-size:13px;list-style:none} details.fgroup>summary::-webkit-details-marker{display:none} details.fgroup>summary small{color:var(--muted);font-weight:400;margin-left:6px} details.fgroup[open]>summary{border-bottom:1px solid var(--border);margin-bottom:10px} details.fgroup .grid3{padding-bottom:12px}
+  .field label small{color:var(--muted);font-weight:400}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0 4px} .chiphead{width:100%;font-size:12px;color:var(--muted)} .chip{font-size:12px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:999px;padding:2px 4px 2px 10px} .chip button{border:none;background:transparent;padding:0 6px;color:var(--muted)}
+  .listrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:11px;margin-bottom:7px;background:var(--panel2);cursor:pointer;} .listrow:hover{border-color:var(--accent);}
+  .tabs{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:3px;}
+  .tabs button{border:none;background:transparent;padding:6px 14px;border-radius:8px;color:var(--muted);font-weight:600;}
+  .tabs button.on{background:var(--accent);color:#1a1206;}
+  .tabs button:hover{border-color:transparent;color:var(--text);} .tabs button.on:hover{color:#1a1206;}
+  .bar[hidden],.wrap[hidden]{display:none;}
+  #siteView{flex:1;min-height:0;display:flex;flex-direction:column;} #siteView[hidden]{display:none;}
+  .sitebar{flex-shrink:0;padding:8px 18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--panel);font-size:12px;color:var(--muted);}
+  #siteFrame{flex:1;min-height:0;width:100%;border:0;background:#fff;} #siteFrame[hidden]{display:none;}
+  #siteFallback{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:var(--muted);} #siteFallback[hidden]{display:none;}
   .syncopt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;cursor:pointer;background:var(--panel2);}
   .syncopt:has(input:checked){border-color:var(--accent);}
   .syncopt input{width:auto;margin-top:3px;}.syncopt span{display:flex;flex-direction:column;gap:2px;}.syncopt small{color:var(--muted);font-size:12px;line-height:1.4;}
   .checkrow{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted)}.checkrow input{width:auto;margin-top:2px;}
+  .credit-top{white-space:nowrap;font-weight:700}.update-ready{border-color:#34d399!important;color:#15803d!important;background:color-mix(in srgb,#34d399 12%,var(--panel2))!important}
+  .versionrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
 </style>
 </head>
 <body>
 <header>
   <div style="display:flex;align-items:center;gap:12px">
     <button class="hamb" onclick="toggleDrawer(event)" title="Menu" aria-label="Menu">☰</button>
-    <div class="brand"><span class="logo"><!--__CM_LOGO__--></span><div><h1>Capta<span class="p">+</span>Mais</h1><div class="sub">Meu CRM · v1.04 · <span style="color:#34d399">🔒 local</span> · <span id="linkStatus" style="color:var(--muted)">não vinculado</span></div></div></div>
+    <div class="brand"><span class="logo"><!--__CM_LOGO__--></span><div><h1>Capta<span class="p">+</span>Mais</h1><div class="sub">Meu CRM · v<!--__CM_VERSION__--> · <span style="color:#34d399">🔒 local</span> · <span id="linkStatus" style="color:var(--muted)">não vinculado</span></div></div></div>
   </div>
+  <div class="tabs" role="tablist"><button id="tabCrm" class="on" role="tab" onclick="showTab('crm')">📋 CRM</button><button id="tabSite" role="tab" onclick="openSite('/')">🌐 Capta+</button></div>
   <div class="tools">
     <span class="stat"><b id="nleads">0</b> leads · <b id="nacts">0</b> ativ.</span>
+    <button class="ghost credit-top" id="credChip" onclick="openCreditsPanel()" title="Conecte sua conta e ganhe 10.000 créditos uma vez por conta">💳 Créditos: <b id="credN">—</b></button>
+    <button class="ghost" id="updateBtn" onclick="checkUpdates(false)" title="Buscar novas versões no GitHub oficial"><span id="updateBtnLabel">↻ Atualizações</span></button>
     <button class="ghost" id="themeBtn" title="Tema claro/escuro" onclick="toggleTheme()">🌙</button>
     <button class="ghost" onclick="syncPlatform()" title="Sincronizar com a plataforma">☁ Sincronizar</button>
     <button class="primary" onclick="openCreate()">+ Novo lead</button>
   </div>
 </header>
 <div class="bar">
+  <button class="primary" onclick="openMarket('lookup')" title="Pesquisar empresas no banco do Capta+">🔎 Pesquisar leads</button>
+  <button class="primary" onclick="openMarket('filters')" title="Montar uma lista de leads com filtros">🎯 Gerar leads</button>
+  <span style="width:1px;align-self:stretch;background:var(--border);margin:0 4px"></span>
   <label style="font-size:12px;color:var(--muted)">Funil</label>
   <select id="layoutSel" onchange="switchLayout(this.value)"></select>
   <button class="ghost" onclick="newLayout()" title="Novo funil">＋ funil</button>
@@ -112,26 +142,44 @@
   <div class="board" id="board"></div>
   <div class="agenda"><h2>Agenda · atividades em aberto</h2><div id="agenda"></div></div>
 </div>
+<div id="siteView" hidden>
+  <div class="sitebar">
+    <button class="ghost" onclick="showTab('crm')">← Voltar ao CRM</button>
+    <button class="ghost" id="siteKeyBtn" onclick="openConnect()" hidden>🔑 Já tenho a chave</button>
+    <span id="siteHint" style="font-size:12px;color:var(--text)"></span>
+    <span class="grow" id="siteUrlTxt"></span>
+    <button class="ghost" onclick="popOutSite()" title="Abrir numa janela separada">Abrir em janela ↗</button>
+  </div>
+  <iframe id="siteFrame" title="Capta+" hidden referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-write"></iframe>
+  <div id="siteFallback" hidden>
+    <div style="font-size:34px">🌐</div>
+    <b style="color:var(--text);font-size:16px">O Capta+ abre em uma janela própria</b>
+    <span style="max-width:420px">O site não permite aparecer dentro de outro programa. Ele usa sempre <b>a mesma janela</b>, sem espalhar abas. Depois de copiar sua chave, volte aqui e cole.</span>
+    <button class="primary" onclick="popOutSite()">Ir para o Capta+ ↗</button>
+  </div>
+</div>
 
 <!-- Modal lead -->
 <div class="modal" id="mLead"><div class="sheet">
-  <h3 id="mLeadTitle">Novo lead</h3>
-  <div class="row"><div class="field"><label>Nome *</label><input id="fName"></div><div class="field"><label>Tipo</label><select id="fEntity"><option value="PF">Pessoa (PF)</option><option value="PJ">Empresa (PJ)</option></select></div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h3 id="mLeadTitle">Novo lead</h3><button class="ghost" type="button" onclick="discardLead()" aria-label="Fechar sem salvar" title="Fechar sem salvar">✕</button></div>
+  <div class="row"><div class="field"><label>Nome *</label><input id="fName"></div><div class="field"><label>Tipo</label><select id="fEntity" onchange="toggleLeadCnpj()"><option value="PF">Pessoa (PF)</option><option value="PJ">Empresa (PJ)</option></select></div></div>
   <div class="row"><div class="field"><label>E-mail</label><input id="fEmail"></div><div class="field"><label>Telefone</label><input id="fPhone"></div></div>
   <div class="row"><div class="field"><label>Cidade</label><input id="fCity"></div><div class="field"><label>Etapa</label><select id="fStage"></select></div></div>
   <div class="field"><label>Subtítulo (empresa/cargo)</label><input id="fSubtitle"></div>
+  <div class="field" id="fCnpjWrap" hidden><label>Completar com a Receita (CNPJ)</label><div class="row"><input id="fCnpj" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" oninput="formatLeadCnpj()"><button type="button" class="ghost" onclick="completeLeadFromCnpj()">Buscar</button></div></div>
   <div class="field"><label>Anotações</label><textarea id="fDesc" rows="3"></textarea></div>
   <div id="leadExtra" hidden>
     <p style="font-size:12px;color:var(--muted);margin:4px 0">Continuar atendimento:</p>
     <div class="quick">
-      <button onclick="quickAct('call')">📞 Ligação</button><button onclick="quickAct('followup')">🔁 Follow-up</button>
-      <button onclick="quickAct('meeting')">📅 Reunião + Meet</button><button onclick="quickAct('task')">✅ Tarefa</button>
+      <button onclick="quickAct('r1')">1️⃣ R1</button><button onclick="quickAct('r2')">2️⃣ R2</button><button onclick="quickAct('r3')">3️⃣ R3</button>
+      <button onclick="quickAct('followup')">🔁 Follow-up</button><button onclick="quickAct('whatsapp')">💬 WhatsApp</button><button onclick="quickAct('call_attempt')">📞 Tentativa de ligação</button>
       <button onclick="openPlanningForLead()" title="Abre o Planejamento Financeiro no site, já com este lead">🧭 Novo planejamento</button>
+      <button onclick="enrichFromLead()" title="Pesquisa este lead no banco do Capta+ e completa os dados">✨ Enriquecer</button>
     </div>
     <div id="planBox" style="font-size:12px;margin:8px 0"></div>
     <div id="actList"></div>
   </div>
-  <div class="end"><button class="ghost" onclick="closeModal('mLead')">Fechar</button><button class="primary" onclick="saveLead()">Salvar</button></div>
+  <div class="end"><button class="ghost" type="button" onclick="discardLead()">Fechar sem salvar</button><button class="primary" onclick="saveLead()">Salvar</button></div>
 </div></div>
 
 <!-- Modal atividade -->
@@ -167,14 +215,17 @@
   <button class="ditem" onclick="openTool('Análise de Ativo')">📈 Análise de Ativo</button>
   <button class="ditem" onclick="openTool('Enriquecimento de Lead')">✨ Enriquecimento de Lead</button>
   <button class="ditem" onclick="openTool('Gerador de Lead')">🎯 Gerador de Lead</button>
+  <button class="ditem" onclick="openTool('Pesquisar Leads')">🔎 Pesquisar Leads</button>
   <button class="ditem" onclick="openTool('Pesquisar CNPJ')">🏢 Pesquisar CNPJ</button>
   <div class="dsec">Meus dados</div>
   <button class="ditem" onclick="closeDrawer();syncPlatform()">☁ Sincronizar com a nuvem</button>
+  <button class="ditem" onclick="closeDrawer();openCreditsPanel()">💳 Créditos e relatório</button>
+  <button class="ditem" onclick="closeDrawer();openLists()">📚 Minhas listas de leads</button>
   <button class="ditem" onclick="closeDrawer();openConnect()">🔗 Conta CaptaMais</button>
-  <button class="ditem" onclick="openSettings();closeDrawer()">⚙️ Configurações</button>
   <button class="ditem" onclick="backupNow();closeDrawer()">💾 Fazer backup</button>
   <button class="ditem" onclick="doExportCsv();closeDrawer()">⬇️ Exportar leads (CSV)</button>
-  <label class="ditem">⬆️ Importar arquivo<input type="file" accept=".csv,.json,application/json,text/csv" style="display:none" onchange="doImport(this);closeDrawer()"></label>
+  <label class="ditem">⬆️ Importar planilha<input type="file" accept=".csv,.tsv,.xlsx,.json,application/json,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none" onchange="doImport(this);closeDrawer()"></label>
+  <button class="ditem" onclick="openSettings();closeDrawer()">⚙️ Configurações</button>
   <div class="dfoot">Backup automático ativo 🔒 · dados no seu computador</div>
 </aside>
 
@@ -189,6 +240,15 @@
     <div class="end"><button class="ghost" id="googleDisconnectBtn" onclick="disconnectGoogle()" hidden>Desconectar</button><button class="primary" id="googleConnectBtn" onclick="connectGoogle()">Conectar Google</button></div>
   </div>
   <div class="end"><span></span><button class="ghost" onclick="closeModal('mSettings')">Fechar</button></div>
+</div></div>
+
+<!-- Modal de atualização — apenas consulta o GitHub; a instalação só acontece quando o usuário pedir à IA -->
+<div class="modal" id="mUpdate"><div class="sheet" style="max-width:560px">
+  <h3>↻ Atualizações da skill e do MCP</h3>
+  <p style="color:var(--muted);font-size:12px;margin:-4px 0 12px">A consulta usa somente o repositório oficial. Nada é instalado automaticamente e seus dados locais não são enviados.</p>
+  <div id="updateStatus" class="mkbox" style="margin-top:0">Consultando…</div>
+  <div class="field" id="updatePromptWrap" hidden style="margin-top:12px"><label>Prompt pronto para enviar à IA que está executando a skill</label><textarea id="updatePrompt" rows="9" readonly></textarea></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mUpdate')">Fechar</button><button class="primary" id="copyUpdateBtn" onclick="copyUpdatePrompt()" hidden>Copiar prompt para atualizar</button></div>
 </div></div>
 
 <!-- Modal de acesso (sincronizar / ferramenta Premium) -->
@@ -213,8 +273,9 @@
 <!-- Modal conectar conta CaptaMais (a chave fica só neste computador) -->
 <div class="modal" id="mConnect"><div class="sheet" style="max-width:480px">
   <h3>🔗 Conectar sua conta CaptaMais</h3>
+  <div class="mkbox" style="margin:0 0 12px;border-color:var(--accent)"><b>🎁 Ganhe 10.000 créditos</b><div style="color:var(--muted);font-size:12px;margin-top:4px">Ao vincular uma conta pela primeira vez. Benefício único por conta, válido para pesquisar, gerar ou enriquecer leads.</div></div>
   <p style="color:var(--muted);margin:0 0 8px"><b>1.</b> Entre no Capta+ (se ainda não tem conta, é só cadastrar) e abra <b>Minha Conta → Conector</b> para gerar sua chave.</p>
-  <p style="margin:0 0 12px"><a id="connLink" class="ghost" target="_blank" rel="noopener" style="display:inline-block;padding:8px 14px;border:1px solid var(--border);border-radius:10px;color:var(--accent);text-decoration:none">Abrir o Capta+ ↗</a></p>
+  <p style="margin:0 0 12px"><button class="ghost" id="connLink" onclick="closeModal('mConnect');openSite('/my-account')" style="color:var(--accent)">Abrir o Capta+ ↗</button></p>
   <p style="color:var(--muted);margin:0 0 6px"><b>2.</b> Cole a chave abaixo.</p>
   <div class="field"><label>Chave de API</label><input id="connKey" type="password" autocomplete="off" placeholder="ctm_…"></div>
   <p style="color:var(--muted);font-size:12px;margin:0">A chave fica salva só neste computador e nunca volta para o navegador.</p>
@@ -222,13 +283,110 @@
   <div class="end"><button class="ghost" id="connOff" onclick="disconnectAccount()" hidden>Desconectar</button><span style="display:flex;gap:6px"><button class="ghost" onclick="closeModal('mConnect')">Cancelar</button><button class="primary" id="connBtn" onclick="saveConnect()">Conectar</button></span></div>
 </div></div>
 
-<!-- Modal Calculadora Patrimonial (local) -->
-<div class="modal" id="mCalc"><div class="sheet" style="max-width:460px">
-  <h3>📊 Calculadora Patrimonial</h3>
-  <div class="row"><div class="field"><label>Valor inicial (R$)</label><input id="cInit" type="number" value="10000"></div><div class="field"><label>Aporte mensal (R$)</label><input id="cMonth" type="number" value="1000"></div></div>
-  <div class="row"><div class="field"><label>Taxa ao ano (%)</label><input id="cRate" type="number" value="10"></div><div class="field"><label>Prazo (anos)</label><input id="cYears" type="number" value="10"></div></div>
-  <div id="calcResult" style="margin-top:6px"></div>
-  <div class="end"><button class="ghost" onclick="closeModal('mCalc')">Fechar</button><button class="primary" onclick="calcCompute()">Calcular</button></div>
+
+<!-- Modal Pesquisar / Gerar leads (mesmo modelo da tela EnriqueceLead do Capta+; busca e créditos na nuvem) -->
+<div class="modal" id="mMarket"><div class="sheet" style="max-width:780px">
+  <h3>🎯 Leads do Capta+</h3>
+  <div class="seg"><button id="mkTabLookup" onclick="setMarketMode('lookup')">🔎 Pesquisar no banco</button><button id="mkTabFilters" onclick="setMarketMode('filters')">🎯 Gerar lista por filtros</button></div>
+  <div id="mkLookup">
+    <p class="mkdesc">Encontre uma empresa por nome, CNPJ, sócio ou e-mail. Se houver correspondência, mostramos os resultados mais parecidos e o custo para abrir cada um.</p>
+    <div class="pills" id="mkPills"></div>
+    <input id="mkQuery" type="search" autocomplete="off" onkeydown="if(event.key==='Enter')marketSearch()">
+  </div>
+  <div id="mkFilters" hidden oninput="renderChips()" onchange="renderChips()">
+    <p class="mkdesc">Monte o perfil ideal da empresa. A consulta só roda ao clicar em <b>Filtrar</b> e mostra quantos resultados existem antes de qualquer cobrança.</p>
+    <details class="fgroup" open><summary>📍 Atividade e localização <small>CNAE, estado e cidade</small></summary>
+      <div class="grid3">
+        <div class="field"><label>CNAE <small>vazio = todos</small></label><input id="mf_cnae" placeholder="Ex: 8630503"></div>
+        <div class="field"><label>Estado (UF)</label><select id="mf_uf" onchange="onUfChange()"><option value="">Todos os estados</option></select></div>
+        <div class="field"><label>Cidade</label><select id="mf_municipio" disabled><option value="">Escolha o estado primeiro</option></select></div>
+      </div>
+    </details>
+    <details class="fgroup" open><summary>🏢 Perfil da empresa <small>situação, porte e contatos</small></summary>
+      <div class="grid3">
+        <div class="field"><label>Situação</label><select id="mf_situacao"><option value="">Todas (inclui baixadas)</option><option value="Ativa">Ativa</option><option value="Baixada">Baixada</option><option value="Inapta">Inapta</option><option value="Suspensa">Suspensa</option><option value="Nula">Nula</option></select></div>
+        <div class="field"><label>Matriz ou filial</label><select id="mf_matrizFilial"><option value="">Todas</option><option value="matriz">Só matriz</option><option value="filial">Só filial</option></select></div>
+        <div class="field"><label>Porte</label><select id="mf_porte"><option value="">Todos os portes</option></select></div>
+        <div class="field"><label>Natureza jurídica</label><select id="mf_naturezaJuridica"><option value="">Todas</option></select></div>
+        <div class="field"><label>Funcionários</label><select id="mf_qtdFuncionarios"><option value="">Todos</option></select></div>
+        <div class="field"><label>Celular <small>depois do DDD começa com 9</small></label><select id="mf_temCelular"><option value="">Indiferente</option><option value="sim">Apenas com celular cadastrado</option></select></div>
+        <div class="field"><label>Telefone <small>fixo ou celular</small></label><select id="mf_temTelefone"><option value="">Indiferente</option><option value="sim">Apenas com telefone</option></select></div>
+        <div class="field"><label>E-mail</label><select id="mf_temEmail"><option value="">Indiferente</option><option value="sim">Apenas com e-mail</option></select></div>
+        <div class="field"><label>Site</label><select id="mf_temSite"><option value="">Indiferente</option><option value="sim">Apenas com site</option></select></div>
+      </div>
+    </details>
+    <details class="fgroup"><summary>💰 Financeiro <small>capital, faturamento e tributação</small></summary>
+      <div class="grid3">
+        <div class="field"><label>Capital social mínimo <small>R$</small></label><input id="mf_capitalMin" placeholder="Ex: 1.000.000" inputmode="numeric"></div>
+        <div class="field"><label>Capital social máximo <small>R$</small></label><input id="mf_capitalMax" placeholder="Ex: 10.000.000" inputmode="numeric"></div>
+        <div class="field"><label>Faturamento estimado</label><select id="mf_faixaFaturamento"><option value="">Todas as faixas</option></select></div>
+        <div class="field"><label>Dívidas federais</label><select id="mf_temDividas"><option value="">Indiferente</option><option value="sim">Com dívidas</option><option value="nao">Sem dívidas</option></select></div>
+        <div class="field"><label>Tributação</label><select id="mf_regimeTributario"><option value="">Todos os regimes</option><option value="mei">MEI</option><option value="simples">Simples Nacional</option><option value="presumido">Lucro Presumido</option><option value="real">Lucro Real</option><option value="presumido_ou_real">Presumido ou Lucro Real</option><option value="imune_isento">Imune / Isento</option></select></div>
+      </div>
+    </details>
+    <details class="fgroup"><summary>📅 Data de abertura <small>período</small></summary>
+      <div class="grid3">
+        <div class="field"><label>A partir de</label><input id="mf_dataAberturaMin" type="date"></div>
+        <div class="field"><label>Até</label><input id="mf_dataAberturaMax" type="date"></div>
+      </div>
+    </details>
+    <div id="mkChips" class="chips"></div>
+  </div>
+  <div id="mkRes"></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mMarket')">Fechar</button><button class="primary" id="mkSearchBtn" onclick="marketSearch()">Buscar</button></div>
+</div></div>
+
+<!-- Modal Créditos: saldo, ativar código e relatório de gastos -->
+<div class="modal" id="mCredits"><div class="sheet" style="max-width:860px">
+  <h3>💳 Créditos</h3>
+  <div id="crSummary"></div>
+  <div class="mkbox" style="margin-top:10px">
+    <div style="font-weight:700;margin-bottom:6px">🎟️ Ativar mais créditos</div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:8px">Comprou créditos? Digite o código que enviamos por e-mail.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="crCode" autocomplete="off" placeholder="CM-XXXX-XXXX-XXXX" style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter')redeemFromPanel()"><button class="primary" id="crCodeBtn" onclick="redeemFromPanel()">Ativar</button><button class="ghost" onclick="openCredits()">Comprar créditos ↗</button></div>
+    <div id="crCodeMsg" style="margin-top:6px"></div>
+  </div>
+  <h4 style="margin:16px 0 4px">Relatório de gastos</h4>
+  <div id="crTotals" style="color:var(--muted);font-size:12px;margin-bottom:8px"></div>
+  <div id="crReport" style="max-height:340px;overflow:auto"></div>
+  <div class="end"><span></span><button class="ghost" onclick="closeModal('mCredits')">Fechar</button></div>
+</div></div>
+
+<!-- Modal lista pronta (a lista fica salva só no banco local) -->
+<div class="modal" id="mList"><div class="sheet" style="max-width:640px">
+  <h3 id="listTitle">Lista de leads</h3>
+  <div id="listBody"></div>
+  <div class="end" style="flex-wrap:wrap"><button class="ghost" onclick="closeModal('mList')">Manter só no banco</button>
+    <span style="display:flex;gap:6px;flex-wrap:wrap"><button class="ghost" onclick="downloadList()">⬇️ Baixar Excel</button><button class="primary" id="listImportBtn" onclick="importList()">📥 Importar no CRM</button></span></div>
+</div></div>
+
+<!-- Modal minhas listas -->
+<div class="modal" id="mLists"><div class="sheet" style="max-width:560px">
+  <h3>📚 Minhas listas de leads</h3>
+  <p style="font-size:12px;color:var(--muted);margin:-4px 0 12px">Listas que você comprou com créditos. Ficam salvas só neste computador.</p>
+  <div id="listsBody"></div>
+  <div class="end"><span></span><button class="ghost" onclick="closeModal('mLists')">Fechar</button></div>
+</div></div>
+
+<!-- Modal acesso aos leads: entrar, criar conta, só comprar créditos ou resgatar código -->
+<div class="modal" id="mAccess"><div class="sheet" style="max-width:460px">
+  <h3>🎯 Leads do Capta+</h3>
+  <div class="mkbox" style="margin:0 0 12px;border-color:var(--accent)"><b>🎁 Conecte-se e ganhe 10.000 créditos</b><div style="color:var(--muted);font-size:12px;margin-top:4px">Crie uma conta ou entre em uma já existente e faça a primeira vinculação. O bônus é concedido uma única vez por conta para pesquisar, gerar ou enriquecer leads.</div></div>
+  <p style="color:var(--muted);margin:0 0 12px">Pesquisar e gerar leads usa créditos. Como você quer continuar?</p>
+  <button class="ditem" onclick="closeModal('mAccess');openConnect()">🔗 Já tenho conta — entrar / conectar</button>
+  <button class="ditem" onclick="closeModal('mAccess');openSite('/register')">✨ Criar conta</button>
+  <button class="ditem" onclick="closeModal('mAccess');openCredits()">💳 Só comprar créditos</button>
+  <button class="ditem" onclick="openCode()">🎟️ Já comprei — tenho um código</button>
+  <div class="end"><span></span><button class="ghost" onclick="closeModal('mAccess')">Fechar</button></div>
+</div></div>
+
+<!-- Modal código de créditos -->
+<div class="modal" id="mCode"><div class="sheet" style="max-width:420px">
+  <h3>🎟️ Resgatar créditos</h3>
+  <p style="color:var(--muted);margin:0 0 10px">Digite o código que enviamos para o e-mail usado na compra.</p>
+  <div class="field"><label>Código</label><input id="codeInput" autocomplete="off" placeholder="CM-XXXX-XXXX-XXXX" onkeydown="if(event.key==='Enter')redeemCode()"></div>
+  <div id="codeMsg" style="margin-top:6px"></div>
+  <div class="end"><button class="ghost" onclick="closeModal('mCode')">Cancelar</button><button class="primary" id="codeBtn" onclick="redeemCode()">Resgatar</button></div>
 </div></div>
 
 <!-- Modal Pesquisar CNPJ (nuvem) -->
@@ -243,18 +401,20 @@
 <script>
 const TOKEN = /*__CM_TOKEN__*/ "";
 const COLORS = ['#3b82f6','#8b5cf6','#6366f1','#f59e0b','#10b981','#ef4444','#06b6d4','#ec4899','#84cc16','#71717a'];
-const TLABEL={call:'Ligação',followup:'Follow-up',meeting:'Reunião',task:'Tarefa'};
+const TLABEL={call:'Ligação',call_attempt:'Tentativa de ligação',followup:'Follow-up',meeting:'Reunião',r1:'R1',r2:'R2',r3:'R3',whatsapp:'WhatsApp',task:'Tarefa'};
 const esc=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 const safeUrl=u=>{try{const p=new URL(String(u));return(p.protocol==='http:'||p.protocol==='https:')?p.href:'';}catch{return '';}};
 const fmt=iso=>iso?new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'sem data';
 let STATE={columns:[],openActivities:[],totals:{},layouts:[],layoutId:null};
 let editId=null, actLeadId=null, colModal=null, colColor=COLORS[0];
 let GOOGLE={connected:false,gmail:false,calendar:false,email:''};
+let UPDATE_STATE=null;
 
 // Tema
-function applyTheme(t){document.documentElement.dataset.theme=t;document.getElementById('themeBtn').textContent=t==='light'?'☀️':'🌙';try{localStorage.setItem('cm_theme',t);}catch{}}
-function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light');}
-try{applyTheme(localStorage.getItem('cm_theme')||'dark');}catch{applyTheme('dark');}
+// Padrão: tema claro. Só guarda a escolha quando a pessoa troca (chave nova: quem só abriu antes não fica preso no escuro).
+function applyTheme(t,save){document.documentElement.dataset.theme=t;document.getElementById('themeBtn').textContent=t==='light'?'☀️':'🌙';if(save)try{localStorage.setItem('cm_theme2',t);}catch{}}
+function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light',true);}
+try{applyTheme(localStorage.getItem('cm_theme2')==='dark'?'dark':'light');}catch{applyTheme('light');}
 
 async function api(path,method='GET',body){const r=await fetch(path,{method,headers:{'Content-Type':'application/json','x-cm-token':TOKEN},body:body?JSON.stringify(body):undefined});return r.json();}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
@@ -339,23 +499,27 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function stageOptions(sel){return STATE.columns.map(c=>`<option value="${esc(c.stage)}"${c.stage===sel?' selected':''}>${esc(c.title)}</option>`).join('');}
 
 function openCreate(){editId=null;document.getElementById('mLeadTitle').textContent='Novo lead';document.getElementById('leadExtra').hidden=true;
-  fName.value='';fEmail.value='';fPhone.value='';fCity.value='';fSubtitle.value='';fDesc.value='';fEntity.value='PF';fStage.innerHTML=stageOptions(STATE.columns[0]?.stage);openModal('mLead');}
+  fName.value='';fEmail.value='';fPhone.value='';fCity.value='';fSubtitle.value='';fCnpj.value='';fDesc.value='';fEntity.value='PF';toggleLeadCnpj();fStage.innerHTML=stageOptions(STATE.columns[0]?.stage);openModal('mLead');}
 async function openEdit(id){const d=await api(`/api/leads/${id}`);if(!d.ok)return;editId=id;const l=d.lead;
   document.getElementById('mLeadTitle').textContent='Editar lead';
-  fName.value=l.name||'';fEmail.value=l.email||'';fPhone.value=l.phone||'';fCity.value=l.city||'';fSubtitle.value=l.subtitle||'';fDesc.value=l.description||'';fEntity.value=l.entity_type||'PF';fStage.innerHTML=stageOptions(l.stage);
+  fName.value=l.name||'';fEmail.value=l.email||'';fPhone.value=l.phone||'';fCity.value=l.city||'';fSubtitle.value=l.subtitle||'';fCnpj.value=l.cnpj||'';fDesc.value=l.description||'';fEntity.value=l.entity_type||'PF';toggleLeadCnpj();formatLeadCnpj();fStage.innerHTML=stageOptions(l.stage);
   document.getElementById('leadExtra').hidden=false;loadPlans(id);renderActs(d.activities);openModal('mLead');}
 function renderActs(acts){const box=document.getElementById('actList');if(!acts.length){box.innerHTML='<div class="empty" style="text-align:left">Sem atividades ainda.</div>';return;}box.innerHTML='';
   for(const a of acts){const meet=safeUrl(a.meet_link),eventUrl=safeUrl(a.google_event_url);const row=document.createElement('div');row.className='actitem';
     row.innerHTML=`<span class="dot t-${esc(a.type)}"></span><span class="grow">${esc(TLABEL[a.type]||a.type)} — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${a.done?' ✓':''}${eventUrl?` · <a href="${esc(eventUrl)}" target="_blank" rel="noopener">Agenda</a>`:''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</span>${a.done?'':'<button class="done-btn ghost">ok</button>'}`;
     if(!a.done)row.querySelector('.done-btn').addEventListener('click',async()=>{await api(`/api/activities/${a.id}/done`,'POST');openEdit(editId);load();});box.appendChild(row);}}
-async function saveLead(){const body={name:fName.value,email:fEmail.value,phone:fPhone.value,city:fCity.value,subtitle:fSubtitle.value,description:fDesc.value,entity_type:fEntity.value,stage:fStage.value,layout_id:STATE.layoutId};
+function discardLead(){closeModal('mLead');editId=null;}
+function toggleLeadCnpj(){document.getElementById('fCnpjWrap').hidden=fEntity.value!=='PJ';}
+function formatLeadCnpj(){const d=(fCnpj.value||'').replace(/\D/g,'').slice(0,14);fCnpj.value=d.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2');}
+const pickCnpjValue=(o,keys)=>{for(const key of keys){const v=o?.[key];if(v!==undefined&&v!==null&&String(v).trim())return String(v).trim();}return '';};
+async function completeLeadFromCnpj(){if(fEntity.value!=='PJ')return;const cnpj=(fCnpj.value||'').replace(/\D/g,'');if(cnpj.length!==14){toast('Informe um CNPJ com 14 dígitos');return;}const d=await api('/api/tool/cnpj','POST',{cnpj}).catch(()=>({ok:false}));if(!d.ok||d.notFound){toast(d.notFound?'CNPJ não encontrado':d.message||'Não foi possível consultar o CNPJ');return;}const o=d.data||{};const razao=pickCnpjValue(o,['razao_social','razaoSocial','nome_empresarial','nomeEmpresarial','nome']),fantasia=pickCnpjValue(o,['nome_fantasia','nomeFantasia','fantasia']),email=pickCnpjValue(o,['email','correio_eletronico']),phone=pickCnpjValue(o,['telefone','phone','celular']),city=pickCnpjValue(o,['municipio','cidade','city']);if(!fName.value.trim())fName.value=fantasia||razao;if(!fSubtitle.value.trim())fSubtitle.value=razao||fantasia;if(!fEmail.value.trim())fEmail.value=email;if(!fPhone.value.trim())fPhone.value=phone;if(!fCity.value.trim())fCity.value=city;toast('Dados do CNPJ preenchidos');}
+async function saveLead(){const body={name:fName.value,email:fEmail.value,phone:fPhone.value,city:fCity.value,subtitle:fSubtitle.value,cnpj:fEntity.value==='PJ'?fCnpj.value:'',description:fDesc.value,entity_type:fEntity.value,stage:fStage.value,layout_id:STATE.layoutId};
   if(!body.name.trim()){toast('Informe o nome');return;}const d=editId?await api(`/api/leads/${editId}`,'PATCH',body):await api('/api/leads','POST',body);
   if(d.ok){toast(editId?'Atualizado':'Lead criado');closeModal('mLead');load();}else toast('Erro ao salvar');}
 
-function quickAct(type){if(!editId)return;actLeadId=editId;document.getElementById('mActTitle').textContent='Nova '+(TLABEL[type]||type);aTitle.value=TLABEL[type]||'';aDue.value='';aNotes.value='';aMeet.value='';document.getElementById('aMeetWrap').hidden=type!=='meeting';aGoogle.checked=!!GOOGLE.calendar;aGoogle.disabled=!GOOGLE.calendar;document.getElementById('aGoogleText').textContent=GOOGLE.calendar?'Adicionar ao Google Agenda'+(type==='meeting'?' e gerar Google Meet':''):'Conecte o Google Agenda em Configurações';document.getElementById('mAct').dataset.type=type;openModal('mAct');}
-async function saveAct(){const type=document.getElementById('mAct').dataset.type;const due=aDue.value?new Date(aDue.value).toISOString():null;
-  if(aGoogle.checked&&!due){toast('Informe data e hora para usar o Google Agenda');return;}
-  const body={type,title:aTitle.value,due_at:due,notes:aNotes.value,meet_link:type==='meeting'&&!aGoogle.checked?(aMeet.value||'https://meet.google.com/new'):null,sync_calendar:aGoogle.checked};
+function quickAct(type){if(!editId)return;const meeting=['meeting','r1','r2','r3'].includes(type);actLeadId=editId;document.getElementById('mActTitle').textContent='Nova '+(TLABEL[type]||type);aTitle.value=TLABEL[type]||'';aDue.value='';aNotes.value='';aMeet.value='';document.getElementById('aMeetWrap').hidden=!meeting;aGoogle.checked=!!GOOGLE.calendar;aGoogle.disabled=!GOOGLE.calendar;document.getElementById('aGoogleText').textContent=GOOGLE.calendar?'Adicionar ao Google Agenda'+(meeting?' e gerar Google Meet':''):'Conecte o Google Agenda em Configurações';document.getElementById('mAct').dataset.type=type;openModal('mAct');}
+async function saveAct(){const type=document.getElementById('mAct').dataset.type;const meeting=['meeting','r1','r2','r3'].includes(type);const due=aDue.value?new Date(aDue.value).toISOString():new Date().toISOString();
+  const body={type,title:aTitle.value,due_at:due,notes:aNotes.value,meet_link:meeting&&!aGoogle.checked?(aMeet.value||'https://meet.google.com/new'):null,sync_calendar:aGoogle.checked};
   const d=await api(`/api/leads/${actLeadId}/activities`,'POST',body);if(d.ok){toast(d.calendar?.ok?'Atividade e evento criados':d.calendar&&!d.calendar.ok?'Atividade salva; Agenda não sincronizou':'Atividade adicionada');closeModal('mAct');openEdit(actLeadId);load();}else toast(d.error||'Erro');}
 
 // Colunas
@@ -371,9 +535,15 @@ async function deleteCol(){if(!colModal)return;if(!confirm('Excluir a coluna? Os
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
 async function doExport(){const d=await api('/api/export');download(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),'captamais-backup.json');toast('Backup JSON exportado');}
 async function doExportCsv(){const r=await fetch(`/api/export.csv?layout=${STATE.layoutId}`,{headers:{'x-cm-token':TOKEN}});const txt=await r.text();download(new Blob([txt],{type:'text/csv;charset=utf-8'}),'captamais-leads.csv');toast('CSV exportado');}
-async function doImport(input){const f=input.files[0];if(!f)return;const txt=await f.text();const isCsv=f.name.toLowerCase().endsWith('.csv')||!/^\s*[[{]/.test(txt);
-  try{let d;if(isCsv){d=await api('/api/import','POST',{csv:txt,layout_id:STATE.layoutId});}else{const data=JSON.parse(txt);d=await api('/api/import','POST',{leads:data.leads||data});}toast(`Importados: ${d.imported||0}`);load();}
-  catch{toast('Arquivo inválido');}input.value='';}
+async function doImport(input){const f=input.files[0];if(!f)return;
+  try{let payload;const lower=f.name.toLowerCase();
+    if(lower.endsWith('.xlsx')){if(f.size>4*1024*1024)throw new Error('A planilha deve ter no máximo 4 MB.');const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f)});payload={xlsxBase64:data,layout_id:STATE.layoutId};}
+    else{const txt=await f.text();if(lower.endsWith('.json')||/^\s*[[{]/.test(txt)){const data=JSON.parse(txt);const d=await api('/api/import','POST',{leads:data.leads||data});toast(`Importados: ${d.imported||0}`);load();input.value='';return;}payload={csv:txt,layout_id:STATE.layoutId};}
+    const preview=await api('/api/import/preview','POST',payload);if(!preview.ok)throw new Error(preview.message||'Arquivo inválido');
+    const map=(preview.mapping||[]).join('\n');const warn=(preview.warnings||[]).join('\n');
+    if(!confirm(`Confira o que foi identificado:\n\n${map||'Nenhuma coluna reconhecida'}\n\n${preview.valid||0} lead(s) válido(s) de ${preview.total||0}.${warn?'\n\nAtenção: '+warn:''}\n\nImportar agora?`)){input.value='';return;}
+    const d=await api('/api/import','POST',payload);toast(`Importados: ${d.imported||0}${d.duplicates?` · ${d.duplicates} já existiam`:''}${d.skipped?` · ${d.skipped} ignorados`:''}`);load();}
+  catch(e){toast(e&&e.message?e.message:'Arquivo inválido');}input.value='';}
 
 function openDrawer(){document.getElementById('drawer').hidden=false;document.getElementById('backdrop').hidden=false;}
 function closeDrawer(){document.getElementById('drawer').hidden=true;document.getElementById('backdrop').hidden=true;}
@@ -382,16 +552,50 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 async function backupNow(){const d=await api('/api/backup','POST');toast(d.ok?'Backup salvo':'Falha no backup');}
 let GATE_ACT='connect';
 function openGate(title,msg,ico,act='connect'){document.getElementById('gateTitle').textContent=title;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateIco').textContent=ico||'☁️';
-  GATE_ACT=act;const b=document.getElementById('gateBtn');b.hidden=act==='none';b.textContent=act==='plans'?'Ver planos':'Conectar conta';openModal('mGate');}
-function gateAction(){closeModal('mGate');if(GATE_ACT==='plans')openPlans();else openConnect();}
+  GATE_ACT=act;const b=document.getElementById('gateBtn');b.hidden=act==='none';b.textContent=act==='plans'?'Ver planos':act==='signup'?'Entrar ou criar conta':'Conectar conta';openModal('mGate');}
+function gateAction(){closeModal('mGate');if(GATE_ACT==='plans')openPlans();else if(GATE_ACT==='signup')openSite('/login');else openConnect();}
 // Free: leva para a página inicial da plataforma, onde a pessoa escolhe o plano.
-function openPlans(){const url=safeUrl((LINK.cloudUrl||'https://captamais.me')+'/');if(url&&!window.open(url,'_blank','noopener'))toast('O navegador bloqueou a nova aba — permita pop-ups para este endereço.');}
+function openPlans(){openSite('/');}
+// Capta+ dentro do CRM: aba ao lado do CRM quando o site permite ser embutido; senão, UMA janela reutilizada (nunca várias abas).
+let SITE={url:'',embeddable:null};
+function showTab(t){
+  const site=t==='site';
+  document.getElementById('tabCrm').classList.toggle('on',!site);document.getElementById('tabSite').classList.toggle('on',site);
+  document.querySelector('.bar').hidden=site;document.querySelector('.wrap').hidden=site;document.getElementById('siteView').hidden=!site;
+  if(site)fitSiteKey();else{fitBoardToViewport();loadLink(true);}
+}
+function fitSiteKey(){document.getElementById('siteKeyBtn').hidden=!!LINK.linked;}
+async function siteEmbeddable(){
+  if(SITE.embeddable===null){const d=await api('/api/site/embeddable').catch(()=>({}));SITE.embeddable=!!d.embeddable;}
+  return SITE.embeddable;
+}
+async function openSite(target='/'){
+  closeDrawer();
+  const url=safeUrl(String(target).startsWith('/')?(LINK.cloudUrl||'https://captamais.me')+target:target);
+  if(!url)return;
+  SITE.url=url;
+  document.getElementById('siteUrlTxt').textContent=url.replace(/^https?:\/\//,'');
+  let onLogin=false;try{onLogin=/^\/(login|register)\/?$/.test(new URL(url).pathname);}catch{}
+  document.getElementById('siteHint').textContent=onLogin?'Entre ou crie sua conta. Depois: Minha Conta → Conector → gerar chave → volte aqui e toque em “Já tenho a chave”.':'';
+  showTab('site');
+  const frame=document.getElementById('siteFrame'),fb=document.getElementById('siteFallback');
+  if(await siteEmbeddable()){fb.hidden=true;frame.hidden=false;if(frame.src!==url)frame.src=url;}
+  else{frame.hidden=true;fb.hidden=false;popOutSite();}
+}
+function popOutSite(){
+  if(!SITE.url)return;
+  // Nome fixo: toda chamada reaproveita a mesma janela do Capta+.
+  const w=window.open(SITE.url,'captamais-site');
+  if(w)w.focus();else toast('O navegador bloqueou a janela — permita pop-ups para este endereço.');
+}
 // Sincronizar: a pessoa escolhe entre "só enviar" e "enviar e baixar". Sem conta vinculada, abre a conexão.
 async function syncPlatform(){
-  if(!LINK.linked){openConnect('Conecte sua conta CaptaMais para sincronizar seus leads com a plataforma.');return;}
+  await loadLink(true); // confere de novo o plano: quem assinou (ou foi rebaixado) desde a última vez aparece certo
+  // Sem conta (ou só com carteira de créditos): leva para entrar ou criar a conta no Capta+; depois a pessoa cola a chave aqui.
+  if(!LINK.linked||(LINK.accountType==='guest')){toast('Entre ou crie sua conta CaptaMais para sincronizar.');openSite('/login');return;}
   if(LINK.blocked){openGate('Enviar para a nuvem','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
   const s=await api('/api/sync/status').catch(()=>({}));
-  syncInfo.textContent=`${s.total??0} lead(s) aqui · ${s.linked??0} já ligado(s) à nuvem · ${s.pending??0} com envio pendente.`;
+  syncInfo.textContent=`${s.total??0} lead(s) aqui · ${s.linked??0} já ligado(s) à nuvem · ${s.pending??0} com envio pendente.`+(LINK.plan?` Plano: ${planLabel(LINK.plan)}.`:'');
   syncResult.innerHTML='';syncBtn.disabled=false;openModal('mSync');
 }
 async function doSync(){
@@ -410,12 +614,11 @@ async function doSync(){
   if(s.missingInCloud)L.push(`${s.missingInCloud} lead(s) daqui não estão mais na nuvem (foram mantidos aqui).`);
   if(s.truncated)L.push('<span style="color:#f59e0b">Sua conta tem muitos leads; rode a sincronização de novo para continuar.</span>');
   syncResult.innerHTML=`<div style="border:1px solid var(--border);border-radius:12px;padding:12px;line-height:1.7">${L.join('<br>')}</div>`;
-  toast('Leads enviados para a nuvem');load();
+  toast('Leads enviados para a nuvem');load();loadLink(true);
 }
 // Conectar conta: a chave vai para o app local (arquivo em ~/.captamais) e nunca volta para o navegador.
 function openConnect(msg){
   connKey.value='';connMsg.innerHTML=msg?`<span style="color:var(--muted)">${esc(msg)}</span>`:'';
-  connLink.href=safeUrl((LINK.cloudUrl||'https://captamais.me')+'/my-account')||'#';
   connOff.hidden=!LINK.configured;closeModal('mGate');openModal('mConnect');
 }
 async function saveConnect(){
@@ -424,7 +627,9 @@ async function saveConnect(){
   const d=await api('/api/link/connect','POST',{key}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
   connBtn.disabled=false;
   if(!d.ok){connMsg.innerHTML=`<span style="color:#f87171">${esc(d.message||'Não foi possível conectar.')}</span>`;return;}
-  closeModal('mConnect');toast('Conta conectada'+(d.name?` — ${d.name}`:''));await loadLink();
+  closeModal('mConnect');
+  toast(d.firstLinkBonusGranted?`${nfmt(d.firstLinkBonusCredits||10000)} créditos adicionados 🎁`:'Conta conectada'+(d.name?` — ${d.name}`:''));
+  await loadLink();
 }
 async function disconnectAccount(){
   if(!confirm('Desconectar a conta? Seus leads continuam aqui; só a sincronização e as ferramentas da nuvem deixam de funcionar.'))return;
@@ -436,12 +641,13 @@ async function openPlanning(leadId,planId){
   const d=await api('/api/planning/url','POST',leadId?{lead_id:leadId,plan_id:planId||undefined}:{}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
   const url=d.ok?safeUrl(d.url):'';
   if(!url){toast(d.message||'Não foi possível abrir o planejamento.');return;}
-  if(!window.open(url,'_blank','noopener'))toast('O navegador bloqueou a nova aba — permita pop-ups para este endereço.');
+  closeModal('mLead');openSite(url);
 }
 function toolAllowed(name,key){
+  if(guestBlocked(name))return false;
   if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return false;}
-  if(!LINK.linked){openGate(name,`${name} precisa da sua conta CaptaMais conectada. Faça seu cadastro/entre e conecte a conta — Calculadora e CNPJ são grátis.`,'🔗');return false;}
-  if(!(LINK.tools&&LINK.tools[key])){openGate(name,`${name} é um recurso Premium. Veja os planos na plataforma para liberar.`,'🔒','plans');return false;}
+  if(!LINK.linked){openGate(name,`${name} precisa de uma conta CaptaMais conectada e de um plano Premium ou Max. Ao fazer a primeira vinculação da conta, você recebe 10.000 créditos para leads.`,'🔗');return false;}
+  if(!(LINK.tools&&LINK.tools[key])){openGate(name,`${name} está disponível nos planos Premium e Max. Veja os planos na plataforma para liberar.`,'🔒','plans');return false;}
   return true;
 }
 function openPlanningForLead(planId){if(toolAllowed('Planejamento Financeiro','planejamento'))openPlanning(editId,planId);}
@@ -458,11 +664,20 @@ async function loadPlans(id){
   box.innerHTML=`🧭 <b>${d.count}</b> planejamento(s) na plataforma · último em ${esc(fmt(last.updatedAt))} <button class="ghost" style="margin-left:6px" onclick="openPlanningForLead(${Number(last.id)})">Abrir último ↗</button>`;
 }
 let LINK={linked:false,tools:{},plan:'',configured:false};
-async function loadLink(){
+const planLabel=p=>{const v=String(p||'').trim().toLowerCase();return v?v.charAt(0).toUpperCase()+v.slice(1):'';};
+// Consulta a conta na nuvem. Com notify, avisa quando o plano mudou (assinou Premium/Max ou voltou ao Free).
+let lastLinkAt=0;
+async function loadLink(notify){
+  const before=LINK.linked?String(LINK.plan||'').toLowerCase():null;
   try{ LINK=await api('/api/link/status'); }catch{ LINK={linked:false,tools:{}}; }
+  lastLinkAt=Date.now();
   const el=document.getElementById('linkStatus');
+  const now=LINK.linked?String(LINK.plan||'').toLowerCase():null;
+  if(notify&&before!==null&&now!==null&&before!==now)toast(`Seu plano agora é ${planLabel(now)||'Free'}.`);
+  fitSiteKey();loadCredits();
   if(LINK.linked && LINK.blocked){ el.textContent='acesso pausado'; el.style.color='#f59e0b'; }
-  else if(LINK.linked){ el.textContent='vinculado ✓'+(LINK.plan?` (${LINK.plan})`:''); el.style.color='#34d399'; }
+  else if(LINK.linked&&LINK.accountType==='guest'){ el.textContent='créditos ✓'; el.style.color='#34d399'; }
+  else if(LINK.linked){ el.textContent='vinculado ✓'+(LINK.plan?` (${planLabel(LINK.plan)})`:''); el.style.color='#34d399'; }
   else if(LINK.configured===false){ el.textContent='não vinculado'; el.style.color='var(--muted)'; }
   else { el.textContent='chave inválida'; el.style.color='#f59e0b'; }
 }
@@ -503,32 +718,348 @@ async function disconnectGoogle(){
   if(d.ok){GOOGLE={connected:false,gmail:false,calendar:false,email:''};renderGoogleSettings();toast('Google desconectado');}else toast(d.message||'Não foi possível desconectar');
 }
 const TOOL_MAP={
- 'Calculadora Patrimonial':{key:'calculadora',open:openCalculator},
+ 'Calculadora Patrimonial':{key:'calculadora',open:()=>openSite('/wealth-calculator')},
  'Pesquisar CNPJ':{key:'cnpj',open:openCnpj},
  'Planejamento Financeiro':{key:'planejamento',open:()=>openPlanning()},
- 'Montagem de Carteira':{key:'carteira'},
- 'Análise de Ativo':{key:'ativos'},
- 'Enriquecimento de Lead':{key:'enriquecimento'},
- 'Gerador de Lead':{key:'gerador_lead'},
+ 'Montagem de Carteira':{key:'carteira',open:()=>openSite('/portfolio-assembly')},
+ 'Análise de Ativo':{key:'ativos',open:()=>openSite('/asset-analysis')},
+ 'Enriquecimento de Lead':{key:'enriquecimento',open:()=>openSite('/enriquece-lead')},
+ 'Gerador de Lead':{key:'gerador_lead',linkOnly:true,open:()=>openMarket('filters')},
+ 'Pesquisar Leads':{key:'gerador_lead',linkOnly:true,open:()=>openMarket('lookup')},
 };
+// ── Pesquisar / Gerar leads: a busca e os créditos ficam na nuvem; a lista comprada fica salva aqui ──
+let MK={mode:'lookup',field:'all',res:null,buyUrl:'',list:null,busy:false};
+const nfmt=n=>Number(n||0).toLocaleString('pt-BR');
+function ensureLinked(name){
+  if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return false;}
+  if(!LINK.linked){openAccess();return false;}
+  return true;
+}
+// Quem só comprou créditos (carteira) não tem conta completa: sincronizar, planejamento e Google pedem o cadastro.
+function guestBlocked(name){
+  if(!(LINK.linked&&LINK.accountType==='guest'))return false;
+  openGate(name,`${name} precisa de uma conta CaptaMais completa. Crie a conta com o mesmo e-mail da compra e seus créditos continuam com você.`,'✨','signup');
+  return true;
+}
+// ── Créditos: saldo, ativar código e relatório de gastos (cada compra de leads vira uma linha, com o resultado salvo) ──
+function chipText(k,v){
+  if(MF_YES[k])return MF_YES[k];
+  if(k==='temDividas')return v==='sim'?'Com dívidas':'Sem dívidas';
+  if(k==='regimeTributario')return 'Tributação: '+(({mei:'MEI',simples:'Simples Nacional',presumido:'Lucro Presumido',real:'Lucro Real',presumido_ou_real:'Presumido ou Real',imune_isento:'Imune / Isento'})[v]||v);
+  if(k==='matrizFilial')return v==='matriz'?'Só matriz':'Só filial';
+  return (MF_LABEL[k]||k)+': '+v;
+}
+function listKind(l){return l.mode==='lookup'?'🔎 Pesquisa':'🎯 Geração';}
+function listDetails(l){
+  let f={};try{f=JSON.parse(l.filters||'{}')||{};}catch{}
+  if(l.mode==='lookup'){
+    const fl=({all:'tudo',nome:'nome',cnpj:'CNPJ',socio:'sócio',email:'e-mail',telefone:'telefone'})[f.field||'all']||'tudo';
+    return `Pesquisa por ${fl}: “${l.query||''}”`;
+  }
+  const parts=Object.keys(f).map(k=>chipText(k,f[k]));
+  return parts.length?parts.join(' · '):(l.name||'Lista por filtros');
+}
+async function openCreditsPanel(){
+  closeDrawer();
+  if(!LINK.linked){openAccess();return;}
+  if(LINK.blocked){openGate('Créditos','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
+  document.getElementById('crCode').value='';document.getElementById('crCodeMsg').innerHTML='';
+  openModal('mCredits');
+  document.getElementById('crSummary').innerHTML='<span style="color:var(--muted)">Carregando…</span>';
+  await loadCredits();renderCreditsSummary();loadReport();
+}
+function renderCreditsSummary(){
+  const c=MK.credits,box=document.getElementById('crSummary');
+  if(!c){box.innerHTML='<div style="color:#f59e0b">Não foi possível consultar seu saldo agora. Tente de novo em instantes.</div>';return;}
+  let h=`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between"><div><div style="color:var(--muted);font-size:12px">Total disponível</div><div style="font-size:30px;font-weight:800">${nfmt(c.balance)}</div></div>`;
+  const cells=[];
+  if(c.plan&&c.monthlyAllowance!=null)cells.push(`<div class="mkbox" style="margin:0;padding:10px 14px"><div style="font-size:12px;color:var(--muted)">Do plano ${esc(planLabel(c.plan))} · recarrega todo mês</div><b>${nfmt(c.planBalance||0)}</b> <span style="color:var(--muted)">de ${nfmt(c.monthlyAllowance)}</span>${c.resetsAt?`<div style="font-size:11px;color:var(--muted)">próxima recarga em ${esc(new Date(c.resetsAt).toLocaleDateString('pt-BR'))}</div>`:''}</div>`);
+  cells.push(`<div class="mkbox" style="margin:0;padding:10px 14px"><div style="font-size:12px;color:var(--muted)">Comprados</div><b>${nfmt(c.purchasedBalance||0)}</b>${c.expiresAt?`<div style="font-size:11px;color:var(--muted)">os mais antigos valem até ${esc(new Date(c.expiresAt).toLocaleDateString('pt-BR'))}</div>`:''}</div>`);
+  if((c.bonusBalance||0)>0)cells.push(`<div class="mkbox" style="margin:0;padding:10px 14px"><div style="font-size:12px;color:var(--muted)">🎁 Bônus de boas-vindas</div><b>${nfmt(c.bonusBalance)}</b>${c.bonusExpiresAt?`<div style="font-size:11px;color:var(--muted)">vale até ${esc(new Date(c.bonusExpiresAt).toLocaleDateString('pt-BR'))}</div>`:''}</div>`);
+  box.innerHTML=h+`<div style="display:flex;gap:10px;flex-wrap:wrap">${cells.join('')}</div></div>`;
+}
+async function loadReport(){
+  const out=document.getElementById('crReport'),tot=document.getElementById('crTotals');
+  const d=await api('/api/leadlists').catch(()=>null);
+  if(!d||!d.ok){out.innerHTML='<div class="empty">Não foi possível carregar o relatório.</div>';tot.textContent='';return;}
+  if(!d.lists.length){out.innerHTML='<div class="empty">Nenhum gasto ainda. Quando você pesquisar ou gerar leads, cada operação aparece aqui.</div>';tot.textContent='';return;}
+  const spent=d.lists.reduce((n,l)=>n+(l.credits_spent||0),0),leads=d.lists.reduce((n,l)=>n+(l.purchased||0),0);
+  tot.textContent=`${d.lists.length} operação(ões) · ${nfmt(leads)} lead(s) · ${nfmt(spent)} crédito(s) gastos`;
+  out.innerHTML=`<table class="mktable"><tr><th>Data</th><th>Tipo</th><th>Detalhes</th><th style="text-align:right">Leads</th><th style="text-align:right">Custo</th><th></th></tr>${d.lists.map(l=>`<tr><td style="white-space:nowrap">${esc(fmt(l.created_at))}</td><td style="white-space:nowrap">${listKind(l)}</td><td>${esc(listDetails(l))}${l.imported?` <span class="pill">${nfmt(l.imported)} no CRM</span>`:''}</td><td style="text-align:right">${nfmt(l.purchased)}</td><td style="text-align:right;white-space:nowrap">${nfmt(l.credits_spent)}</td><td><button class="ghost" style="padding:3px 9px;font-size:12px" onclick="openListFromReport(${Number(l.id)})">Abrir resultado</button></td></tr>`).join('')}</table>`;
+}
+function openListFromReport(id){closeModal('mCredits');openList(id);}
+async function redeemFromPanel(){
+  const code=document.getElementById('crCode').value.trim(),msg=document.getElementById('crCodeMsg'),btn=document.getElementById('crCodeBtn');
+  if(!code)return;
+  btn.disabled=true;msg.innerHTML='<span style="color:var(--muted)">Verificando…</span>';
+  const d=await api('/api/credits/redeem','POST',{code}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  btn.disabled=false;
+  if(!d.ok){msg.innerHTML=`<span style="color:#f87171">${esc(d.message||'Não foi possível ativar o código.')}</span>`;return;}
+  if(d.accountExists){msg.innerHTML='<span style="color:#f59e0b">Créditos adicionados à sua conta CaptaMais. Conecte a conta para usá-los.</span>';return;}
+  document.getElementById('crCode').value='';
+  msg.innerHTML='<span style="color:#34d399">✓ Créditos ativados.</span>';
+  await loadLink();await loadCredits();renderCreditsSummary();
+}
+function openAccess(){closeDrawer();openModal('mAccess');}
+function openCode(){closeModal('mAccess');document.getElementById('codeInput').value='';document.getElementById('codeMsg').innerHTML='';openModal('mCode');}
+async function redeemCode(){
+  const code=document.getElementById('codeInput').value.trim(),msg=document.getElementById('codeMsg'),btn=document.getElementById('codeBtn');
+  if(!code)return;
+  btn.disabled=true;msg.innerHTML='<span style="color:var(--muted)">Verificando…</span>';
+  const d=await api('/api/credits/redeem','POST',{code}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  btn.disabled=false;
+  if(!d.ok){msg.innerHTML=`<span style="color:#f87171">${esc(d.message||'Não foi possível resgatar o código.')}</span>`;return;}
+  closeModal('mCode');
+  if(d.accountExists){toast('Créditos adicionados à sua conta CaptaMais. Conecte a conta para usá-los.');await loadLink();openConnect('Seus créditos já estão na sua conta. Conecte-a para usá-los.');return;}
+  toast('Créditos adicionados');
+  await loadLink();await loadCredits();
+  if(LINK.linked&&!LINK.blocked)openMarket(MK.mode);
+}
+function openMarket(mode){
+  closeDrawer();
+  if(LINK.linked&&LINK.blocked){openGate('Leads do Capta+','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
+  if(!LINK.linked){MK.mode=mode||MK.mode;openAccess();return;}MK.enrichLeadId=null;
+  MK.res=null;document.getElementById('mkRes').innerHTML='';setMarketMode(mode||'lookup');openModal('mMarket');loadCredits();
+}
+function enrichFromLead(){
+  if(!editId)return;const name=fName.value.trim();if(!name){toast('Informe o nome do lead');return;}
+  if(!ensureLinked('Enriquecimento de Lead'))return;
+  const id=editId;closeModal('mLead');openMarket('lookup');MK.enrichLeadId=id;MK.field='nome';renderPills();
+  document.getElementById('mkQuery').value=name;marketSearch();
+}
+const MK_FIELDS=[
+  {v:'all',l:'Tudo',p:'Nome, CNPJ, sócio, e-mail ou telefone…'},
+  {v:'nome',l:'Nome',p:'Razão social ou nome fantasia'},
+  {v:'cnpj',l:'CNPJ',p:'CNPJ (pode ser parcial)'},
+  {v:'socio',l:'Sócio',p:'Nome do sócio'},
+  {v:'email',l:'E-mail',p:'contato@empresa.com.br'},
+  {v:'telefone',l:'Telefone',p:'Telefone 1, 2 ou 3 (com ou sem DDD)'}];
+function renderPills(){
+  document.getElementById('mkPills').innerHTML=MK_FIELDS.map(f=>`<button class="pillbtn${MK.field===f.v?' on':''}" onclick="setLookupField('${f.v}')">${f.l}</button>`).join('');
+  document.getElementById('mkQuery').placeholder=(MK_FIELDS.find(f=>f.v===MK.field)||MK_FIELDS[0]).p;
+  document.getElementById('mkQuery').inputMode=MK.field==='cnpj'?'numeric':'text';
+}
+function setLookupField(v){MK.field=v;renderPills();document.getElementById('mkQuery').focus();}
+function setMarketMode(m){
+  MK.mode=m;MK.res=null;document.getElementById('mkRes').innerHTML='';
+  document.getElementById('mkTabLookup').classList.toggle('on',m==='lookup');document.getElementById('mkTabFilters').classList.toggle('on',m!=='lookup');
+  document.getElementById('mkLookup').hidden=m!=='lookup';document.getElementById('mkFilters').hidden=m==='lookup';
+  document.getElementById('mkSearchBtn').textContent=m==='lookup'?'Buscar':'Filtrar';
+  renderPills();renderChips();loadFilterOptions();
+}
+// Opções dos filtros (UF, porte, natureza, funcionários, faturamento) vêm da base do Capta+, as mesmas da tela do site.
+let MKOPT=null;
+function fillSelect(id,list){
+  const el=document.getElementById(id);if(!el||!Array.isArray(list))return;const first=el.options[0];el.innerHTML='';el.appendChild(first);
+  for(const v of list){const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o);}
+}
+async function loadFilterOptions(){
+  if(MKOPT)return;const d=await api('/api/leadmarket/filters').catch(()=>null);if(!d||!d.ok)return;MKOPT=d;
+  fillSelect('mf_uf',d.ufs);fillSelect('mf_porte',d.portes);fillSelect('mf_naturezaJuridica',d.naturezasJuridicas);
+  fillSelect('mf_qtdFuncionarios',d.qtdFuncionarios);fillSelect('mf_faixaFaturamento',d.faixasFaturamento);
+}
+async function onUfChange(){
+  const uf=document.getElementById('mf_uf').value,sel=document.getElementById('mf_municipio');
+  sel.innerHTML='';
+  if(!uf){sel.innerHTML='<option value="">Escolha o estado primeiro</option>';sel.disabled=true;return;}
+  sel.innerHTML='<option value="">Carregando…</option>';sel.disabled=true;
+  const d=await api('/api/leadmarket/municipios?uf='+encodeURIComponent(uf)).catch(()=>null);
+  sel.innerHTML='<option value="">Todas as cidades</option>';
+  if(d&&d.ok)for(const m of d.municipios){const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);}
+  sel.disabled=false;renderChips();
+}
+const MF_ALL=['cnae','uf','municipio','situacao','matrizFilial','porte','naturezaJuridica','qtdFuncionarios','temCelular','temTelefone','temEmail','temSite','capitalMin','capitalMax','faixaFaturamento','temDividas','regimeTributario','dataAberturaMin','dataAberturaMax'];
+const MF_LABEL={cnae:'CNAE',uf:'UF',municipio:'Cidade',situacao:'Situação',matrizFilial:'Matriz/filial',porte:'Porte',naturezaJuridica:'Natureza',qtdFuncionarios:'Funcionários',capitalMin:'Capital ≥ R$',capitalMax:'Capital ≤ R$',faixaFaturamento:'Faturamento',regimeTributario:'Tributação',dataAberturaMin:'Aberta desde',dataAberturaMax:'Aberta até'};
+const MF_YES={temCelular:'Com celular',temTelefone:'Com telefone',temEmail:'Com e-mail',temSite:'Com site'};
+function readFilters(){
+  const f={};for(const k of MF_ALL){const el=document.getElementById('mf_'+k);const v=el?el.value.trim():'';if(v)f[k]=v;}
+  return f;
+}
+function renderChips(){
+  const box=document.getElementById('mkChips');if(!box)return;const f=readFilters();const chips=[];
+  for(const k of Object.keys(f)){
+    const t=chipText(k,f[k]);
+    chips.push(`<span class="chip">${esc(t)} <button title="Remover filtro" onclick="clearFilter('${k}')">✕</button></span>`);
+  }
+  box.innerHTML=chips.length?`<div class="chiphead">${chips.length} filtro${chips.length>1?'s':''} ativo${chips.length>1?'s':''} <button class="ghost" style="padding:2px 8px;font-size:11px" onclick="clearFilters()">Limpar</button></div>${chips.join('')}`:'';
+}
+function clearFilter(k){const el=document.getElementById('mf_'+k);if(!el)return;el.value='';if(k==='uf')onUfChange();renderChips();}
+function clearFilters(){for(const k of MF_ALL){const el=document.getElementById('mf_'+k);if(el)el.value='';}onUfChange();renderChips();}
+function cloudPath(u){
+  const base=(LINK.cloudUrl||'https://captamais.me');
+  const FALLBACK='/api/public/credits/buy'; // redireciona ao pagamento de créditos
+  if(!u)return FALLBACK;
+  if(String(u).startsWith('/'))return u;
+  try{const o=new URL(u).origin;return (o===new URL(base).origin||o==='https://buy.stripe.com')?u:FALLBACK;}catch{return FALLBACK;}
+}
+function openCredits(){closeModal('mMarket');closeModal('mList');openSite(cloudPath(MK.buyUrl));}
+async function loadCredits(){
+  const chip=document.getElementById('credChip');
+  chip.hidden=false;
+  if(!LINK.linked){document.getElementById('credN').textContent='—';chip.title='Conecte ou crie sua conta e ganhe 10.000 créditos uma vez por conta';return;}
+  if(LINK.blocked){document.getElementById('credN').textContent='—';chip.title='Acesso ao conector pausado';return;}
+  const d=await api('/api/leadmarket/credits').catch(()=>null);
+  if(!d||!d.ok){MK.credits=null;document.getElementById('credN').textContent='—';chip.title='Não foi possível consultar o saldo agora';return;}
+  MK.buyUrl=d.buyUrl||MK.buyUrl;MK.credits=d;document.getElementById('credN').textContent=nfmt(d.balance);
+  chip.title=d.plan&&d.monthlyAllowance!=null?`Plano ${planLabel(d.plan)}: ${nfmt(d.monthlyAllowance)} créditos/mês para skill e MCP${d.planBalance!=null?' · restam '+nfmt(d.planBalance):''}${d.purchasedBalance?' · comprados: '+nfmt(d.purchasedBalance):''}. Clique para comprar mais.`:'Comprar créditos';
+}
+
+function versionLine(name,item){
+  const installed=item?.installed||'não instalado',available=item?.available||'não foi possível consultar';
+  const state=item?.update?'<span style="color:#15803d;font-weight:700">nova versão</span>':(item?.installed&&item?.available?'<span style="color:#34d399">atualizado</span>':'<span style="color:var(--muted)">—</span>');
+  return `<div class="versionrow"><span><b>${esc(name)}</b><br><small style="color:var(--muted)">Instalada: ${esc(installed)} · GitHub: ${esc(available)}</small></span>${state}</div>`;
+}
+async function checkUpdates(automatic=false){
+  const btn=document.getElementById('updateBtn'),label=document.getElementById('updateBtnLabel');
+  if(!automatic){openModal('mUpdate');document.getElementById('updateStatus').textContent='Consultando o GitHub oficial…';}
+  btn.disabled=true;
+  const d=await api('/api/update/check').catch(()=>({ok:false,message:'Não foi possível consultar o GitHub agora.'}));
+  btn.disabled=false;UPDATE_STATE=d;
+  const promptWrap=document.getElementById('updatePromptWrap'),copy=document.getElementById('copyUpdateBtn');
+  if(!d.ok){label.textContent='↻ Atualizações';btn.classList.remove('update-ready');if(!automatic){document.getElementById('updateStatus').innerHTML=`<span style="color:#f59e0b">${esc(d.message||'Não foi possível consultar o GitHub agora.')}</span>`;promptWrap.hidden=true;copy.hidden=true;}return;}
+  label.textContent=d.updateAvailable?'⬆ Atualizar':'✓ Atualizado';btn.classList.toggle('update-ready',!!d.updateAvailable);
+  document.getElementById('updateStatus').innerHTML=versionLine('Skill',d.components?.skill)+versionLine('MCP',d.components?.mcp)+(d.updateAvailable?'<p style="margin:12px 0 0"><b>Há uma atualização disponível.</b> Copie o prompt abaixo e envie à IA que está executando esta skill.</p>':'<p style="margin:12px 0 0;color:var(--muted)">Esta instalação já está na versão mais recente publicada.</p>');
+  document.getElementById('updatePrompt').value=d.prompt||'';promptWrap.hidden=!d.updateAvailable;copy.hidden=!d.updateAvailable;
+  if(d.updateAvailable&&automatic)openModal('mUpdate');
+}
+async function copyUpdatePrompt(){
+  const field=document.getElementById('updatePrompt'),text=field.value;if(!text)return;
+  try{await navigator.clipboard.writeText(text);toast('Prompt de atualização copiado');}
+  catch{field.focus();field.select();document.execCommand('copy');toast('Prompt de atualização copiado');}
+}
+async function marketSearch(){
+  if(MK.busy)return;
+  const body=MK.mode==='lookup'?{mode:'lookup',field:MK.field,query:document.getElementById('mkQuery').value}:{mode:'filters',filters:readFilters()};
+  const out=document.getElementById('mkRes'),btn=document.getElementById('mkSearchBtn');
+  if(MK.mode==='lookup'&&!body.query.trim()){out.innerHTML='<div style="color:#f87171;margin-top:10px">Digite o que deseja pesquisar.</div>';return;}
+  MK.busy=true;btn.disabled=true;out.innerHTML='<div style="color:var(--muted);margin-top:10px">Buscando no banco do Capta+…</div>';
+  const d=await api('/api/leadmarket/search','POST',body).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  MK.busy=false;btn.disabled=false;
+  if(!d.ok){out.innerHTML=`<div style="color:#f87171;margin-top:10px">${esc(d.message||'Não foi possível buscar agora.')}</div>`;return;}
+  MK.res=d;if(d.buyUrl)MK.buyUrl=d.buyUrl;document.getElementById('credN').textContent=nfmt(d.balance);document.getElementById('credChip').hidden=false;
+  renderMarketRes();
+}
+function affordable(r){return r.pricePerLead>0?Math.floor(r.balance/r.pricePerLead):r.total;}
+function creditsLine(r){
+  const c=MK.credits||{};let t=`Seu saldo: <b style="color:var(--text)">${nfmt(r.balance)}</b> crédito(s)`;
+  if(c.expiresAt){const dt=new Date(c.expiresAt);if(!isNaN(dt))t+=` · válidos até ${dt.toLocaleDateString('pt-BR')}`;}
+  if(c.plan&&c.monthlyAllowance!=null)t+=` · plano ${esc(planLabel(c.plan))} inclui ${nfmt(c.monthlyAllowance)}/mês para a skill e o MCP`+(c.planBalance!=null?` (restam ${nfmt(c.planBalance)})`:'');
+  return t;
+}
+function renderMarketRes(){
+  const r=MK.res,out=document.getElementById('mkRes');
+  if(!r.total){out.innerHTML='<div class="mkbox">Nenhum resultado para essa busca. Tente outros termos ou amplie os filtros.</div>';return;}
+  const named=r.query.mode==='lookup'&&r.results.length>0;
+  if(named){
+    const one=MK.enrichLeadId?'radio':'checkbox';
+    const rows=r.results.map((x,i)=>`<label class="listrow" style="cursor:pointer"><input type="${one}" name="mkPick" value="${esc(x.resultId)}" data-price="${x.price}" ${r.results.length===1||(one==='radio'&&i===0)?'checked':''} onchange="updateMarketCost()" style="width:auto"><span class="grow"><b>${esc(x.nome)}</b><div style="font-size:12px;color:var(--muted)">${esc(x.cidade)}${x.uf?'/'+esc(x.uf):''}${x.porte?' · '+esc(x.porte):''}</div></span><span class="pill">${nfmt(x.price)} crédito(s)</span></label>`).join('');
+    out.innerHTML=`<div class="mkbox">
+      <div style="font-size:20px;font-weight:800">${r.total===1?'Encontramos 1 resultado':nfmt(r.total)+' resultados'}</div>
+      <div style="color:var(--muted)">${creditsLine(r)}${r.total>r.results.length?` · mostrando os ${r.results.length} primeiros — refine a pesquisa para ver os demais`:''}</div>
+      <div style="margin-top:10px">${rows}</div>
+      <div style="font-size:12px;color:var(--muted)">O valor é o que custa para abrir os dados completos (contato, sócios…) e ${MK.enrichLeadId?'completar este lead':'gerar um lead ou enriquecer um que você já tem'}.</div>
+      <div id="mkCost" style="margin-top:8px"></div>
+      <div class="end" style="margin-top:10px"><button class="ghost" onclick="openCredits()">💳 Comprar créditos</button><button class="ghost" onclick="openCode()">🎟️ Tenho um código</button><button class="primary" id="mkBuyBtn" onclick="marketBuy()">Abrir dados</button></div>
+    </div>`;
+    updateMarketCost();return;
+  }
+  const prev=r.preview.length?`<table class="mktable"><tr><th>Empresa</th><th>Cidade</th><th>Porte</th></tr>${r.preview.map(p=>`<tr><td>${esc(p.nome)}</td><td>${esc(p.cidade)}${p.uf?'/'+esc(p.uf):''}</td><td>${esc(p.porte)}</td></tr>`).join('')}</table><div style="font-size:11px;color:var(--muted);margin-top:4px">Prévia parcial — os dados completos vêm ao gerar a lista.</div>`:'';
+  out.innerHTML=`<div class="mkbox">
+    <div style="font-size:20px;font-weight:800">${nfmt(r.total)} resultado(s) <span style="font-weight:600;color:var(--accent)">· ${nfmt(r.total*r.pricePerLead)} crédito(s) para todos</span></div>
+    <div style="color:var(--muted)">${nfmt(r.pricePerLead)} crédito(s) por lead · ${creditsLine(r)}</div>
+    ${prev}
+    <div class="row" style="margin-top:12px"><div class="field"><label>Quantos leads gerar (máx. ${nfmt(r.total)})</label><input id="mkQty" type="number" min="1" max="${r.total}" value="${r.total}" oninput="updateMarketCost()"></div>
+      <div class="field"><label>Nome da lista (opcional)</label><input id="mkName" maxlength="80"></div></div>
+    <div id="mkCost" style="margin-top:2px"></div>
+    <div class="end" style="margin-top:10px"><button class="ghost" onclick="openCredits()">💳 Comprar créditos</button><button class="ghost" onclick="openCode()">🎟️ Tenho um código</button><button class="primary" id="mkBuyBtn" onclick="marketBuy()">Gerar lista</button></div>
+  </div>`;
+  updateMarketCost();
+}
+// Seleção atual: por nome (itens marcados) ou por quantidade. "eff" é o que o saldo realmente cobre.
+function marketSel(){
+  const r=MK.res;
+  if(r.query.mode==='lookup'&&r.results.length){
+    const picks=[...document.querySelectorAll('input[name=mkPick]:checked')];
+    let left=r.balance,ids=[],cost=0;
+    for(const el of picks){const pr=Number(el.dataset.price)||0;if(pr<=left){ids.push(el.value);left-=pr;cost+=pr;}}
+    return {want:picks.length,eff:ids.length,ids,cost};
+  }
+  const want=Math.min(r.total,Math.max(1,Math.floor(Number(document.getElementById('mkQty').value)||0)));
+  const eff=Math.min(want,affordable(r));
+  return {want,eff,ids:null,cost:eff*r.pricePerLead};
+}
+function updateMarketCost(){
+  const {want,eff,cost}=marketSel(),box=document.getElementById('mkCost'),btn=document.getElementById('mkBuyBtn'),look=MK.res.query.mode==='lookup';
+  let t=want?`Custo: <b>${nfmt(cost)}</b> crédito(s) para <b>${nfmt(eff)}</b> ${look?'resultado(s)':'lead(s)'}.`:'Marque ao menos um resultado.';
+  if(eff<want)t+=`<br><span style="color:#f59e0b">Seu saldo cobre ${nfmt(eff)} de ${nfmt(want)}. Compre mais créditos para o restante.</span>`;
+  if(want&&eff<1)t='<span style="color:#f59e0b">Você não tem créditos suficientes. Compre créditos para continuar.</span>';
+  box.innerHTML=t;btn.disabled=eff<1;
+  btn.textContent=eff<1?(want?'Sem créditos':'Escolha um resultado'):(look?`Abrir ${nfmt(eff)} resultado(s)`:`Gerar lista com ${nfmt(eff)} lead(s)`);
+}
+async function marketBuy(){
+  if(MK.busy)return;const r=MK.res,sel=marketSel();if(sel.eff<1)return;
+  if(!confirm(`Gastar ${nfmt(sel.cost)} crédito(s) para abrir ${nfmt(sel.eff)} ${r.query.mode==='lookup'?'resultado(s)':'lead(s)'}?`))return;
+  MK.busy=true;const btn=document.getElementById('mkBuyBtn');btn.disabled=true;btn.textContent='Abrindo…';
+  const nameEl=document.getElementById('mkName');
+  const d=await api('/api/leadmarket/buy','POST',{searchId:r.searchId,quantity:sel.eff,resultIds:sel.ids||undefined,name:nameEl?nameEl.value:'',query:r.query,total:r.total,pricePerLead:r.pricePerLead}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
+  MK.busy=false;
+  if(!d.ok){document.getElementById('mkRes').insertAdjacentHTML('beforeend',`<div style="color:#f87171;margin-top:10px">${esc(d.message||'Não foi possível concluir.')}</div>`);btn.disabled=false;updateMarketCost();return;}
+  closeModal('mMarket');loadCredits();
+  if(MK.enrichLeadId&&d.marketLeadIds?.length){ // veio de "Enriquecer" na ficha do lead: completa o lead e volta para ele
+    const id=MK.enrichLeadId;MK.enrichLeadId=null;
+    const e=await api('/api/leadlists/enrich','POST',{market_lead_id:d.marketLeadIds[0],lead_id:id}).catch(()=>({ok:false}));
+    toast(e.ok?(e.filled.length?'Lead enriquecido: '+e.filled.join(', '):'Nada novo para preencher'):'Não foi possível enriquecer o lead');
+    await load();openEdit(id);return;
+  }
+  openList(d.listId,d);
+}
+async function openList(id,info){
+  const d=await api('/api/leadlists/'+id).catch(()=>null);if(!d||!d.ok){toast('Lista não encontrada');return;}
+  MK.list=d.list;const l=d.list;
+  document.getElementById('listTitle').textContent='📋 '+l.name;
+  let h=`<p style="margin:0 0 8px"><b>${nfmt(l.purchased)}</b> lead(s) salvo(s) no banco do seu computador${l.credits_spent?` · ${nfmt(l.credits_spent)} crédito(s) usado(s)`:''}.</p>`;
+  if(info&&info.partial)h+=`<p style="color:#f59e0b;margin:0 0 8px">Você pediu ${nfmt(info.requested)}, mas os créditos cobriram ${nfmt(info.purchased)}. ${esc(info.message||'')} <a href="#" onclick="openCredits();return false">Comprar mais créditos</a></p>`;
+  h+='<p style="color:var(--muted);font-size:12px;margin:0 0 8px">Já está salva. Você pode <b>baixar em Excel</b> agora ou depois, <b>importar no CRM</b> no funil que quiser, ou <b>manter só no banco</b> — ela fica em “Minhas listas de leads”.</p>';
+  h+=`<div class="field" style="max-width:280px"><label>Importar para o funil</label><select id="listLayout">${STATE.layouts.map(x=>`<option value="${x.id}"${x.id===STATE.layoutId?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>`;
+  h+=`<div style="max-height:300px;overflow:auto"><table class="mktable"><tr><th>Empresa</th><th>E-mail</th><th>Telefone</th><th>Cidade</th></tr>${d.leads.map(x=>`<tr><td>${esc(x.fantasia||x.razao||'')}</td><td>${esc(x.email||'')}</td><td>${esc(x.cellphone||x.phone||'')}</td><td>${esc(x.city||'')}${x.uf?'/'+esc(x.uf):''}</td></tr>`).join('')}</table></div>`;
+  if(l.purchased>d.leads.length)h+=`<div style="font-size:11px;color:var(--muted);margin-top:4px">Mostrando os ${nfmt(d.leads.length)} primeiros — os outros ${nfmt(l.purchased-d.leads.length)} estão na planilha.</div>`;
+  h+='<div id="listMsg" style="margin-top:8px"></div>';
+  document.getElementById('listBody').innerHTML=h;
+  document.getElementById('listImportBtn').disabled=false;
+  closeModal('mLists');openModal('mList');
+}
+async function downloadList(){
+  if(!MK.list)return;
+  const r=await fetch(`/api/leadlists/${MK.list.id}/export.xlsx`,{headers:{'x-cm-token':TOKEN}});
+  if(!r.ok){toast('Não foi possível gerar a planilha');return;}
+  download(await r.blob(),r.headers.get('X-Filename')||'captamais-leads.xlsx');toast('Planilha Excel baixada');
+}
+async function importList(){
+  if(!MK.list)return;const btn=document.getElementById('listImportBtn');btn.disabled=true;
+  const layout=Number(document.getElementById('listLayout').value)||STATE.layoutId;
+  const d=await api(`/api/leadlists/${MK.list.id}/import`,'POST',{layout_id:layout}).catch(()=>({ok:false}));
+  if(!d.ok){btn.disabled=false;toast('Não foi possível importar');return;}
+  const name=(STATE.layouts.find(x=>x.id===layout)||{}).name||'funil';
+  document.getElementById('listMsg').innerHTML=`<div style="color:#34d399">✓ ${nfmt(d.created)} lead(s) criado(s) no funil “${esc(name)}”${d.skipped?` · ${nfmt(d.skipped)} já existia(m) e foram pulados`:''}.</div>`;
+  toast('Leads importados no CRM');STATE.layoutId=layout;load();
+}
+async function openLists(){
+  const d=await api('/api/leadlists').catch(()=>null);const box=document.getElementById('listsBody');
+  if(!d||!d.ok||!d.lists.length)box.innerHTML='<div class="empty">Você ainda não gerou nenhuma lista. Use “🎯 Gerar leads”.</div>';
+  else{box.innerHTML='';for(const l of d.lists){const row=document.createElement('div');row.className='listrow';
+    row.innerHTML=`<div class="grow"><b>${esc(l.name)}</b><div style="font-size:12px;color:var(--muted)">${esc(fmt(l.created_at))} · ${nfmt(l.purchased)} lead(s)${l.imported?` · ${nfmt(l.imported)} no CRM`:''}</div></div><span>›</span>`;
+    row.addEventListener('click',()=>openList(l.id));box.appendChild(row);}}
+  openModal('mLists');
+}
 function openTool(name){
   closeDrawer();
   const t=TOOL_MAP[name]||{};
-  if(!toolAllowed(name,t.key))return;
+  if(t.linkOnly?!ensureLinked(name):!toolAllowed(name,t.key))return;
   if(t.open)t.open(); else toast(`${name}: abrindo na plataforma (em breve)`);
 }
 function connectAccount(){openConnect();}
 
-// Calculadora Patrimonial (local, sem nuvem)
-function openCalculator(){document.getElementById('calcResult').innerHTML='';openModal('mCalc');}
-function calcCompute(){
-  const P=+document.getElementById('cInit').value||0, PMT=+document.getElementById('cMonth').value||0, ry=(+document.getElementById('cRate').value||0)/100, years=+document.getElementById('cYears').value||0;
-  const r=Math.pow(1+ry,1/12)-1, n=Math.round(years*12);
-  let fv=P*Math.pow(1+r,n); fv += r!==0 ? PMT*((Math.pow(1+r,n)-1)/r) : PMT*n;
-  const invested=P+PMT*n, gain=fv-invested, brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  document.getElementById('calcResult').innerHTML=`<div style="border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px"><div style="font-size:12px;color:var(--muted)">Patrimônio estimado em ${years} anos</div><div style="font-size:26px;font-weight:800;color:var(--accent)">${brl(fv)}</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Investido: ${brl(invested)} · Rendimento: ${brl(gain)}</div></div>`;
-}
-// Pesquisar CNPJ (nuvem, grátis com cadastro)
+// Pesquisar CNPJ (nuvem, disponível para Premium e Max)
 function openCnpj(){document.getElementById('cnpjResult').textContent='';document.getElementById('cnpjInput').value='';openModal('mCnpj');}
 async function searchCnpj(){
   const btn=document.getElementById('cnpjBtn'), out=document.getElementById('cnpjResult');
@@ -548,8 +1079,13 @@ function renderCnpj(data){
 }
 load();
 loadLink();
+checkUpdates(true);
 // Avisa o app local que a janela segue aberta (ele se encerra sozinho se ficar muito tempo sem uso).
 setInterval(()=>{api('/api/ping').catch(()=>{});},300000);
+// Mudou de plano no site? Ao voltar para esta janela (e a cada poucos minutos) o título e as ferramentas se atualizam.
+const refreshLink=()=>{if(document.visibilityState==='visible'&&Date.now()-lastLinkAt>20000)loadLink(true);};
+window.addEventListener('focus',refreshLink);document.addEventListener('visibilitychange',refreshLink);
+setInterval(refreshLink,180000);
 loadGoogle(false);
 </script>
 </body>

@@ -10,6 +10,57 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.7] — 2026-10-01
+### Alterado
+- Calculadora Patrimonial e pesquisa de CNPJ agora aparecem e são autorizadas somente para Premium ou Max.
+- Contas recebem 10.000 créditos na primeira vinculação, com concessão única por conta validada no servidor.
+- A oferta do bônus aparece no saldo, no menu de créditos e no fluxo de conexão para usuários ainda não vinculados.
+
+## [1.0.6] — 2026-10-01
+### Adicionado
+- Verificação automática e manual de versões da skill e do MCP no GitHub oficial, sem instalação automática.
+- Modal com versões instalada/publicada e prompt seguro pronto para pedir a atualização à IA.
+- Saldo de créditos permanentemente visível no canto superior direito; `—` diferencia saldo indisponível de saldo zero.
+- Atividades rápidas R1, R2, R3, Follow-up, WhatsApp e Tentativa de ligação; atividades sem data usam o instante da criação.
+- CNPJ visível e armazenável somente para PJ, com preenchimento pela Receita e proteção também na camada de dados.
+- Importação segura de CSV/TSV/XLSX/JSON com prévia e reconhecimento de campos.
+
+## [1.0.5] — 2026-10-01 (identificação: 1.05)
+### Adicionado
+- **Aba "Capta+" ao lado do CRM** (conectar conta, planejamento, calculadora). Se o site permitir ser embutido, abre
+  dentro do CRM; senão usa sempre **uma única janela** reaproveitada, sem espalhar abas.
+- **Calculadora Patrimonial** agora abre a calculadora completa do Capta+ (a calculadora local simples foi removida).
+- **Montagem de Carteira** e **Análise de Ativo** abrem as ferramentas do Capta+ (`/portfolio-assembly`, `/asset-analysis`).
+- **Enriquecimento de Lead** e **Gerador de Lead** abrem o EnriqueceLead do Capta+ (`/enriquece-lead` e `/enriquece-lead?tab=leads`).
+- **Pesquisar leads / Gerar leads (créditos):** botões no topo do CRM e no menu; popup de busca com os filtros do
+  EnriqueceLead, contagem de resultados, custo e saldo; compra proporcional ao saldo; a lista comprada fica no banco
+  local, com popup para **baixar Excel (.xlsx)**, **importar no CRM** ou **manter só no banco**; "Minhas listas de leads".
+  Ferramentas MCP equivalentes (`captamais_search_leads`, `captamais_generate_leads`, …).
+- Pesquisa por nome mostra os resultados com o custo de abrir cada um; **✨ Enriquecer** na ficha do lead completa um lead
+  existente (só campos vazios); a importação deixa escolher o funil; o saldo mostra a cota de créditos do plano
+  (Premium/Max) para uso na skill e no MCP.
+- **Comprar créditos sem conta:** ao abrir Pesquisar/Gerar leads sem conta, o CRM oferece entrar, criar conta, só comprar
+  créditos ou resgatar um **código recebido por e-mail**; o código gera uma chave de carteira (guardada só neste computador).
+  Quem só tem carteira vê "Crie sua conta" em sincronizar, planejamento e Google. Créditos mostram a data de validade.
+- **Popup de leads no mesmo modelo da EnriqueceLead do site:** "Pesquisar no banco" (Tudo, Nome, CNPJ, Sócio, E-mail,
+  Telefone) e "Gerar lista por filtros" (Atividade e localização, Perfil da empresa, Financeiro, Data de abertura), com
+  opções vindas da base e filtros ativos em etiquetas.
+- **Painel de Créditos** (menu "💳 Créditos e relatório" e o contador de créditos no topo do CRM): saldo (plano e comprados,
+  validade), campo para **ativar um código** e **relatório de gastos** — cada pesquisa ou geração com o que foi buscado,
+  leads, custo e o botão **Abrir resultado** (ver, baixar o Excel de novo ou importar no CRM).
+- MCP: `captamais_credits_report` e `captamais_redeem_credits`; a chave de carteira resgatada fica em `~/.captamais/config.json`
+  e vale para o CRM e para o MCP.
+- O CRM e o MCP identificam a versão e o sistema em cada chamada à nuvem (cabeçalho `x-captamais-client`), para a plataforma
+  saber qual versão está em uso; veja `PRIVACY.md`.
+- **Sincronizar sem conta** (ou só com carteira de créditos) abre a página de entrada/cadastro do Capta+ (`/login`), com a dica de como
+  trazer a chave de volta ao CRM.
+### Corrigido
+- O plano exibido no título (Free/Premium/Max) é conferido de novo ao sincronizar, ao voltar para a janela e a cada
+  poucos minutos, com aviso quando muda (assinatura ou rebaixamento).
+### Alterado
+- **Configurações** é o último item do menu.
+- **Tema claro** é o padrão (a escolha só é guardada quando a pessoa alterna o tema).
+
 ## [1.0.4] — 2026-09-28 (identificação: 1.04)
 ### Adicionado
 - **Abrir sem o assistente:** `Abrir CaptaMais.bat` (Windows) e `Abrir CaptaMais.command` (Mac) — duplo clique abre o CRM,

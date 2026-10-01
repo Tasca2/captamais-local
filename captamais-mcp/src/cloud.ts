@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import type { CaptaMaisConfig } from './config.js';
 import type { Lead } from './db.js';
 
@@ -10,14 +11,24 @@ export type MeteredResult<T> =
  * MEDE o consumo (server-side, fonte da verdade) e devolve o resultado + o uso.
  * Ações locais (CRUD) NÃO passam por aqui — só as de IA.
  */
-async function callCloud<T>(config: CaptaMaisConfig, path: string, body: unknown, method = 'POST'): Promise<MeteredResult<T>> {
-  if (!config.apiKey) {
+/** Identificação enviada à nuvem em cada chamada (cliente, versão e sistema). */
+const CLIENT_ID = (() => {
+  let v = '?';
+  try { v = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version || '?'; } catch { /* sem versão */ }
+  return `mcp/${v} ${process.platform}`;
+})();
+
+export async function callCloud<T>(config: CaptaMaisConfig, path: string, body: unknown, method = 'POST', anon = false): Promise<MeteredResult<T>> {
+  if (!config.apiKey && !anon) {
     return { ok: false, error: 'Sem CAPTAMAIS_API_KEY. Gere sua chave no CaptaMais (Minha Conta) e configure no cliente MCP.', code: 'no_api_key' };
   }
   try {
     const res = await fetch(`${config.cloudUrl}${path}`, {
       method,
-      headers: { 'Content-Type': 'application/json', 'x-captamais-key': config.apiKey },
+      // Não segue 301/302/307/308: um redirect poderia reenviar x-captamais-key
+      // para outro host. A nuvem oficial deve responder diretamente.
+      redirect: 'error',
+      headers: { 'Content-Type': 'application/json', 'x-captamais-client': CLIENT_ID, ...(config.apiKey ? { 'x-captamais-key': config.apiKey } : {}) },
       body: method === 'GET' || method === 'HEAD' ? undefined : JSON.stringify(body),
     });
     const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
@@ -30,7 +41,7 @@ async function callCloud<T>(config: CaptaMaisConfig, path: string, body: unknown
     }
     return {
       ok: true,
-      data: json.data as T,
+      data: (json.data ?? json) as T,
       usage: json.usage as { action: string; tokens: number; balanceLeft?: number | null } | undefined,
     };
   } catch (e) {

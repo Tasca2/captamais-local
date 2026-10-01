@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.04-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.0.7-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />
@@ -51,7 +51,14 @@ você quiser**, e são cobrados por uso.
 - Funil de prospecção (NOVO LEAD → CONTATO INICIAL → PRIMEIRA REUNIÃO → SEGUNDA REUNIÃO → FECHAMENTO).
 - Criar lead, **arrastar cards** entre etapas, **pop-up** para editar e atender.
 - Atividades: **ligação, follow-up, reunião (+ Meet), tarefa** e **agenda**.
-- **Importar/Exportar** (JSON).
+- **Importar planilhas** CSV, TSV, XLSX ou JSON, com prévia do mapeamento de nome, telefone, e-mail, cidade e detalhes antes de gravar.
+- **Exportar** os dados em JSON; listas compradas também podem ser baixadas em Excel.
+
+Na importação, títulos comuns em português ou inglês são reconhecidos mesmo com acentos e variações. Colunas adicionais não são descartadas: são reunidas em **Detalhes**. O importador valida e-mail/telefone, ignora duplicados e aceita arquivos de até 4 MB e 10 mil linhas.
+
+O saldo de **créditos** fica sempre visível no canto superior direito (ou `—` até a conta ser conectada). O botão **Atualizações** consulta somente as versões publicadas no GitHub oficial; quando encontra uma versão nova da skill ou do MCP, exibe um prompt pronto para copiar e enviar à IA. A atualização nunca é instalada automaticamente e deve preservar `~/.captamais`.
+
+Na primeira vinculação de uma conta completa à skill/MCP, ela recebe **10.000 créditos** para pesquisar, gerar ou enriquecer leads. É uma concessão única por conta, validada no servidor — trocar de computador, pasta ou IP não repete o bônus. A **Calculadora Patrimonial** e a **pesquisa de CNPJ** exigem plano Premium ou Max; créditos não substituem essa assinatura.
 
 **Nuvem (opcional, medido — liberação progressiva):**
 - IA para preparar reunião (nuvem CaptaMais).

@@ -30,6 +30,15 @@ recurso de nuvem/IA — e, mesmo assim, apenas o necessário para aquela ação.
 - **Sincronização (opcional):** se você clicar em ☁ Sincronizar, os contatos e a etapa dos seus leads
   sobem para a sua conta na nuvem CaptaMais. É opt-in e **só sobe**: nenhum dado da plataforma é baixado
   para o seu computador. Trazer chave própria de IA (BYO) ainda não está disponível.
+- **Listas de leads compradas (opcional):** em "Pesquisar leads" / "Gerar leads" a busca roda na nuvem e mostra só
+  uma contagem e uma prévia mascarada. **Somente os leads que você comprar com créditos** descem para o seu
+  computador, onde ficam no banco local (~/.captamais) até você baixá-los em Excel, importá-los ao CRM ou apagá-los.
+  O restante da base do Capta+ nunca é baixado. Você é o controlador dos dados que importar (LGPD/RGPD).
+- **Dados de uso do conector (Skill e MCP):** quando você usa créditos de leads, ativa um código ou sincroniza, a plataforma
+  registra dados técnicos e de uso da sua conta: qual cliente fez a chamada (Skill ou MCP, versão e sistema operacional), o
+  que foi pesquisado ou comprado (termo de busca ou filtros, quantos leads e quantos créditos), ativações de código e
+  contagens de sincronização (quantos leads enviados, novos ou atualizados). **O conteúdo dos seus leads não é copiado para
+  esses registros.** Servem para entregar o serviço, apoiar o suporte e medir o uso dos créditos.
 - **Google (opcional):** ao conectar Gmail/Google Agenda, a autorização e os tokens OAuth ficam na
   plataforma CaptaMais. Ao marcar a sincronização de uma atividade, título, data, notas e dados
   mínimos do lead necessários para o convite são enviados ao Google. O app local não lê a caixa de

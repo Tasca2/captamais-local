@@ -62,9 +62,16 @@ Aponte o servidor para `node CAMINHO/ATE/captamais-mcp/dist/index.js` com as mes
 | `captamais_list_leads` | Lista leads (filtra por etapa/busca) | Não (local) |
 | `captamais_create_lead` | Cria um lead | Não (local) |
 | `captamais_move_stage` | Move o lead de etapa | Não (local) |
+| `captamais_import_leads_file` | Faz prévia e importa CSV, TSV, XLSX ou JSON local, reconhecendo nome, telefone, e-mail, cidade e detalhes | Não (local) |
 | `captamais_prepare_meeting` | IA prepara uma reunião a partir do lead | **Sim** (nuvem) |
 | `captamais_google_status` | Verifica a conexão com Gmail e Google Agenda | Não |
 | `captamais_schedule_activity` | Agenda atividade local e, opcionalmente, cria evento/Meet no Google Agenda | Não* |
+| `captamais_lead_credits` | Saldo de créditos e preço por lead | Não |
+| `captamais_credits_report` | Saldo + relatório de gastos (pesquisa/geração, detalhes, leads, custo) | Não |
+| `captamais_redeem_credits` | Ativa um código de créditos recebido por e-mail (guarda a chave da carteira neste computador) | Não |
+| `captamais_search_leads` | Pesquisa/filtra empresas no banco do Capta+ (contagem, custo, prévia mascarada) | Não |
+| `captamais_generate_leads` | Compra a lista e salva no banco local (exige confirmação e teto de créditos) | **Sim** (créditos) |
+| `captamais_lead_lists`, `captamais_import_lead_list`, `captamais_export_lead_list` | Ver, importar ao CRM e exportar (CSV) as listas compradas | Não |
 
 \* A sincronização do Google passa pela conta CaptaMais conectada, mas não usa tokens de IA.
 
@@ -73,6 +80,7 @@ Aponte o servidor para `node CAMINHO/ATE/captamais-mcp/dist/index.js` com as mes
 Peça ao seu assistente, por exemplo:
 - "Cria um lead: João Silva, joão@email.com, etapa MEETING."
 - "Lista meus leads na etapa MEETING."
+- "Mostra uma prévia da planilha C:\\Leads\\contatos.xlsx e, se o mapeamento estiver certo, importa."
 - "Prepara a reunião com o lead 3." *(usa IA — consome tokens)*
 
 ## Privacidade e termos

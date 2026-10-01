@@ -8,6 +8,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import Database from 'better-sqlite3';
+import { mappingSummary, normalizeLeadRows, parseDelimited } from './lead-import.mjs';
 
 // Colunas-padrão do funil inicial.
 const DEFAULT_COLUMNS = [
@@ -17,16 +18,33 @@ const DEFAULT_COLUMNS = [
   { col_key: 'SECOND MEETING', title: 'SEGUNDA REUNIÃO', color: '#f59e0b' },
   { col_key: 'CLOSING', title: 'FECHAMENTO', color: '#10b981' },
 ];
-export const ACTIVITY_TYPES = ['call', 'followup', 'meeting', 'task'];
-export const ACTIVITY_LABEL = { call: 'Ligação', followup: 'Follow-up', meeting: 'Reunião', task: 'Tarefa' };
+export const ACTIVITY_TYPES = ['call', 'call_attempt', 'followup', 'meeting', 'r1', 'r2', 'r3', 'whatsapp', 'task'];
+export const ACTIVITY_LABEL = { call: 'Ligação', call_attempt: 'Tentativa de ligação', followup: 'Follow-up', meeting: 'Reunião', r1: 'R1', r2: 'R2', r3: 'R3', whatsapp: 'WhatsApp', task: 'Tarefa' };
 export const COLUMN_COLORS = ['#3b82f6', '#8b5cf6', '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#06b6d4', '#ec4899', '#84cc16', '#71717a'];
 
 export function safeHttpUrl(u) {
   const s = String(u || '').trim(); if (!s) return null;
   try { const p = new URL(s); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : null; } catch { return null; }
 }
-export function dataDir() {
+export function baseDataDir() {
   const dir = process.env.CAPTAMAIS_DATA_DIR || path.join(os.homedir(), '.captamais');
+  fs.mkdirSync(dir, { recursive: true }); return dir;
+}
+
+const safeProfileId = (v) => {
+  const s = String(v || '').trim();
+  return /^(anonymous|acct_[a-f0-9]{24})$/.test(s) ? s : 'anonymous';
+};
+function savedProfileId() {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(baseDataDir(), 'config.json'), 'utf8'));
+    return safeProfileId(cfg?.activeProfile);
+  } catch { return 'anonymous'; }
+}
+let _profile = savedProfileId();
+export function activeProfileId() { return _profile; }
+export function dataDir() {
+  const dir = _profile === 'anonymous' ? baseDataDir() : path.join(baseDataDir(), 'profiles', _profile);
   fs.mkdirSync(dir, { recursive: true }); return dir;
 }
 const now = () => new Date().toISOString();
@@ -34,6 +52,37 @@ const clean = (v) => { if (v === undefined || v === null) return null; const s =
 const newKey = () => 'col_' + crypto.randomBytes(5).toString('hex');
 
 let _db = null;
+function closeDb() {
+  if (!_db) return;
+  try { _db.pragma('wal_checkpoint(TRUNCATE)'); } catch (_) {}
+  try { _db.close(); } catch (_) {}
+  _db = null;
+}
+
+/**
+ * Troca o banco local ativo sem misturar contas. Na primeira vinculação, copia o
+ * perfil anônimo para a conta; nas trocas seguintes abre o perfil isolado existente.
+ */
+export function switchProfile(profileId, { claimAnonymous = false } = {}) {
+  const next = safeProfileId(profileId);
+  if (next === _profile) return { profileId: next, dataDir: dataDir(), claimed: false };
+  const previous = _profile;
+  const previousDir = dataDir();
+  closeDb();
+  _profile = next;
+  const nextDir = dataDir();
+  const source = path.join(previousDir, 'captamais.db');
+  const target = path.join(nextDir, 'captamais.db');
+  let claimed = false;
+  if (claimAnonymous && previous === 'anonymous' && next !== 'anonymous' && fs.existsSync(source) && !fs.existsSync(target)) {
+    // Mantém a origem como recuperação; o perfil vinculado passa a trabalhar numa cópia independente.
+    fs.copyFileSync(source, target, fs.constants.COPYFILE_EXCL);
+    claimed = true;
+  }
+  openDb();
+  return { profileId: next, dataDir: nextDir, claimed };
+}
+
 export function openDb() {
   if (_db) return _db;
   _db = new Database(path.join(dataDir(), 'captamais.db'));
@@ -45,7 +94,7 @@ export function openDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT, layout_id INTEGER NOT NULL, col_key TEXT NOT NULL,
       title TEXT NOT NULL, color TEXT, position INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE IF NOT EXISTS leads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT, phone TEXT, city TEXT,
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT, phone TEXT, city TEXT, cnpj TEXT,
       stage TEXT NOT NULL DEFAULT 'NEW LEAD', description TEXT, subtitle TEXT,
       entity_type TEXT NOT NULL DEFAULT 'PF', custom_fields TEXT NOT NULL DEFAULT '{}',
       created_at TEXT NOT NULL, updated_at TEXT);
@@ -54,8 +103,19 @@ export function openDb() {
       due_at TEXT, done INTEGER NOT NULL DEFAULT 0, notes TEXT, meet_link TEXT, created_at TEXT NOT NULL,
       google_event_id TEXT, google_event_url TEXT, calendar_sync_status TEXT);
     CREATE INDEX IF NOT EXISTS idx_act_lead ON activities(lead_id);
+    -- Listas de leads compradas com créditos (Pesquisar / Gerar leads). Ficam só neste computador.
+    CREATE TABLE IF NOT EXISTS lead_lists (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, mode TEXT, query TEXT, filters TEXT,
+      total_found INTEGER NOT NULL DEFAULT 0, purchased INTEGER NOT NULL DEFAULT 0, credits_spent INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS market_leads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, list_id INTEGER NOT NULL, cnpj TEXT, razao TEXT, fantasia TEXT, email TEXT,
+      phone TEXT, cellphone TEXT, city TEXT, uf TEXT, cnae TEXT, porte TEXT, situacao TEXT, socio TEXT, site TEXT,
+      imported_lead_id INTEGER);
+    CREATE INDEX IF NOT EXISTS idx_ml_list ON market_leads(list_id);
   `);
   try { _db.exec('ALTER TABLE leads ADD COLUMN layout_id INTEGER'); } catch (_) {}
+  try { _db.exec('ALTER TABLE leads ADD COLUMN cnpj TEXT'); } catch (_) {}
   try { _db.exec('ALTER TABLE activities ADD COLUMN google_event_id TEXT'); } catch (_) {}
   try { _db.exec('ALTER TABLE activities ADD COLUMN google_event_url TEXT'); } catch (_) {}
   try { _db.exec('ALTER TABLE activities ADD COLUMN calendar_sync_status TEXT'); } catch (_) {}
@@ -169,21 +229,23 @@ export function createLead(input) {
   if (!clean(input?.name)) throw new Error('Nome é obrigatório.');
   const lid = Number(input.layout_id) || getDefaultLayoutId();
   const stage = clean(input.stage) || firstColKey(lid);
+  const entity = String(input.entityType || input.entity_type || 'PF').toUpperCase() === 'PJ' ? 'PJ' : 'PF';
   const info = db.prepare(
-    `INSERT INTO leads (name,email,phone,city,stage,description,subtitle,entity_type,custom_fields,layout_id,created_at)
-     VALUES (?,?,?,?,?,?,?,?,'{}',?,?)`,
-  ).run(String(input.name).trim(), clean(input.email), clean(input.phone), clean(input.city), stage,
-        clean(input.description), clean(input.subtitle), (String(input.entityType || input.entity_type || 'PF').toUpperCase() === 'PJ' ? 'PJ' : 'PF'), lid, now());
+    `INSERT INTO leads (name,email,phone,city,cnpj,stage,description,subtitle,entity_type,custom_fields,layout_id,created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,'{}',?,?)`,
+  ).run(String(input.name).trim(), clean(input.email), clean(input.phone), clean(input.city), entity === 'PJ' ? clean(input.cnpj) : null, stage,
+        clean(input.description), clean(input.subtitle), entity, lid, now());
   return getLead(info.lastInsertRowid).lead;
 }
 export function updateLead(id, patch) {
   const db = openDb();
   const cur = db.prepare('SELECT * FROM leads WHERE id=?').get(Number(id)); if (!cur) return null;
   const g = (k, d) => (patch[k] !== undefined ? patch[k] : d);
-  db.prepare(`UPDATE leads SET name=?,email=?,phone=?,city=?,stage=?,description=?,subtitle=?,entity_type=?,updated_at=? WHERE id=?`)
+  const entity = String(g('entity_type', cur.entity_type)).toUpperCase() === 'PJ' ? 'PJ' : 'PF';
+  db.prepare(`UPDATE leads SET name=?,email=?,phone=?,city=?,cnpj=?,stage=?,description=?,subtitle=?,entity_type=?,updated_at=? WHERE id=?`)
     .run(String(g('name', cur.name)).trim() || cur.name, clean(g('email', cur.email)), clean(g('phone', cur.phone)),
-         clean(g('city', cur.city)), clean(g('stage', cur.stage)) || cur.stage, clean(g('description', cur.description)),
-         clean(g('subtitle', cur.subtitle)), (String(g('entity_type', cur.entity_type)).toUpperCase() === 'PJ' ? 'PJ' : 'PF'), now(), Number(id));
+         clean(g('city', cur.city)), entity === 'PJ' ? clean(g('cnpj', cur.cnpj)) : null, clean(g('stage', cur.stage)) || cur.stage, clean(g('description', cur.description)),
+         clean(g('subtitle', cur.subtitle)), entity, now(), Number(id));
   return getLead(id).lead;
 }
 export function moveStage(id, colKey) {
@@ -202,9 +264,10 @@ export function addActivity(leadId, input) {
   const type = String(input?.type || '').toLowerCase();
   if (!ACTIVITY_TYPES.includes(type)) throw new Error('Tipo de atividade inválido.');
   if (!db.prepare('SELECT id FROM leads WHERE id=?').get(Number(leadId))) throw new Error('Lead não encontrado.');
-  const meet = type === 'meeting' && input.meet_link ? safeHttpUrl(input.meet_link) : null;
+  const meet = ['meeting', 'r1', 'r2', 'r3'].includes(type) && input.meet_link ? safeHttpUrl(input.meet_link) : null;
+  const createdAt = now();
   const info = db.prepare('INSERT INTO activities (lead_id,type,title,due_at,notes,meet_link,created_at) VALUES (?,?,?,?,?,?,?)')
-    .run(Number(leadId), type, clean(input.title) || ACTIVITY_LABEL[type], clean(input.due_at), clean(input.notes), meet, now());
+    .run(Number(leadId), type, clean(input.title) || ACTIVITY_LABEL[type], clean(input.due_at) || createdAt, clean(input.notes), meet, createdAt);
   return db.prepare('SELECT * FROM activities WHERE id=?').get(info.lastInsertRowid);
 }
 export function getActivity(id) { return openDb().prepare('SELECT * FROM activities WHERE id=?').get(Number(id)) || null; }
@@ -232,8 +295,8 @@ export function importLeads(rows) {
 }
 
 // ── CSV (leads) — para planilhas e outros CRMs ──
-const CSV_COLS = ['name', 'email', 'phone', 'city', 'stage', 'subtitle', 'entity_type', 'description', 'created_at'];
-const CSV_HEADER_PT = ['nome', 'email', 'telefone', 'cidade', 'etapa', 'subtitulo', 'tipo', 'anotacoes', 'criado_em'];
+const CSV_COLS = ['name', 'email', 'phone', 'city', 'cnpj', 'stage', 'subtitle', 'entity_type', 'description', 'created_at'];
+const CSV_HEADER_PT = ['nome', 'email', 'telefone', 'cidade', 'cnpj', 'etapa', 'subtitulo', 'tipo', 'anotacoes', 'criado_em'];
 const csvCell = (v) => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 
 export function exportLeadsCsv(layoutId) {
@@ -244,41 +307,6 @@ export function exportLeadsCsv(layoutId) {
   const lines = ['﻿' + CSV_HEADER_PT.join(',')]; // BOM p/ Excel abrir acentos certo
   for (const l of leads) lines.push(CSV_COLS.map((c) => csvCell(l[c])).join(','));
   return lines.join('\r\n');
-}
-
-/** Parser CSV simples e robusto (aspas, vírgulas e quebras dentro de campo). */
-function parseCsv(text) {
-  const s = String(text || '').replace(/^﻿/, '');
-  const rows = []; let row = [], cell = '', q = false;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if (q) {
-      if (ch === '"') { if (s[i + 1] === '"') { cell += '"'; i++; } else q = false; }
-      else cell += ch;
-    } else if (ch === '"') q = true;
-    else if (ch === ',') { row.push(cell); cell = ''; }
-    else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
-    else if (ch === '\r') { /* ignora */ }
-    else cell += ch;
-  }
-  if (cell.length || row.length) { row.push(cell); rows.push(row); }
-  return rows.filter((r) => r.some((c) => String(c).trim() !== ''));
-}
-
-const HEADER_ALIASES = {
-  name: ['name', 'nome', 'nome completo', 'full name', 'fullname'],
-  email: ['email', 'e-mail', 'e_mail', 'mail'],
-  phone: ['phone', 'telefone', 'celular', 'whatsapp', 'fone', 'tel'],
-  city: ['city', 'cidade', 'municipio', 'município'],
-  stage: ['stage', 'etapa', 'funil', 'coluna'],
-  subtitle: ['subtitle', 'subtitulo', 'subtítulo', 'empresa', 'cargo', 'companhia'],
-  entity_type: ['entity_type', 'tipo', 'pf/pj', 'pf_pj'],
-  description: ['description', 'anotacoes', 'anotações', 'observacoes', 'observações', 'notas', 'descricao', 'descrição'],
-};
-function mapHeader(h) {
-  const key = String(h || '').trim().toLowerCase();
-  for (const canon of Object.keys(HEADER_ALIASES)) if (HEADER_ALIASES[canon].includes(key)) return canon;
-  return null;
 }
 
 /** Backup automático (JSON) — silencioso, nos bastidores. Mantém os últimos 7. */
@@ -294,18 +322,31 @@ export function writeBackup() {
   } catch { return null; }
 }
 
-export function importLeadsCsv(text, layoutId) {
-  const rows = parseCsv(text);
-  if (rows.length < 2) return 0;
-  const headers = rows[0].map(mapHeader);
-  let n = 0;
-  for (let r = 1; r < rows.length; r++) {
-    const obj = {};
-    headers.forEach((canon, i) => { if (canon) obj[canon] = rows[r][i]; });
-    if (!clean(obj.name)) continue;
-    try { createLead({ ...obj, entityType: obj.entity_type, layout_id: layoutId }); n++; } catch { /* pula inválidos */ }
+export function previewLeadsImport(rows) {
+  const parsed = normalizeLeadRows(rows);
+  return { total: parsed.rows.length, valid: parsed.records.length, skipped: parsed.skipped.length, mapping: mappingSummary(parsed.mapping), warnings: parsed.warnings, samples: parsed.records.slice(0, 3) };
+}
+
+export function importLeadRows(rows, layoutId) {
+  const parsed = normalizeLeadRows(rows);
+  const existing = openDb().prepare('SELECT email, phone FROM leads').all();
+  const emails = new Set(existing.map((r) => String(r.email || '').trim().toLowerCase()).filter(Boolean));
+  const phones = new Set(existing.map((r) => String(r.phone || '').replace(/\D/g, '')).filter((v) => v.length >= 8));
+  let imported = 0; let duplicates = 0;
+  for (const lead of parsed.records) {
+    const email = String(lead.email || '').trim().toLowerCase();
+    const phone = String(lead.phone || '').replace(/\D/g, '');
+    if ((email && emails.has(email)) || (phone.length >= 8 && phones.has(phone))) { duplicates++; continue; }
+    try {
+      createLead({ ...lead, entityType: lead.entity_type, layout_id: layoutId });
+      imported++; if (email) emails.add(email); if (phone.length >= 8) phones.add(phone);
+    } catch { parsed.skipped.push({ reason: 'registro inválido' }); }
   }
-  return n;
+  return { imported, duplicates, skipped: parsed.skipped.length, total: parsed.rows.length, mapping: mappingSummary(parsed.mapping), warnings: parsed.warnings };
+}
+
+export function importLeadsCsv(text, layoutId) {
+  return importLeadRows(parseDelimited(text), layoutId);
 }
 
 // ── Sincronização local ↔ nuvem (a orquestração fica em sync.mjs) ──

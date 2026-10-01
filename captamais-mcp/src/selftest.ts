@@ -2,8 +2,9 @@
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
-import type { CaptaMaisConfig } from './config.js';
+import { normalizeCloudUrl, type CaptaMaisConfig } from './config.js';
 import { createActivity, createLead, listLeads, moveStage, getLead, setActivityGoogleEvent } from './db.js';
+import { importLeadFile, readLeadFile } from './leadImport.js';
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'captamais-mcp-test-'));
 const config: CaptaMaisConfig = {
@@ -16,6 +17,15 @@ const config: CaptaMaisConfig = {
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(`FALHOU: ${msg}`);
   console.log(`  ok — ${msg}`);
+}
+
+assert(normalizeCloudUrl('https://captamais.me/') === 'https://captamais.me', 'aceita a nuvem oficial por HTTPS');
+assert(normalizeCloudUrl('http://127.0.0.1:3000/') === 'http://127.0.0.1:3000', 'aceita HTTP somente no loopback');
+try {
+  normalizeCloudUrl('https://dominio-externo.example');
+  assert(false, 'recusa host externo');
+} catch {
+  console.log('  ok — recusa host externo');
 }
 
 console.log('== CRM local (captamais-mcp) ==');
@@ -47,6 +57,15 @@ const activity = createActivity(config, a.id, { type: 'meeting', title: 'Diagnó
 assert(activity.lead_id === a.id && activity.type === 'meeting', 'criar atividade local');
 const synced = setActivityGoogleEvent(config, activity.id, { eventId: 'evt-1', htmlLink: 'https://calendar.google.com/event/1', meetLink: 'https://meet.google.com/abc-defg-hij' });
 assert(synced.calendar_sync_status === 'synced' && synced.google_event_id === 'evt-1', 'persistir vínculo com evento Google');
+
+const csvFile = path.join(dataDir, 'leads.csv');
+fs.writeFileSync(csvFile, 'Lista de contatos;;;;\nNome do contato;WhatsApp;E-mail;Município;Detalhes\nAna Lima;(11) 97777-6666;ANA@EXEMPLO.COM;São Paulo;Pediu retorno\nAna Lima;(11) 97777-6666;ANA@EXEMPLO.COM;São Paulo;Duplicada\n');
+const parsedImport = await readLeadFile(csvFile);
+assert(parsedImport.mapping.includes('Nome do contato → Nome'), 'identifica coluna de nome da planilha');
+assert(parsedImport.mapping.includes('WhatsApp → Telefone'), 'identifica coluna de telefone da planilha');
+const importResult = importLeadFile(config, parsedImport);
+assert(importResult.imported === 1 && importResult.skipped === 1, 'importa lead e elimina duplicado da planilha');
+assert(listLeads(config, { search: 'ANA@EXEMPLO.COM' }).length === 1, 'normaliza e-mail importado');
 
 console.log('\n✅ CRM local OK. Banco:', config.dbPath);
 try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch { /* noop */ }

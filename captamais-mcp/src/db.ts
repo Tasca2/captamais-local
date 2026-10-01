@@ -55,6 +55,17 @@ export function openDb(config: CaptaMaisConfig): Database.Database {
       google_event_id TEXT, google_event_url TEXT, calendar_sync_status TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_act_lead ON activities(lead_id);
+    CREATE TABLE IF NOT EXISTS lead_lists (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, mode TEXT, query TEXT, filters TEXT,
+      total_found INTEGER NOT NULL DEFAULT 0, purchased INTEGER NOT NULL DEFAULT 0, credits_spent INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS market_leads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, list_id INTEGER NOT NULL, cnpj TEXT, razao TEXT, fantasia TEXT, email TEXT,
+      phone TEXT, cellphone TEXT, city TEXT, uf TEXT, cnae TEXT, porte TEXT, situacao TEXT, socio TEXT, site TEXT,
+      imported_lead_id INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_ml_list ON market_leads(list_id);
   `);
   try { db.exec('ALTER TABLE activities ADD COLUMN google_event_id TEXT'); } catch {}
   try { db.exec('ALTER TABLE activities ADD COLUMN google_event_url TEXT'); } catch {}

@@ -15,7 +15,7 @@
   <a href="https://github.com/Tasca2/captamais-local/raw/main/docs/apresentacao-capta-mais.pdf"><strong>Baixar PDF</strong></a>
 </p>
 
-**Versão 1.04** (metadados npm: `1.0.4`).
+**Versão 1.0.7** (metadados npm: `1.0.7`).
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 
