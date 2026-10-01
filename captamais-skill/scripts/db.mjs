@@ -259,6 +259,20 @@ export function getLead(id) {
   if (!lead) return { lead: null, activities: [] };
   return { lead, activities: db.prepare('SELECT * FROM activities WHERE lead_id=? ORDER BY datetime(created_at) DESC').all(Number(id)) };
 }
+/** Exclui o lead e as atividades dele. Os dados comprados (listas) ficam; só perdem o vínculo com o lead apagado. */
+export function deleteLead(id) {
+  const d = openDb();
+  const n = Number(id);
+  if (!d.prepare('SELECT 1 FROM leads WHERE id=?').get(n)) return false;
+  d.exec('BEGIN');
+  try {
+    d.prepare('DELETE FROM activities WHERE lead_id=?').run(n);
+    try { d.prepare('UPDATE market_leads SET imported_lead_id=NULL WHERE imported_lead_id=?').run(n); } catch (_) {}
+    d.prepare('DELETE FROM leads WHERE id=?').run(n);
+    d.exec('COMMIT');
+  } catch (e) { d.exec('ROLLBACK'); throw e; }
+  return true;
+}
 export function addActivity(leadId, input) {
   const db = openDb();
   const type = String(input?.type || '').toLowerCase();

@@ -48,8 +48,9 @@
   .act { display:flex; gap:11px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:11px; margin-bottom:7px; background:var(--panel); }
   .act .dot{width:8px;height:8px;border-radius:999px;flex:0 0 8px;} .t-call,.t-call_attempt{background:#38bdf8}.t-followup{background:#f59e0b}.t-meeting,.t-r1,.t-r2,.t-r3{background:#22c55e}.t-task{background:#a1a1aa}.t-whatsapp{background:#25d366}
   .pill{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);} a{color:var(--accent);}
+  .xclose{position:absolute;top:10px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--panel);color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0;z-index:2;} .xclose:hover{color:var(--text);} .sheet>h3{padding-right:40px;}
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;} .modal.open{display:flex;}
-  .sheet{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:20px;box-shadow:var(--shadow);}
+  .sheet{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:20px;box-shadow:var(--shadow);}
   .sheet h3{margin:0 0 14px;}
   .field{margin-bottom:11px;} .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;} .field input,.field select,.field textarea{width:100%;}
   textarea{background:var(--panel2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font:inherit;}
@@ -179,7 +180,7 @@
     <div id="planBox" style="font-size:12px;margin:8px 0"></div>
     <div id="actList"></div>
   </div>
-  <div class="end"><button class="ghost" type="button" onclick="discardLead()">Fechar sem salvar</button><button class="primary" onclick="saveLead()">Salvar</button></div>
+  <div class="end"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" type="button" onclick="discardLead()">Fechar sem salvar</button><button class="ghost" type="button" id="leadDelBtn" onclick="deleteCurrentLead()" style="color:#f87171" hidden>🗑 Excluir lead</button></span><button class="primary" onclick="saveLead()">Salvar</button></div>
 </div></div>
 
 <!-- Modal atividade -->
@@ -355,7 +356,7 @@
 <div class="modal" id="mList"><div class="sheet" style="max-width:640px">
   <h3 id="listTitle">Lista de leads</h3>
   <div id="listBody"></div>
-  <div class="end" style="flex-wrap:wrap"><button class="ghost" onclick="closeModal('mList')">Manter só no banco</button>
+  <div class="end" style="flex-wrap:wrap"><button class="ghost" onclick="closeModal('mList')">Fechar (manter só no banco)</button>
     <span style="display:flex;gap:6px;flex-wrap:wrap"><button class="ghost" onclick="downloadList()">⬇️ Baixar Excel</button><button class="primary" id="listImportBtn" onclick="importList()">📥 Importar no CRM</button></span></div>
 </div></div>
 
@@ -497,17 +498,24 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function stageOptions(sel){return STATE.columns.map(c=>`<option value="${esc(c.stage)}"${c.stage===sel?' selected':''}>${esc(c.title)}</option>`).join('');}
 
-function openCreate(){editId=null;document.getElementById('mLeadTitle').textContent='Novo lead';document.getElementById('leadExtra').hidden=true;
+function openCreate(){editId=null;document.getElementById('mLeadTitle').textContent='Novo lead';document.getElementById('leadExtra').hidden=true;document.getElementById('leadDelBtn').hidden=true;
   fName.value='';fEmail.value='';fPhone.value='';fCity.value='';fSubtitle.value='';fCnpj.value='';fDesc.value='';fEntity.value='PF';toggleLeadCnpj();fStage.innerHTML=stageOptions(STATE.columns[0]?.stage);openModal('mLead');}
 async function openEdit(id){const d=await api(`/api/leads/${id}`);if(!d.ok)return;editId=id;const l=d.lead;
   document.getElementById('mLeadTitle').textContent='Editar lead';
   fName.value=l.name||'';fEmail.value=l.email||'';fPhone.value=l.phone||'';fCity.value=l.city||'';fSubtitle.value=l.subtitle||'';fCnpj.value=l.cnpj||'';fDesc.value=l.description||'';fEntity.value=l.entity_type||'PF';toggleLeadCnpj();formatLeadCnpj();fStage.innerHTML=stageOptions(l.stage);
-  document.getElementById('leadExtra').hidden=false;loadPlans(id);renderActs(d.activities);openModal('mLead');}
+  document.getElementById('leadExtra').hidden=false;document.getElementById('leadDelBtn').hidden=false;loadPlans(id);renderActs(d.activities);openModal('mLead');}
 function renderActs(acts){const box=document.getElementById('actList');if(!acts.length){box.innerHTML='<div class="empty" style="text-align:left">Sem atividades ainda.</div>';return;}box.innerHTML='';
   for(const a of acts){const meet=safeUrl(a.meet_link),eventUrl=safeUrl(a.google_event_url);const row=document.createElement('div');row.className='actitem';
     row.innerHTML=`<span class="dot t-${esc(a.type)}"></span><span class="grow">${esc(TLABEL[a.type]||a.type)} — ${esc(a.title||'')} <span class="pill">${esc(fmt(a.due_at))}</span>${a.done?' ✓':''}${eventUrl?` · <a href="${esc(eventUrl)}" target="_blank" rel="noopener">Agenda</a>`:''}${meet?` · <a href="${esc(meet)}" target="_blank" rel="noopener">Meet</a>`:''}</span>${a.done?'':'<button class="done-btn ghost">ok</button>'}`;
     if(!a.done)row.querySelector('.done-btn').addEventListener('click',async()=>{await api(`/api/activities/${a.id}/done`,'POST');openEdit(editId);load();});box.appendChild(row);}}
 function discardLead(){closeModal('mLead');editId=null;}
+async function deleteCurrentLead(){
+  if(!editId)return;const nm=fName.value.trim()||'este lead';
+  if(!confirm(`Excluir "${nm}"? As atividades dele também serão apagadas. Uma cópia de segurança é feita antes. Se o lead já foi sincronizado, a cópia na plataforma continua lá.`))return;
+  const d=await api(`/api/leads/${editId}`,'DELETE').catch(()=>({ok:false}));
+  if(!d.ok){toast('Não foi possível excluir o lead');return;}
+  closeModal('mLead');editId=null;toast('Lead excluído');load();
+}
 function toggleLeadCnpj(){document.getElementById('fCnpjWrap').hidden=fEntity.value!=='PJ';}
 function formatLeadCnpj(){const d=(fCnpj.value||'').replace(/\D/g,'').slice(0,14);fCnpj.value=d.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2');}
 const pickCnpjValue=(o,keys)=>{for(const key of keys){const v=o?.[key];if(v!==undefined&&v!==null&&String(v).trim())return String(v).trim();}return '';};
@@ -1019,6 +1027,8 @@ async function openList(id,info){
   document.getElementById('listTitle').textContent='📋 '+l.name;
   let h=`<p style="margin:0 0 8px"><b>${nfmt(l.purchased)}</b> lead(s) salvo(s) no banco do seu computador${l.credits_spent?` · ${nfmt(l.credits_spent)} crédito(s) usado(s)`:''}.</p>`;
   if(info&&info.partial)h+=`<p style="color:#f59e0b;margin:0 0 8px">Você pediu ${nfmt(info.requested)}, mas os créditos cobriram ${nfmt(info.purchased)}. ${esc(info.message||'')} <a href="#" onclick="openCredits();return false">Comprar mais créditos</a></p>`;
+  MK.person=listPerson(l,d.leads);
+  if(MK.person)h+=`<div style="margin:0 0 10px"><button class="ghost" id="personLeadBtn" onclick="createPersonLead()">👤 Criar lead de <b>${esc(MK.person.name)}</b> <span style="color:var(--muted)">(empresas na descrição)</span></button></div>`;
   h+='<p style="color:var(--muted);font-size:12px;margin:0 0 8px">Já está salva. Você pode <b>baixar em Excel</b> agora ou depois, <b>importar no CRM</b> no funil que quiser, ou <b>manter só no banco</b> — ela fica em “Minhas listas de leads”.</p>';
   h+=`<div class="field" style="max-width:280px"><label>Importar para o funil</label><select id="listLayout">${STATE.layouts.map(x=>`<option value="${x.id}"${x.id===STATE.layoutId?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>`;
   h+=`<div style="max-height:300px;overflow:auto"><table class="mktable"><tr><th>Empresa</th><th>E-mail</th><th>Telefone</th><th>Cidade</th></tr>${d.leads.map(x=>`<tr><td>${esc(x.fantasia||x.razao||'')}</td><td>${esc(x.email||'')}</td><td>${esc(x.cellphone||x.phone||'')}</td><td>${esc(x.city||'')}${x.uf?'/'+esc(x.uf):''}</td></tr>`).join('')}</table></div>`;
@@ -1027,6 +1037,32 @@ async function openList(id,info){
   document.getElementById('listBody').innerHTML=h;
   document.getElementById('listImportBtn').disabled=false;
   closeModal('mLists');openModal('mList');
+}
+// Lista de uma pesquisa por SÓCIO: descobre a pessoa (o nome do sócio que casa com o termo) e as empresas dela.
+const plainTxt=(v)=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const tcase=(v)=>String(v||'').toLowerCase().split(/\s+/).filter(Boolean).map((w,i)=>(i&&/^(de|da|do|dos|das|e)$/.test(w))?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+function listPerson(l,leads){
+  let f={};try{f=JSON.parse(l.filters||'{}');}catch{}
+  if(l.mode!=='lookup'||f.field!=='socio'||!leads.length)return null;
+  const toks=plainTxt(l.query).split(/[^a-z0-9]+/).filter(Boolean);if(!toks.length)return null;
+  const hit=(n)=>{const w=plainTxt(n).split(/[^a-z0-9]+/).filter(Boolean);return toks.every(t=>w.some(x=>x.startsWith(t)));};
+  const count=new Map();
+  for(const x of leads)for(const n of String(x.socio||'').split(/,|-(?=\s|$)/).map(v=>v.trim()).filter(Boolean))if(hit(n)){const k=plainTxt(n).trim();const c=count.get(k)||{name:n,n:0};c.n++;count.set(k,c);}
+  const best=[...count.entries()].sort((a,b)=>b[1].n-a[1].n)[0];if(!best)return null;
+  const mine=leads.filter(x=>String(x.socio||'').split(/,|-(?=\s|$)/).some(n=>plainTxt(n).trim()===best[0]));
+  return {name:tcase(best[1].name),leads:mine};
+}
+async function createPersonLead(){
+  const p=MK.person;if(!p)return;const btn=document.getElementById('personLeadBtn'),msg=document.getElementById('listMsg');btn.disabled=true;
+  const layout=Number(document.getElementById('listLayout').value)||STATE.layoutId;
+  const lines=p.leads.slice(0,50).map(x=>{const nm=x.fantasia||x.razao||'',razao=x.razao&&x.razao!==nm?` (${x.razao})`:'';
+    const bits=[x.cnpj&&`CNPJ ${x.cnpj}`,[x.city,x.uf].filter(Boolean).join('/'),x.cellphone||x.phone,x.email].filter(Boolean);return `• ${nm}${razao}${bits.length?' — '+bits.join(' · '):''}`;});
+  const n=p.leads.length,desc=`Sócio de ${n} empresa${n>1?'s':''}:\n${lines.join('\n')}${n>50?`\n… e mais ${n-50}.`:''}`;
+  const d=await api('/api/leads','POST',{name:p.name,entity_type:'PF',subtitle:`Sócio de ${n} empresa${n>1?'s':''}`,description:desc,layout_id:layout}).catch(()=>({ok:false}));
+  if(!d.ok){btn.disabled=false;toast('Não foi possível criar o lead');return;}
+  const fn=(STATE.layouts.find(x=>x.id===layout)||{}).name||'funil';
+  msg.innerHTML=`<div style="color:#34d399">✓ Lead “${esc(p.name)}” criado no funil “${esc(fn)}” com ${nfmt(n)} empresa(s) na descrição.</div>`;
+  toast('Lead criado no CRM');STATE.layoutId=layout;load();
 }
 async function downloadList(){
   if(!MK.list)return;
@@ -1087,6 +1123,20 @@ const refreshLink=()=>{if(document.visibilityState==='visible'&&Date.now()-lastL
 window.addEventListener('focus',refreshLink);document.addEventListener('visibilitychange',refreshLink);
 setInterval(refreshLink,180000);
 loadGoogle(false);
+// Todo popup fecha pelo ✕ e pela tecla Esc; os de consulta (listas, créditos, avisos) também clicando fora.
+(function(){
+  const outside=new Set(['mList','mLists','mCredits','mUpdate','mGate']);
+  document.querySelectorAll('.modal').forEach(m=>{
+    const sheet=m.querySelector('.sheet');if(!sheet||m.id==='mLead')return;
+    const b=document.createElement('button');b.type='button';b.className='xclose';b.textContent='✕';b.title='Fechar (Esc)';b.setAttribute('aria-label','Fechar');
+    b.onclick=()=>closeModal(m.id);sheet.prepend(b);
+    if(outside.has(m.id))m.addEventListener('mousedown',e=>{if(e.target===m)closeModal(m.id);});
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape')return;const open=[...document.querySelectorAll('.modal.open')];if(!open.length)return;
+    const top=open[open.length-1];if(top.id==='mLead')discardLead();else closeModal(top.id);
+  });
+})();
 </script>
 </body>
 </html>

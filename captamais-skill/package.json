@@ -1,6 +1,6 @@
 {
   "name": "captamais-skill",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "description": "Skill CaptaMais — CRM local no Claude (leads, funil, atividades, reunião/Meet).",
   "type": "module",

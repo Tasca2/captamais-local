@@ -10,6 +10,13 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.9] — 2026-10-01 (identificação: 1.09)
+### Adicionado
+- **Excluir lead:** botão «Excluir lead» na ficha do lead. Faz uma cópia de segurança antes e apaga também as atividades do lead; os dados comprados continuam nas listas.
+- **Lead da pessoa:** ao abrir uma pesquisa por sócio, o botão «Criar lead de <nome>» cria um lead com o nome da pessoa e as empresas dela na descrição.
+### Corrigido
+- Todos os popups agora fecham pelo ✕, pela tecla Esc e, nas listas, nos créditos e nos avisos, clicando fora.
+
 ## [1.0.8] — 2026-10-01 (identificação: 1.08)
 ### Alterado
 - Pesquisa por nome, CNPJ, sócio, e-mail ou telefone: antes de abrir, mostra o que foi encontrado (a pessoa, o e-mail, o telefone ou a empresa) e quanto custa abrir cada item; ao abrir, entrega todas as empresas dele.

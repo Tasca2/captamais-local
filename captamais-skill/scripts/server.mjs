@@ -360,6 +360,7 @@ async function handle(req, res) {
       const id = Number(m[1]);
       if (method === 'GET') { const r = db.getLead(id); return r.lead ? json(res, 200, { ok: true, ...r }) : json(res, 404, { ok: false, error: 'lead não encontrado' }); }
       if (method === 'PATCH') { const body = await readBody(req); const lead = db.updateLead(id, body); return lead ? json(res, 200, { ok: true, lead }) : json(res, 404, { ok: false, error: 'lead não encontrado' }); }
+      if (method === 'DELETE') { try { db.writeBackup(); } catch (_) {} try { return db.deleteLead(id) ? json(res, 200, { ok: true }) : json(res, 404, { ok: false, error: 'lead não encontrado' }); } catch (e) { return json(res, 400, { ok: false, error: e.message }); } }
     }
     if ((m = p.match(/^\/api\/leads\/(\d+)\/stage$/)) && method === 'POST') {
       const body = await readBody(req); const lead = db.moveStage(Number(m[1]), body.stage);
