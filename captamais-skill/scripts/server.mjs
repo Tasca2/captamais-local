@@ -72,7 +72,11 @@ async function cloud(path, body, method = 'POST', key = API_KEY, anon = false) {
     const data = await r.json().catch(() => ({ ok: false, message: 'Resposta inválida da nuvem.' }));
     if (!r.ok && data.ok !== false) return { ...data, ok: false, message: data.message || `Falha na nuvem (HTTP ${r.status}).` };
     return data;
-  } catch { return { ok: false, code: 'network', message: 'Sem conexão com a nuvem.' }; }
+  } catch (e) {
+    // Estouro do prazo (45 s) não é falta de internet: a nuvem estava processando uma busca pesada.
+    if (e?.name === 'TimeoutError' || e?.name === 'AbortError') return { ok: false, code: 'timeout', message: 'A busca demorou mais que o esperado. Tente de novo com mais filtros (cidade, CNAE ou porte) para reduzir o resultado.' };
+    return { ok: false, code: 'network', message: 'Sem conexão com a nuvem.' };
+  }
 }
 
 /**
@@ -195,7 +199,7 @@ async function handle(req, res) {
       const key = String(b.key || '').trim();
       if (!KEY_FORMAT.test(key)) return json(res, 400, { ok: false, message: 'Chave inválida. Copie-a inteira em Minha Conta → Conector.' });
       const d = await cloud('/api/mcp/link/status', {}, 'POST', key);
-      if (!d.linked) return json(res, 400, { ok: false, message: d.code === 'network' ? 'Sem conexão com a nuvem.' : 'A nuvem não reconheceu essa chave. Gere ou rotacione a chave em Minha Conta.' });
+      if (!d.linked) return json(res, 400, { ok: false, message: (d.code === 'network' || d.code === 'timeout') ? 'Sem conexão com a nuvem.' : 'A nuvem não reconheceu essa chave. Gere ou rotacione a chave em Minha Conta.' });
       const accountRef = String(d.accountRef || '').trim();
       if (!/^acct_[a-f0-9]{24}$/.test(accountRef)) return json(res, 400, { ok: false, message: 'A nuvem não devolveu uma identidade segura para esta conta.' });
 

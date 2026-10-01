@@ -12,9 +12,12 @@ import { callCloud, type MeteredResult } from './cloud.js';
  */
 export type SearchInput = { mode: 'lookup' | 'filters'; query?: string; field?: string; filters?: Record<string, string | number | boolean> };
 export type SearchResult = {
-  searchId: string; total: number; pricePerLead: number; balance: number; buyUrl?: string;
+  searchId: string; total: number; totalCapped?: boolean; pricePerLead: number; balance: number; buyUrl?: string;
   preview?: { nome?: string; cidade?: string; uf?: string; porte?: string }[];
   /** Pesquisa por nome: poucos resultados vêm com o nome visível e o preço para abrir cada um. */
+  /** Pesquisa por identidade: o que foi encontrado; abrir um item custa `price` e entrega todas as empresas dele (resultIds). */
+  candidates?: { candidateId: string; label: string; sub?: string; kind?: string; count?: number; resultIds: string[]; price?: number }[];
+  lookupPrice?: number;
   results?: { resultId: string; nome: string; cidade?: string; uf?: string; porte?: string; price?: number }[];
 };
 type CloudLead = Record<string, unknown>;
@@ -25,15 +28,14 @@ const txt = (v: unknown, max = 300) => String(v ?? '').trim().slice(0, max) || n
 const digits = (v: unknown) => String(v ?? '').replace(/\D/g, '');
 
 // Buscas recentes (para comprar depois sem repetir os filtros). Vivem só enquanto o MCP estiver aberto.
-const recent = new Map<string, { input: SearchInput; total: number; price: number }>();
+const recent = new Map<string, { input: SearchInput; total: number; price: number; unit: number }>();
 
 export function leadCredits(config: CaptaMaisConfig): Promise<MeteredResult<{ balance: number; pricePerLead: number; buyUrl?: string }>> {
   return callCloud(config, '/api/mcp/leads/credits', {});
 }
-
 export async function searchLeads(config: CaptaMaisConfig, input: SearchInput): Promise<MeteredResult<SearchResult>> {
   const r = await callCloud<SearchResult>(config, '/api/mcp/leads/search', input);
-  if (r.ok && r.data?.searchId) recent.set(r.data.searchId, { input, total: Number(r.data.total) || 0, price: Number(r.data.pricePerLead) || 0 });
+  if (r.ok && r.data?.searchId) recent.set(r.data.searchId, { input, total: Number(r.data.total) || 0, price: Number(r.data.pricePerLead) || 0, unit: Number(r.data.lookupPrice) || 0 });
   return r;
 }
 
@@ -50,7 +52,10 @@ export async function buyLeads(
   if (!ctx) return { ok: false, error: 'Busca não encontrada. Rode a busca de novo antes de gerar a lista.' };
   const ids = (p.resultIds || []).map((x) => String(x).trim()).filter(Boolean).slice(0, 200);
   let want = ids.length || Math.min(Math.floor(p.quantity || 0), ctx.total);
-  if (p.maxCredits != null && ctx.price > 0) want = Math.min(want, Math.floor(p.maxCredits / ctx.price));
+  if (ids.length && ctx.unit > 0) {
+    // Pesquisa por identidade: o custo é por item encontrado (não por empresa); respeita o limite informado.
+    if (p.maxCredits != null && p.maxCredits < ctx.unit) return { ok: false, error: 'O limite de créditos informado não cobre a abertura desse item.' };
+  } else if (p.maxCredits != null && ctx.price > 0) want = Math.min(want, Math.floor(p.maxCredits / ctx.price));
   if (ids.length) ids.length = Math.min(ids.length, want);
   if (want < 1) return { ok: false, error: 'Quantidade zero: o limite de créditos informado não cobre nenhum lead.' };
   ensureTables(config);

@@ -10,6 +10,14 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.8] — 2026-10-01 (identificação: 1.08)
+### Alterado
+- Pesquisa por nome, CNPJ, sócio, e-mail ou telefone: antes de abrir, mostra o que foi encontrado (a pessoa, o e-mail, o telefone ou a empresa) e quanto custa abrir cada item; ao abrir, entrega todas as empresas dele.
+- Gerar lista por filtros: não exibe mais custo por lead; o total passa a mostrar «Mais de N» em buscas muito amplas.
+- Buscas pesadas que passam do prazo agora avisam que demoraram, em vez de «Sem conexão com a nuvem».
+- Filtro «Situação» removido: a base do Capta+ contém só empresas ativas.
+- MCP (1.0.4): mesmas regras de pesquisa e de exibição de créditos.
+
 ## [1.0.7] — 2026-10-01 (identificação: 1.07)
 ### Alterado
 - Calculadora Patrimonial e pesquisa de CNPJ agora aparecem e são autorizadas somente para Premium ou Max.

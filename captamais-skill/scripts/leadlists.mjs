@@ -26,6 +26,7 @@ export function sanitizeSearch(b = {}) {
     out.query = str(b.query, 200);
     out.field = LOOKUP_FIELDS.includes(b.field) ? b.field : 'all';
     if (out.query.length < 2) throw new Error('Digite ao menos 2 caracteres para pesquisar.');
+    if (b.perCompany === true) out.perCompany = true; // enriquecer um lead: uma empresa por item
     return out;
   }
   const f = {}, src = b.filters || {};
@@ -70,12 +71,16 @@ export async function search(cloud, body) {
   const d = await cloud('/api/mcp/leads/search', q);
   if (!d.ok) throw new Error(d.message || 'A busca não pôde ser feita agora.');
   return {
-    searchId: str(d.searchId, 80), total: Number(d.total) || 0, pricePerLead: Number(d.pricePerLead) || 0,
+    searchId: str(d.searchId, 80), total: Number(d.total) || 0, totalCapped: d.totalCapped === true, pricePerLead: Number(d.pricePerLead) || 0,
     balance: Number(d.balance) || 0, buyUrl: str(d.buyUrl, 300),
     preview: (Array.isArray(d.preview) ? d.preview : []).slice(0, 5).map((p) => ({
       nome: str(p.nome ?? p.name, 80), cidade: str(p.cidade ?? p.city, 60), uf: str(p.uf, 2), porte: str(p.porte, 40),
     })),
-    // Pesquisa por nome: poucos resultados vêm com o nome visível e o preço de abrir cada um.
+    // Pesquisa por identidade: o que foi encontrado (pessoa, e-mail, telefone, empresa) e o custo de abrir cada item.
+    candidates: (Array.isArray(d.candidates) ? d.candidates : []).slice(0, 20).map((c) => ({
+      candidateId: str(c.candidateId, 20), label: str(c.label, 160), sub: str(c.sub, 80), kind: str(c.kind, 12), count: Number(c.count) || 0,
+      resultIds: (Array.isArray(c.resultIds) ? c.resultIds : []).map((x) => str(x, 20)).filter(Boolean).slice(0, 50), price: Number(c.price) || 0,
+    })).filter((c) => c.candidateId && c.resultIds.length),
     results: (Array.isArray(d.results) ? d.results : []).slice(0, 50).map((p) => ({
       resultId: str(p.resultId ?? p.id, 80), nome: str(p.nome ?? p.name, 120), cidade: str(p.cidade ?? p.city, 60), uf: str(p.uf, 2),
       porte: str(p.porte, 40), price: Number(p.price ?? d.pricePerLead) || 0,

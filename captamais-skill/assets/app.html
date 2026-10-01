@@ -302,9 +302,8 @@
         <div class="field"><label>Cidade</label><select id="mf_municipio" disabled><option value="">Escolha o estado primeiro</option></select></div>
       </div>
     </details>
-    <details class="fgroup" open><summary>🏢 Perfil da empresa <small>situação, porte e contatos</small></summary>
+    <details class="fgroup" open><summary>🏢 Perfil da empresa <small>porte e contatos · só empresas ativas</small></summary>
       <div class="grid3">
-        <div class="field"><label>Situação</label><select id="mf_situacao"><option value="">Todas (inclui baixadas)</option><option value="Ativa">Ativa</option><option value="Baixada">Baixada</option><option value="Inapta">Inapta</option><option value="Suspensa">Suspensa</option><option value="Nula">Nula</option></select></div>
         <div class="field"><label>Matriz ou filial</label><select id="mf_matrizFilial"><option value="">Todas</option><option value="matriz">Só matriz</option><option value="filial">Só filial</option></select></div>
         <div class="field"><label>Porte</label><select id="mf_porte"><option value="">Todos os portes</option></select></div>
         <div class="field"><label>Natureza jurídica</label><select id="mf_naturezaJuridica"><option value="">Todas</option></select></div>
@@ -929,7 +928,7 @@ async function copyUpdatePrompt(){
 }
 async function marketSearch(){
   if(MK.busy)return;
-  const body=MK.mode==='lookup'?{mode:'lookup',field:MK.field,query:document.getElementById('mkQuery').value}:{mode:'filters',filters:readFilters()};
+  const body=MK.mode==='lookup'?{mode:'lookup',field:MK.field,query:document.getElementById('mkQuery').value,perCompany:!!MK.enrichLeadId}:{mode:'filters',filters:readFilters()};
   const out=document.getElementById('mkRes'),btn=document.getElementById('mkSearchBtn');
   if(MK.mode==='lookup'&&!body.query.trim()){out.innerHTML='<div style="color:#f87171;margin-top:10px">Digite o que deseja pesquisar.</div>';return;}
   MK.busy=true;btn.disabled=true;out.innerHTML='<div style="color:var(--muted);margin-top:10px">Buscando no banco do Capta+…</div>';
@@ -949,15 +948,16 @@ function creditsLine(r){
 function renderMarketRes(){
   const r=MK.res,out=document.getElementById('mkRes');
   if(!r.total){out.innerHTML='<div class="mkbox">Nenhum resultado para essa busca. Tente outros termos ou amplie os filtros.</div>';return;}
-  const named=r.query.mode==='lookup'&&r.results.length>0;
+  const named=r.query.mode==='lookup'&&(r.candidates||[]).length>0;
   if(named){
     const one=MK.enrichLeadId?'radio':'checkbox';
-    const rows=r.results.map((x,i)=>`<label class="listrow" style="cursor:pointer"><input type="${one}" name="mkPick" value="${esc(x.resultId)}" data-price="${x.price}" ${r.results.length===1||(one==='radio'&&i===0)?'checked':''} onchange="updateMarketCost()" style="width:auto"><span class="grow"><b>${esc(x.nome)}</b><div style="font-size:12px;color:var(--muted)">${esc(x.cidade)}${x.uf?'/'+esc(x.uf):''}${x.porte?' · '+esc(x.porte):''}</div></span><span class="pill">${nfmt(x.price)} crédito(s)</span></label>`).join('');
+    const KIND={socio:'Sócio',email:'E-mail',telefone:'Telefone',empresa:'Empresa'};
+    const rows=r.candidates.map((x,i)=>`<label class="listrow" style="cursor:pointer"><input type="${one}" name="mkPick" value="${esc(x.candidateId)}" data-price="${x.price}" ${r.candidates.length===1||(one==='radio'&&i===0)?'checked':''} onchange="updateMarketCost()" style="width:auto"><span class="grow"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">${esc(KIND[x.kind]||'Encontrado')}</div><b>Encontrei: ${esc(x.label)}</b><div style="font-size:12px;color:var(--muted)">${esc(x.sub)}</div></span><span class="pill">${nfmt(x.price)} crédito(s) para abrir</span></label>`).join('');
     out.innerHTML=`<div class="mkbox">
       <div style="font-size:20px;font-weight:800">${r.total===1?'Encontramos 1 resultado':nfmt(r.total)+' resultados'}</div>
-      <div style="color:var(--muted)">${creditsLine(r)}${r.total>r.results.length?` · mostrando os ${r.results.length} primeiros — refine a pesquisa para ver os demais`:''}</div>
+      <div style="color:var(--muted)">${creditsLine(r)}</div>
       <div style="margin-top:10px">${rows}</div>
-      <div style="font-size:12px;color:var(--muted)">O valor é o que custa para abrir os dados completos (contato, sócios…) e ${MK.enrichLeadId?'completar este lead':'gerar um lead ou enriquecer um que você já tem'}.</div>
+      <div style="font-size:12px;color:var(--muted)">Ao abrir, você vê todas as empresas e os dados completos (contato, sócios…) e pode ${MK.enrichLeadId?'completar este lead':'gerar leads ou enriquecer os que já tem'}.</div>
       <div id="mkCost" style="margin-top:8px"></div>
       <div class="end" style="margin-top:10px"><button class="ghost" onclick="openCredits()">💳 Comprar créditos</button><button class="ghost" onclick="openCode()">🎟️ Tenho um código</button><button class="primary" id="mkBuyBtn" onclick="marketBuy()">Abrir dados</button></div>
     </div>`;
@@ -965,10 +965,10 @@ function renderMarketRes(){
   }
   const prev=r.preview.length?`<table class="mktable"><tr><th>Empresa</th><th>Cidade</th><th>Porte</th></tr>${r.preview.map(p=>`<tr><td>${esc(p.nome)}</td><td>${esc(p.cidade)}${p.uf?'/'+esc(p.uf):''}</td><td>${esc(p.porte)}</td></tr>`).join('')}</table><div style="font-size:11px;color:var(--muted);margin-top:4px">Prévia parcial — os dados completos vêm ao gerar a lista.</div>`:'';
   out.innerHTML=`<div class="mkbox">
-    <div style="font-size:20px;font-weight:800">${nfmt(r.total)} resultado(s) <span style="font-weight:600;color:var(--accent)">· ${nfmt(r.total*r.pricePerLead)} crédito(s) para todos</span></div>
-    <div style="color:var(--muted)">${nfmt(r.pricePerLead)} crédito(s) por lead · ${creditsLine(r)}</div>
+    <div style="font-size:20px;font-weight:800">${r.totalCapped?'Mais de ':''}${nfmt(r.total)} resultado(s)</div>
+    <div style="color:var(--muted)">${creditsLine(r)}</div>
     ${prev}
-    <div class="row" style="margin-top:12px"><div class="field"><label>Quantos leads gerar (máx. ${nfmt(r.total)})</label><input id="mkQty" type="number" min="1" max="${r.total}" value="${r.total}" oninput="updateMarketCost()"></div>
+    <div class="row" style="margin-top:12px"><div class="field"><label>Quantos leads gerar (máx. ${nfmt(r.total)}${r.totalCapped?'+':''})</label><input id="mkQty" type="number" min="1" max="${r.total}" value="${r.total}" oninput="updateMarketCost()"></div>
       <div class="field"><label>Nome da lista (opcional)</label><input id="mkName" maxlength="80"></div></div>
     <div id="mkCost" style="margin-top:2px"></div>
     <div class="end" style="margin-top:10px"><button class="ghost" onclick="openCredits()">💳 Comprar créditos</button><button class="ghost" onclick="openCode()">🎟️ Tenho um código</button><button class="primary" id="mkBuyBtn" onclick="marketBuy()">Gerar lista</button></div>
@@ -978,11 +978,11 @@ function renderMarketRes(){
 // Seleção atual: por nome (itens marcados) ou por quantidade. "eff" é o que o saldo realmente cobre.
 function marketSel(){
   const r=MK.res;
-  if(r.query.mode==='lookup'&&r.results.length){
+  if(r.query.mode==='lookup'&&(r.candidates||[]).length){
     const picks=[...document.querySelectorAll('input[name=mkPick]:checked')];
-    let left=r.balance,ids=[],cost=0;
-    for(const el of picks){const pr=Number(el.dataset.price)||0;if(pr<=left){ids.push(el.value);left-=pr;cost+=pr;}}
-    return {want:picks.length,eff:ids.length,ids,cost};
+    const ids2=[];let left=r.balance,cost=0,n=0;
+    for(const el of picks){const pr=Number(el.dataset.price)||0;if(pr<=left){const c=r.candidates.find(x=>x.candidateId===el.value);if(c){ids2.push(...c.resultIds);n++;left-=pr;cost+=pr;}}}
+    return {want:picks.length,eff:n,ids:ids2,cost};
   }
   const want=Math.min(r.total,Math.max(1,Math.floor(Number(document.getElementById('mkQty').value)||0)));
   const eff=Math.min(want,affordable(r));
@@ -990,15 +990,15 @@ function marketSel(){
 }
 function updateMarketCost(){
   const {want,eff,cost}=marketSel(),box=document.getElementById('mkCost'),btn=document.getElementById('mkBuyBtn'),look=MK.res.query.mode==='lookup';
-  let t=want?`Custo: <b>${nfmt(cost)}</b> crédito(s) para <b>${nfmt(eff)}</b> ${look?'resultado(s)':'lead(s)'}.`:'Marque ao menos um resultado.';
+  let t=want?(look?`Custo para abrir: <b>${nfmt(cost)}</b> crédito(s).`:`Serão gerados <b>${nfmt(eff)}</b> lead(s).`):'Marque ao menos um resultado.';
   if(eff<want)t+=`<br><span style="color:#f59e0b">Seu saldo cobre ${nfmt(eff)} de ${nfmt(want)}. Compre mais créditos para o restante.</span>`;
   if(want&&eff<1)t='<span style="color:#f59e0b">Você não tem créditos suficientes. Compre créditos para continuar.</span>';
   box.innerHTML=t;btn.disabled=eff<1;
-  btn.textContent=eff<1?(want?'Sem créditos':'Escolha um resultado'):(look?`Abrir ${nfmt(eff)} resultado(s)`:`Gerar lista com ${nfmt(eff)} lead(s)`);
+  btn.textContent=eff<1?(want?'Sem créditos':'Escolha um resultado'):(look?`Abrir por ${nfmt(cost)} crédito(s)`:`Gerar lista com ${nfmt(eff)} lead(s)`);
 }
 async function marketBuy(){
   if(MK.busy)return;const r=MK.res,sel=marketSel();if(sel.eff<1)return;
-  if(!confirm(`Gastar ${nfmt(sel.cost)} crédito(s) para abrir ${nfmt(sel.eff)} ${r.query.mode==='lookup'?'resultado(s)':'lead(s)'}?`))return;
+  if(!confirm(r.query.mode==='lookup'?`Abrir por ${nfmt(sel.cost)} crédito(s)?`:`Gerar ${nfmt(sel.eff)} lead(s)?`))return;
   MK.busy=true;const btn=document.getElementById('mkBuyBtn');btn.disabled=true;btn.textContent='Abrindo…';
   const nameEl=document.getElementById('mkName');
   const d=await api('/api/leadmarket/buy','POST',{searchId:r.searchId,quantity:sel.eff,resultIds:sel.ids||undefined,name:nameEl?nameEl.value:'',query:r.query,total:r.total,pricePerLead:r.pricePerLead}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
