@@ -10,7 +10,7 @@ import { importLeadFile, readLeadFile } from './leadImport.js';
 
 const config = loadConfig();
 
-const server = new McpServer({ name: 'captamais', version: '1.0.2' });
+const server = new McpServer({ name: 'captamais', version: '1.0.4' });
 
 const text = (s: string) => ({ content: [{ type: 'text' as const, text: s }] });
 const jsonText = (obj: unknown) => text(JSON.stringify(obj, null, 2));

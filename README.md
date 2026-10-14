@@ -65,10 +65,12 @@ No CRM só local, os leads não saem do seu PC. Veja também a [privacidade dest
 
 **Jeito mais simples (sem Git):**
 
-1. Abra [github.com/Tasca2/captamais-local](https://github.com/Tasca2/captamais-local).
-2. Clique em **Code** → **Download ZIP**.
-3. Extraia o ZIP, por exemplo em `Documentos\CaptaMais-local`.
-4. Dentro da pasta extraída você verá `captamais-skill` e `captamais-mcp`.
+1. Abra a página de [**Releases**](https://github.com/Tasca2/captamais-local/releases/latest).
+2. Em **Assets**, baixe os dois arquivos: `captamais-skill-vX.XX.zip` (a skill) e `captamais-mcp-vX.X.X.zip` (o MCP).
+3. Extraia **os dois na mesma pasta**, por exemplo `Documentos\CaptaMais-local`.
+4. Dentro dela você verá `captamais-skill` e `captamais-mcp`.
+
+> Prefira os arquivos da Release ao botão **Code → Download ZIP**: eles são a versão oficial, enxuta, e são os únicos cujos downloads são contados.
 
 **Quem usa Git:**
 
