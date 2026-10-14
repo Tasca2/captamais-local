@@ -10,6 +10,10 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.10] — 2026-10-14 (identificação: 1.10)
+### Alterado
+- **Pesquisa de leads:** o botão e o aviso mostram o custo em créditos e o saldo que sobra depois (também ao abrir resultado por nome), e a confirmação repete os dois valores.
+
 ## [1.0.9] — 2026-10-01 (identificação: 1.09)
 ### Adicionado
 - **Excluir lead:** botão «Excluir lead» na ficha do lead. Faz uma cópia de segurança antes e apaga também as atividades do lead; os dados comprados continuam nas listas.

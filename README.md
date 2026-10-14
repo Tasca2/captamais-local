@@ -15,7 +15,13 @@
   <a href="https://github.com/Tasca2/captamais-local/raw/main/docs/apresentacao-capta-mais.pdf"><strong>Baixar PDF</strong></a>
 </p>
 
-**Versão 1.09** (metadados npm: `1.0.9`).
+<p align="center">
+  <a href="https://github.com/Tasca2/captamais-local/releases/latest"><img alt="Última versão" src="https://img.shields.io/github/v/release/Tasca2/captamais-local?label=vers%C3%A3o&color=f59e0b"></a>
+  <a href="https://github.com/Tasca2/captamais-local/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/Tasca2/captamais-local/total?label=downloads&color=22c55e"></a>
+  <a href="https://github.com/Tasca2/captamais-local/releases/latest"><strong>⬇️ Baixar a última versão</strong></a>
+</p>
+
+**Versão 1.10** (metadados npm: `1.0.10`).
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 
@@ -66,8 +72,9 @@ No CRM só local, os leads não saem do seu PC. Veja também a [privacidade dest
 **Jeito mais simples (sem Git):**
 
 1. Abra a página de [**Releases**](https://github.com/Tasca2/captamais-local/releases/latest).
-2. Em **Assets**, baixe os dois arquivos: `captamais-skill-vX.XX.zip` (a skill) e `captamais-mcp-vX.X.X.zip` (o MCP).
-3. Extraia **os dois na mesma pasta**, por exemplo `Documentos\CaptaMais-local`.
+2. Em **Assets**, baixe **`captamais-completo-vX.XX.zip`**: skill e MCP juntos, no mesmo arquivo.
+   (Se quiser só uma parte, há também `captamais-skill-vX.XX.zip` e `captamais-mcp-vX.X.X.zip`.)
+3. Extraia o ZIP, por exemplo em `Documentos\CaptaMais-local`.
 4. Dentro dela você verá `captamais-skill` e `captamais-mcp`.
 
 > Prefira os arquivos da Release ao botão **Code → Download ZIP**: eles são a versão oficial, enxuta, e são os únicos cujos downloads são contados.

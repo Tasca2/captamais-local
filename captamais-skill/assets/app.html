@@ -998,15 +998,16 @@ function marketSel(){
 }
 function updateMarketCost(){
   const {want,eff,cost}=marketSel(),box=document.getElementById('mkCost'),btn=document.getElementById('mkBuyBtn'),look=MK.res.query.mode==='lookup';
-  let t=want?(look?`Custo para abrir: <b>${nfmt(cost)}</b> crédito(s).`:`Serão gerados <b>${nfmt(eff)}</b> lead(s).`):'Marque ao menos um resultado.';
+  const after=`saldo depois: <b>${nfmt(Math.max(0,MK.res.balance-cost))}</b>`;
+  let t=want?(look?`Custo para abrir: <b>${nfmt(cost)}</b> crédito(s) · ${after}.`:`Serão gerados <b>${nfmt(eff)}</b> lead(s). Custo: <b>${nfmt(cost)}</b> crédito(s) · ${after}.`):'Marque ao menos um resultado.';
   if(eff<want)t+=`<br><span style="color:#f59e0b">Seu saldo cobre ${nfmt(eff)} de ${nfmt(want)}. Compre mais créditos para o restante.</span>`;
   if(want&&eff<1)t='<span style="color:#f59e0b">Você não tem créditos suficientes. Compre créditos para continuar.</span>';
   box.innerHTML=t;btn.disabled=eff<1;
-  btn.textContent=eff<1?(want?'Sem créditos':'Escolha um resultado'):(look?`Abrir por ${nfmt(cost)} crédito(s)`:`Gerar lista com ${nfmt(eff)} lead(s)`);
+  btn.textContent=eff<1?(want?'Sem créditos':'Escolha um resultado'):(look?`Abrir por ${nfmt(cost)} crédito(s)`:`Gerar lista com ${nfmt(eff)} lead(s) · ${nfmt(cost)} crédito(s)`);
 }
 async function marketBuy(){
   if(MK.busy)return;const r=MK.res,sel=marketSel();if(sel.eff<1)return;
-  if(!confirm(r.query.mode==='lookup'?`Abrir por ${nfmt(sel.cost)} crédito(s)?`:`Gerar ${nfmt(sel.eff)} lead(s)?`))return;
+  if(!confirm(r.query.mode==='lookup'?`Abrir por ${nfmt(sel.cost)} crédito(s)? Saldo depois: ${nfmt(Math.max(0,r.balance-sel.cost))}.`:`Gerar ${nfmt(sel.eff)} lead(s) por ${nfmt(sel.cost)} crédito(s)? Saldo depois: ${nfmt(Math.max(0,r.balance-sel.cost))}.`))return;
   MK.busy=true;const btn=document.getElementById('mkBuyBtn');btn.disabled=true;btn.textContent='Abrindo…';
   const nameEl=document.getElementById('mkName');
   const d=await api('/api/leadmarket/buy','POST',{searchId:r.searchId,quantity:sel.eff,resultIds:sel.ids||undefined,name:nameEl?nameEl.value:'',query:r.query,total:r.total,pricePerLead:r.pricePerLead}).catch(()=>({ok:false,message:'Erro de conexão com o app local.'}));
