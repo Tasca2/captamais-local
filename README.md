@@ -21,7 +21,7 @@
   <a href="https://github.com/Tasca2/captamais-local/releases/latest"><strong>⬇️ Baixar a última versão</strong></a>
 </p>
 
-**Versão 1.10** (metadados npm: `1.0.10`).
+**Versão 1.11** (metadados npm: `1.0.11`).
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 

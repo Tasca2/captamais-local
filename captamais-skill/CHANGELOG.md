@@ -10,6 +10,10 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.11] — 2026-10-14 (identificação: 1.11)
+### Segurança
+- MCP 1.0.5: o relatório de créditos deixou de mostrar o preço por lead; dependências atualizadas (SDK do MCP 1.32.1 e proxy-addr 2.0.8), sem falhas conhecidas no `npm audit`.
+
 ## [1.0.10] — 2026-10-14 (identificação: 1.10)
 ### Alterado
 - **Pesquisa de leads:** o botão e o aviso mostram o custo em créditos e o saldo que sobra depois (também ao abrir resultado por nome), e a confirmação repete os dois valores.

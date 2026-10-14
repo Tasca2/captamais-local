@@ -10,7 +10,7 @@ import { importLeadFile, readLeadFile } from './leadImport.js';
 
 const config = loadConfig();
 
-const server = new McpServer({ name: 'captamais', version: '1.0.4' });
+const server = new McpServer({ name: 'captamais', version: '1.0.5' });
 
 const text = (s: string) => ({ content: [{ type: 'text' as const, text: s }] });
 const jsonText = (obj: unknown) => text(JSON.stringify(obj, null, 2));
@@ -174,7 +174,7 @@ server.tool(
   async ({ limit }) => {
     const credits = await leadCredits(config);
     return jsonText({
-      credits: credits.ok ? credits.data : { aviso: `Não foi possível consultar o saldo: ${credits.error}` },
+      credits: credits.ok ? (({ pricePerLead: _preco, ...d }) => d)(credits.data) : { aviso: `Não foi possível consultar o saldo: ${credits.error}` },
       relatorio: creditsSpendingReport(config, limit ?? 50),
     });
   },
