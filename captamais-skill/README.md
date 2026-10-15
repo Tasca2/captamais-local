@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.11-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.12-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />
@@ -65,7 +65,7 @@ Na primeira vinculação de uma conta completa à skill/MCP, ela recebe **10.000
 - Dados de ativos, montagem de carteira, enriquecimento, sincronização. Ver [status](INTEGRATION.md#status-dos-recursos).
 
 ## Requisitos
-- **Node.js 18+**
+- **Node.js 18+** — só se for usar pelo Claude/terminal. Pelo duplo clique (`Abrir CaptaMais`), o Node portátil é baixado sozinho para dentro da pasta da skill, sem instalar nada.
 - Um cliente de IA compatível (ex.: Claude Desktop) — a skill vai na sua pasta de skills.
 - (Opcional) Conta CaptaMais para os recursos de nuvem.
 
@@ -93,6 +93,15 @@ O Claude **sobe o app local** (`http://127.0.0.1:…`, só na sua máquina), que
 daí você trabalha direto: arrastar cards, criar/editar leads, registrar atendimento, agenda,
 importar/exportar.
 
+### Instalar pedindo ao Claude (o mais simples)
+Cole no Claude Code (ou no Claude com acesso ao computador):
+```
+Instale a skill CaptaMais deste repositório e abra o CRM quando terminar:
+https://github.com/Tasca2/captamais-local
+```
+O Claude baixa o repositório, copia a skill para a pasta de skills, **baixa o Node.js portátil se o computador não tiver**
+(sem instalar nada no sistema), prepara as dependências e já abre o CaptaMais. Não precisa instalar o Node antes.
+
 ### Abrir sem o Claude (duplo clique)
 O CRM não depende do assistente para abrir. Na pasta da skill:
 - **Windows:** dê duplo clique em **`Abrir CaptaMais.bat`**.
@@ -100,7 +109,8 @@ O CRM não depende do assistente para abrir. Na pasta da skill:
 
 Na **primeira vez** o arquivo instala o que falta sozinho (leva cerca de um minuto, precisa de internet) e, no Windows,
 oferece um **atalho "CaptaMais" na Área de Trabalho** com o ícone. Depois é só abrir o atalho — a janela do CRM aparece sozinha.
-Precisa apenas do [Node.js](https://nodejs.org) (versão LTS) instalado.
+**Não precisa instalar o Node.js:** se o computador não tiver, o arquivo baixa o Node portátil oficial (com conferência de
+checksum) para a pasta `runtime/` da skill, sem instalar nada no sistema nem alterar o PATH.
 
 ## Privacidade e segurança
 - Servidor local escuta **só em `127.0.0.1`** + **token anti-CSRF**; nada exposto na rede.

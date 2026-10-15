@@ -304,8 +304,22 @@ export function exportAll() {
   return { exportedAt: now(), layouts: db.prepare('SELECT * FROM layouts').all(), columns: db.prepare('SELECT * FROM columns').all(),
            leads: db.prepare('SELECT * FROM leads').all(), activities: db.prepare('SELECT * FROM activities').all() };
 }
-export function importLeads(rows) {
-  let n = 0; for (const r of Array.isArray(rows) ? rows : []) { if (!clean(r?.name)) continue; try { createLead(r); n++; } catch { /* pula */ } } return n;
+export function importLeads(rows, layoutId) {
+  let n = 0; for (const r of Array.isArray(rows) ? rows : []) { if (!clean(r?.name)) continue; try { createLead(layoutId ? { ...r, layout_id: layoutId } : r); n++; } catch { /* pula */ } } return n;
+}
+
+/**
+ * Resolve o funil de destino de uma inclusão de leads: id/nome de um funil existente ou criação de um novo.
+ * Não existe "padrão silencioso": quem chama (CLI/MCP) precisa informar para onde os leads vão.
+ */
+export function resolveLayoutTarget({ layout, newLayout } = {}) {
+  if (clean(newLayout)) return createLayout(newLayout).id;
+  const ref = clean(layout);
+  if (!ref) return null;
+  const all = listLayouts();
+  const byId = /^\d+$/.test(ref) ? all.find((l) => l.id === Number(ref)) : null;
+  const byName = all.find((l) => l.name.trim().toLowerCase() === ref.toLowerCase());
+  return (byId || byName)?.id ?? null;
 }
 
 // ── CSV (leads) — para planilhas e outros CRMs ──

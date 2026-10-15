@@ -17,3 +17,6 @@ crm-view-demo.html
 .DS_Store
 Thumbs.db
 *.log
+
+# Node.js portátil baixado pelo "Abrir CaptaMais" (não versionar; ~100 MB)
+runtime/

@@ -432,6 +432,26 @@ function renderLayoutSel(){
 }
 async function switchLayout(id){STATE.layoutId=Number(id);await load();}
 async function newLayout(){const n=prompt('Nome do novo funil:');if(!n)return;const d=await api('/api/layouts','POST',{name:n});if(d.ok){STATE.layoutId=d.layout.id;toast('Funil criado');load();}}
+/** Pergunta em qual funil os leads entram (ou cria um novo). Resolve com o id do funil, ou null se cancelar. */
+function askLayout(title){return new Promise(resolve=>{
+  const wrap=document.createElement('div');wrap.className='modal open';
+  const opts=STATE.layouts.map(x=>`<option value="${x.id}"${x.id===STATE.layoutId?' selected':''}>${esc(x.name)}</option>`).join('');
+  wrap.innerHTML=`<div class="sheet" style="max-width:380px"><h3>${esc(title||'Em qual funil adicionar?')}</h3>
+    <div class="field"><label>Funil de destino</label><select id="alSel">${opts}<option value="new">＋ Criar novo funil…</option></select></div>
+    <div class="field" id="alNewBox" style="display:none"><label>Nome do novo funil</label><input id="alNew" maxlength="60" placeholder="Ex.: Prospecção Sul"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="ghost" id="alCancel">Cancelar</button><button id="alOk">Continuar</button></div></div>`;
+  document.body.appendChild(wrap);
+  const sel=wrap.querySelector('#alSel'),box=wrap.querySelector('#alNewBox'),inp=wrap.querySelector('#alNew');
+  const done=v=>{wrap.remove();resolve(v);};
+  sel.onchange=()=>{box.style.display=sel.value==='new'?'block':'none';if(sel.value==='new')inp.focus();};
+  wrap.querySelector('#alCancel').onclick=()=>done(null);
+  wrap.onclick=e=>{if(e.target===wrap)done(null);};
+  wrap.querySelector('#alOk').onclick=async()=>{
+    if(sel.value!=='new'){done(Number(sel.value));return;}
+    const n=inp.value.trim();if(!n){toast('Digite o nome do novo funil');return;}
+    const d=await api('/api/layouts','POST',{name:n});if(!d.ok){toast('Não foi possível criar o funil');return;}
+    STATE.layouts.push(d.layout);done(d.layout.id);};
+});}
 async function renameLayout(){const cur=STATE.layouts.find(l=>l.id===STATE.layoutId);const n=prompt('Renomear funil:',cur?.name||'');if(!n)return;const d=await api(`/api/layouts/${STATE.layoutId}`,'PATCH',{name:n});if(d.ok){toast('Renomeado');load();}}
 async function deleteLayout(){if(!confirm('Excluir este funil? (precisa estar sem leads)'))return;const d=await api(`/api/layouts/${STATE.layoutId}`,'DELETE');if(d.ok){STATE.layoutId=null;toast('Funil excluído');load();}else toast(d.error||'Erro');}
 
@@ -544,12 +564,13 @@ async function doExport(){const d=await api('/api/export');download(new Blob([JS
 async function doExportCsv(){const r=await fetch(`/api/export.csv?layout=${STATE.layoutId}`,{headers:{'x-cm-token':TOKEN}});const txt=await r.text();download(new Blob([txt],{type:'text/csv;charset=utf-8'}),'captamais-leads.csv');toast('CSV exportado');}
 async function doImport(input){const f=input.files[0];if(!f)return;
   try{let payload;const lower=f.name.toLowerCase();
-    if(lower.endsWith('.xlsx')){if(f.size>4*1024*1024)throw new Error('A planilha deve ter no máximo 4 MB.');const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f)});payload={xlsxBase64:data,layout_id:STATE.layoutId};}
-    else{const txt=await f.text();if(lower.endsWith('.json')||/^\s*[[{]/.test(txt)){const data=JSON.parse(txt);const d=await api('/api/import','POST',{leads:data.leads||data});toast(`Importados: ${d.imported||0}`);load();input.value='';return;}payload={csv:txt,layout_id:STATE.layoutId};}
+    const layoutId=await askLayout('Importar para qual funil?');if(!layoutId){input.value='';return;}
+    if(lower.endsWith('.xlsx')){if(f.size>4*1024*1024)throw new Error('A planilha deve ter no máximo 4 MB.');const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f)});payload={xlsxBase64:data,layout_id:layoutId};}
+    else{const txt=await f.text();if(lower.endsWith('.json')||/^\s*[[{]/.test(txt)){const data=JSON.parse(txt);const d=await api('/api/import','POST',{leads:data.leads||data,layout_id:layoutId});toast(`Importados: ${d.imported||0}`);STATE.layoutId=layoutId;load();input.value='';return;}payload={csv:txt,layout_id:layoutId};}
     const preview=await api('/api/import/preview','POST',payload);if(!preview.ok)throw new Error(preview.message||'Arquivo inválido');
     const map=(preview.mapping||[]).join('\n');const warn=(preview.warnings||[]).join('\n');
     if(!confirm(`Confira o que foi identificado:\n\n${map||'Nenhuma coluna reconhecida'}\n\n${preview.valid||0} lead(s) válido(s) de ${preview.total||0}.${warn?'\n\nAtenção: '+warn:''}\n\nImportar agora?`)){input.value='';return;}
-    const d=await api('/api/import','POST',payload);toast(`Importados: ${d.imported||0}${d.duplicates?` · ${d.duplicates} já existiam`:''}${d.skipped?` · ${d.skipped} ignorados`:''}`);load();}
+    const d=await api('/api/import','POST',payload);toast(`Importados: ${d.imported||0}${d.duplicates?` · ${d.duplicates} já existiam`:''}${d.skipped?` · ${d.skipped} ignorados`:''}`);STATE.layoutId=layoutId;load();}
   catch(e){toast(e&&e.message?e.message:'Arquivo inválido');}input.value='';}
 
 function openDrawer(){document.getElementById('drawer').hidden=false;document.getElementById('backdrop').hidden=false;}
@@ -600,7 +621,7 @@ async function syncPlatform(){
   await loadLink(true); // confere de novo o plano: quem assinou (ou foi rebaixado) desde a última vez aparece certo
   // Sem conta (ou só com carteira de créditos): leva para entrar ou criar a conta no Capta+; depois a pessoa cola a chave aqui.
   if(!LINK.linked||(LINK.accountType==='guest')){toast('Entre ou crie sua conta CaptaMais para sincronizar.');openSite('/login');return;}
-  if(LINK.blocked){openGate('Enviar para a nuvem','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
+  if(LINK.blocked){openGate('Enviar para a nuvem','Seu acesso ao conector está pausado. Fale com o suporte para reativar.','⏸️','none');return;}
   const s=await api('/api/sync/status').catch(()=>({}));
   syncInfo.textContent=`${s.total??0} lead(s) aqui · ${s.linked??0} já ligado(s) à nuvem · ${s.pending??0} com envio pendente.`+(LINK.plan?` Plano: ${planLabel(LINK.plan)}.`:'');
   syncResult.innerHTML='';syncBtn.disabled=false;openModal('mSync');
@@ -652,7 +673,7 @@ async function openPlanning(leadId,planId){
 }
 function toolAllowed(name,key){
   if(guestBlocked(name))return false;
-  if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return false;}
+  if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado. Fale com o suporte para reativar.','⏸️','none');return false;}
   if(!LINK.linked){openGate(name,`${name} precisa de uma conta CaptaMais conectada e de um plano Premium ou Max. Ao fazer a primeira vinculação da conta, você recebe 10.000 créditos para leads.`,'🔗');return false;}
   if(!(LINK.tools&&LINK.tools[key])){openGate(name,`${name} está disponível nos planos Premium e Max. Veja os planos na plataforma para liberar.`,'🔒','plans');return false;}
   return true;
@@ -738,7 +759,7 @@ const TOOL_MAP={
 let MK={mode:'lookup',field:'all',res:null,buyUrl:'',list:null,busy:false};
 const nfmt=n=>Number(n||0).toLocaleString('pt-BR');
 function ensureLinked(name){
-  if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return false;}
+  if(LINK.linked&&LINK.blocked){openGate(name,'Seu acesso ao conector está pausado. Fale com o suporte para reativar.','⏸️','none');return false;}
   if(!LINK.linked){openAccess();return false;}
   return true;
 }
@@ -769,7 +790,7 @@ function listDetails(l){
 async function openCreditsPanel(){
   closeDrawer();
   if(!LINK.linked){openAccess();return;}
-  if(LINK.blocked){openGate('Créditos','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
+  if(LINK.blocked){openGate('Créditos','Seu acesso ao conector está pausado. Fale com o suporte para reativar.','⏸️','none');return;}
   document.getElementById('crCode').value='';document.getElementById('crCodeMsg').innerHTML='';
   openModal('mCredits');
   document.getElementById('crSummary').innerHTML='<span style="color:var(--muted)">Carregando…</span>';
@@ -824,7 +845,7 @@ async function redeemCode(){
 }
 function openMarket(mode){
   closeDrawer();
-  if(LINK.linked&&LINK.blocked){openGate('Leads do Capta+','Seu acesso ao conector está pausado pelo administrador. Fale com o suporte para reativar.','⏸️','none');return;}
+  if(LINK.linked&&LINK.blocked){openGate('Leads do Capta+','Seu acesso ao conector está pausado. Fale com o suporte para reativar.','⏸️','none');return;}
   if(!LINK.linked){MK.mode=mode||MK.mode;openAccess();return;}MK.enrichLeadId=null;
   MK.res=null;document.getElementById('mkRes').innerHTML='';setMarketMode(mode||'lookup');openModal('mMarket');loadCredits();
 }
@@ -1031,7 +1052,6 @@ async function openList(id,info){
   MK.person=listPerson(l,d.leads);
   if(MK.person)h+=`<div style="margin:0 0 10px"><button class="ghost" id="personLeadBtn" onclick="createPersonLead()">👤 Criar lead de <b>${esc(MK.person.name)}</b> <span style="color:var(--muted)">(empresas na descrição)</span></button></div>`;
   h+='<p style="color:var(--muted);font-size:12px;margin:0 0 8px">Já está salva. Você pode <b>baixar em Excel</b> agora ou depois, <b>importar no CRM</b> no funil que quiser, ou <b>manter só no banco</b> — ela fica em “Minhas listas de leads”.</p>';
-  h+=`<div class="field" style="max-width:280px"><label>Importar para o funil</label><select id="listLayout">${STATE.layouts.map(x=>`<option value="${x.id}"${x.id===STATE.layoutId?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>`;
   h+=`<div style="max-height:300px;overflow:auto"><table class="mktable"><tr><th>Empresa</th><th>E-mail</th><th>Telefone</th><th>Cidade</th></tr>${d.leads.map(x=>`<tr><td>${esc(x.fantasia||x.razao||'')}</td><td>${esc(x.email||'')}</td><td>${esc(x.cellphone||x.phone||'')}</td><td>${esc(x.city||'')}${x.uf?'/'+esc(x.uf):''}</td></tr>`).join('')}</table></div>`;
   if(l.purchased>d.leads.length)h+=`<div style="font-size:11px;color:var(--muted);margin-top:4px">Mostrando os ${nfmt(d.leads.length)} primeiros — os outros ${nfmt(l.purchased-d.leads.length)} estão na planilha.</div>`;
   h+='<div id="listMsg" style="margin-top:8px"></div>';
@@ -1072,8 +1092,9 @@ async function downloadList(){
   download(await r.blob(),r.headers.get('X-Filename')||'captamais-leads.xlsx');toast('Planilha Excel baixada');
 }
 async function importList(){
-  if(!MK.list)return;const btn=document.getElementById('listImportBtn');btn.disabled=true;
-  const layout=Number(document.getElementById('listLayout').value)||STATE.layoutId;
+  if(!MK.list)return;const btn=document.getElementById('listImportBtn');
+  const layout=await askLayout('Importar a lista para qual funil?');if(!layout)return;
+  btn.disabled=true;
   const d=await api(`/api/leadlists/${MK.list.id}/import`,'POST',{layout_id:layout}).catch(()=>({ok:false}));
   if(!d.ok){btn.disabled=false;toast('Não foi possível importar');return;}
   const name=(STATE.layouts.find(x=>x.id===layout)||{}).name||'funil';

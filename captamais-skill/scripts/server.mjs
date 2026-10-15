@@ -289,7 +289,8 @@ async function handle(req, res) {
         }
         if ((lm = p.match(/^\/api\/leadlists\/(\d+)\/import$/)) && method === 'POST') {
           const b = await readBody(req);
-          return json(res, 200, { ok: true, ...leadlists.importToCrm(Number(lm[1]), b.layout_id) });
+          if (!db.listLayouts().some((l) => l.id === Number(b.layout_id))) return json(res, 400, { ok: false, error: 'Escolha o funil de destino.' });
+          return json(res, 200, { ok: true, ...leadlists.importToCrm(Number(lm[1]), Number(b.layout_id)) });
         }
       } catch (e) { return fail(e); }
     }
@@ -352,7 +353,7 @@ async function handle(req, res) {
         if (buffer.subarray(0, 2).toString() !== 'PK') return json(res, 400, { ok: false, message: 'Arquivo Excel inválido.' });
         return json(res, 200, { ok: true, ...db.importLeadRows(await rowsFromXlsx(buffer), body.layout_id) });
       }
-      return json(res, 200, { ok: true, imported: db.importLeads(body.leads || body) });
+      return json(res, 200, { ok: true, imported: db.importLeads(body.leads || body, body.layout_id) });
     }
 
     let m;

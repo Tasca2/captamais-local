@@ -10,6 +10,17 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.12] — 2026-10-15 (identificação: 1.12)
+### Adicionado
+- **Node.js embutido no duplo clique:** `Abrir CaptaMais.bat` / `.command` baixam um Node.js portátil oficial
+  (nodejs.org, checksum SHA-256 conferido) para `runtime/node` quando o computador não tem Node 18+. Não instala nada
+  no sistema nem mexe no PATH — acaba o pré-requisito de instalar o Node.
+- **Instalação pelo link do GitHub:** o `SKILL.md` ensina o Claude a instalar a skill, preparar o Node portátil e já
+  abrir o CRM (`Abrir CaptaMais.bat|.command --silencioso`, sem pausas nem perguntas).
+- **Funil de destino explícito:** importar planilha/lista, `crm.mjs add-lead` e as ferramentas do MCP perguntam em
+  qual funil os leads entram (ou criam um novo); novos `layouts`/`add-layout` e `captamais_list_layouts`.
+- MCP 1.0.6: `captamais_create_lead`, `captamais_import_leads_file` e `captamais_import_lead_list` exigem o funil de destino (`layout`/`newLayoutName`); nova ferramenta `captamais_list_layouts`.
+
 ## [1.0.11] — 2026-10-14 (identificação: 1.11)
 ### Segurança
 - MCP 1.0.5: o relatório de créditos deixou de mostrar o preço por lead; dependências atualizadas (SDK do MCP 1.32.1 e proxy-addr 2.0.8), sem falhas conhecidas no `npm audit`.

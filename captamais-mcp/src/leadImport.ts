@@ -62,8 +62,8 @@ export async function readLeadFile(filePath:string) {
   throw new Error('Formato aceito: .xlsx, .csv, .tsv, .txt ou .json.');
 }
 
-export function importLeadFile(config:CaptaMaisConfig, parsed:Awaited<ReturnType<typeof readLeadFile>>) {
+export function importLeadFile(config:CaptaMaisConfig, parsed:Awaited<ReturnType<typeof readLeadFile>>, layoutId?:number) {
   const conn=openDb(config);const existing=conn.prepare('SELECT email,phone FROM leads').all() as {email:string|null;phone:string|null}[];const emails=new Set(existing.map((r)=>txt(r.email).toLowerCase()).filter(Boolean));const phones=new Set(existing.map((r)=>digits(r.phone)).filter((v)=>v.length>=8));let imported=0,duplicates=0;
-  for(const lead of parsed.leads){const email=txt(lead.email).toLowerCase(),phone=digits(lead.phone);if((email&&emails.has(email))||(phone.length>=8&&phones.has(phone))){duplicates++;continue;}createLead(config,{...lead,entityType:lead.entity_type});imported++;if(email)emails.add(email);if(phone.length>=8)phones.add(phone);}
+  for(const lead of parsed.leads){const email=txt(lead.email).toLowerCase(),phone=digits(lead.phone);if((email&&emails.has(email))||(phone.length>=8&&phones.has(phone))){duplicates++;continue;}createLead(config,{...lead,entityType:lead.entity_type,layoutId});imported++;if(email)emails.add(email);if(phone.length>=8)phones.add(phone);}
   return { imported, duplicates, skipped:parsed.skipped, total:parsed.total, mapping:parsed.mapping, warnings:parsed.warnings };
 }

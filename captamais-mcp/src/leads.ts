@@ -95,7 +95,7 @@ export function leadLists(config: CaptaMaisConfig) {
 }
 
 /** Cria leads no CRM a partir da lista, sem duplicar e-mail/telefone. */
-export function importLeadList(config: CaptaMaisConfig, listId: number) {
+export function importLeadList(config: CaptaMaisConfig, listId: number, layoutId?: number) {
   const conn = openDb(config);
   const rows = conn.prepare('SELECT * FROM market_leads WHERE list_id=? AND imported_lead_id IS NULL ORDER BY id').all(listId) as Record<string, string | number | null>[];
   const emails = new Set<string>(), phones = new Set<string>();
@@ -113,7 +113,7 @@ export function importLeadList(config: CaptaMaisConfig, listId: number) {
     const description = [r.cnpj && `CNPJ: ${r.cnpj}`, r.socio && `Sócio: ${r.socio}`, r.cnae && `CNAE: ${r.cnae}`, r.situacao && `Situação: ${r.situacao}`, r.site && `Site: ${r.site}`].filter(Boolean).join('\n');
     const lead = createLead(config, {
       name, email: String(r.email || ''), phone, city: [r.city, r.uf].filter(Boolean).join('/'),
-      subtitle: [r.porte, r.cnae].filter(Boolean).join(' · '), description, entityType: 'PJ',
+      subtitle: [r.porte, r.cnae].filter(Boolean).join(' · '), description, entityType: 'PJ', layoutId,
     });
     conn.prepare('UPDATE market_leads SET imported_lead_id=? WHERE id=?').run(lead.id, r.id);
     if (email) emails.add(email); if (pk) phones.add(pk);

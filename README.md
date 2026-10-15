@@ -21,7 +21,7 @@
   <a href="https://github.com/Tasca2/captamais-local/releases/latest"><strong>⬇️ Baixar a última versão</strong></a>
 </p>
 
-**Versão 1.11** (metadados npm: `1.0.11`).
+**Versão 1.12** (metadados npm: `1.0.12`).
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 
@@ -54,7 +54,7 @@ Capita+® é uma marca registrada. CaptaMais — [captamais.me](https://captamai
 ## Antes de começar
 
 1. Conta no [CaptaMais](https://captamais.me) (para vincular a nuvem; o CRM local funciona sem isso).
-2. [Node.js 18 ou superior](https://nodejs.org/) instalado (na instalação, marque a opção de adicionar ao PATH).
+2. Nada de Node.js para instalar à mão: se o seu computador não tiver o Node.js 18+, a skill baixa um Node portátil oficial para dentro da própria pasta (sem instalar nada no sistema nem mexer no PATH).
 3. Claude Desktop (skill) e/ou Cursor / outro cliente MCP.
 
 Ao usar a nuvem CaptaMais, você concorda com:
@@ -64,6 +64,20 @@ Ao usar a nuvem CaptaMais, você concorda com:
 - [Acordo de tratamento de dados — DPA](https://captamais.me/dpa)
 
 No CRM só local, os leads não saem do seu PC. Veja também a [privacidade desta skill](captamais-skill/PRIVACY.md).
+
+---
+
+## Jeito mais rápido: peça ao Claude
+
+Cole no Claude Code (ou no Claude com acesso ao computador):
+
+```
+Instale a skill CaptaMais deste repositório e abra o CRM quando terminar:
+https://github.com/Tasca2/captamais-local
+```
+
+O Claude baixa o repositório, copia a skill para a pasta de skills, baixa o Node.js portátil se o computador não tiver,
+prepara as dependências e já abre o CaptaMais. Se preferir fazer à mão, siga os passos abaixo.
 
 ---
 

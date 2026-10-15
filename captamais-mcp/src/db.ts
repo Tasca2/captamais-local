@@ -67,6 +67,24 @@ export function openDb(config: CaptaMaisConfig): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_ml_list ON market_leads(list_id);
   `);
+  // Funis (layouts) — mesmas tabelas do CRM visual (captamais-skill), para o MCP também escolher o destino.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS layouts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, position INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS columns (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, layout_id INTEGER NOT NULL, col_key TEXT NOT NULL,
+      title TEXT NOT NULL, color TEXT, position INTEGER NOT NULL DEFAULT 0);
+  `);
+  try { db.exec('ALTER TABLE leads ADD COLUMN layout_id INTEGER'); } catch {}
+  if (!db.prepare('SELECT id FROM layouts LIMIT 1').get()) {
+    const id = Number(db.prepare('INSERT INTO layouts (name, position, created_at) VALUES (?,?,?)').run('Prospecção', 0, new Date().toISOString()).lastInsertRowid);
+    const cols: [string, string, string][] = [
+      ['NEW LEAD', 'NOVO LEAD', '#3b82f6'], ['INITIAL CONTACT', 'CONTATO INICIAL', '#8b5cf6'], ['FIRST MEETING', 'PRIMEIRA REUNIÃO', '#6366f1'],
+      ['SECOND MEETING', 'SEGUNDA REUNIÃO', '#f59e0b'], ['CLOSING', 'FECHAMENTO', '#10b981'],
+    ];
+    cols.forEach((c, i) => db!.prepare('INSERT INTO columns (layout_id,col_key,title,color,position) VALUES (?,?,?,?,?)').run(id, c[0], c[1], c[2], i));
+    db.prepare('UPDATE leads SET layout_id = ? WHERE layout_id IS NULL').run(id);
+  }
   try { db.exec('ALTER TABLE activities ADD COLUMN google_event_id TEXT'); } catch {}
   try { db.exec('ALTER TABLE activities ADD COLUMN google_event_url TEXT'); } catch {}
   try { db.exec('ALTER TABLE activities ADD COLUMN calendar_sync_status TEXT'); } catch {}
@@ -93,17 +111,49 @@ export function listLeads(config: CaptaMaisConfig, opts?: { stage?: string; sear
     .all(...params, limit) as Lead[];
 }
 
+export type Layout = { id: number; name: string; position: number; created_at: string };
+
+export function listLayouts(config: CaptaMaisConfig): Layout[] {
+  return openDb(config).prepare('SELECT * FROM layouts ORDER BY position, id').all() as Layout[];
+}
+
+export function createLayout(config: CaptaMaisConfig, name: string): Layout {
+  const conn = openDb(config);
+  const clean = String(name || '').trim().slice(0, 60) || 'Novo funil';
+  const pos = ((conn.prepare('SELECT MAX(position) m FROM layouts').get() as { m: number | null }).m ?? -1) + 1;
+  const id = Number(conn.prepare('INSERT INTO layouts (name, position, created_at) VALUES (?,?,?)').run(clean, pos, new Date().toISOString()).lastInsertRowid);
+  [['Entrada', '#3b82f6'], ['Em andamento', '#f59e0b'], ['Ganhos', '#10b981']].forEach((c, i) =>
+    conn.prepare('INSERT INTO columns (layout_id,col_key,title,color,position) VALUES (?,?,?,?,?)').run(id, 'col_' + Math.random().toString(16).slice(2, 12), c[0], c[1], i));
+  return conn.prepare('SELECT * FROM layouts WHERE id=?').get(id) as Layout;
+}
+
+/**
+ * Funil de destino escolhido pelo usuário: id/nome de um existente, ou um novo (criado agora).
+ * Devolve null se nada foi informado ou o funil não existe — não há destino "padrão" silencioso.
+ */
+export function resolveLayoutTarget(config: CaptaMaisConfig, opts: { layout?: string | number; newLayoutName?: string }): number | null {
+  if (opts.newLayoutName && opts.newLayoutName.trim()) return createLayout(config, opts.newLayoutName).id;
+  const ref = String(opts.layout ?? '').trim();
+  if (!ref) return null;
+  const all = listLayouts(config);
+  const byId = /^\d+$/.test(ref) ? all.find((l) => l.id === Number(ref)) : undefined;
+  const byName = all.find((l) => l.name.trim().toLowerCase() === ref.toLowerCase());
+  return (byId || byName)?.id ?? null;
+}
+
 export function createLead(
   config: CaptaMaisConfig,
-  input: { name: string; email?: string; phone?: string; city?: string; stage?: string; description?: string; subtitle?: string; entityType?: string },
+  input: { name: string; email?: string; phone?: string; city?: string; stage?: string; description?: string; subtitle?: string; entityType?: string; layoutId?: number },
 ): Lead {
   const conn = openDb(config);
   const now = new Date().toISOString();
-  const stage = (input.stage || 'NEW LEAD').trim() || 'NEW LEAD';
+  const layoutId = input.layoutId && listLayouts(config).some((l) => l.id === input.layoutId) ? input.layoutId : listLayouts(config)[0]?.id;
+  const firstCol = (conn.prepare('SELECT col_key FROM columns WHERE layout_id = ? ORDER BY position, id LIMIT 1').get(layoutId) as { col_key: string } | undefined)?.col_key;
+  const stage = (input.stage || firstCol || 'NEW LEAD').trim() || 'NEW LEAD';
   const info = conn
     .prepare(
-      `INSERT INTO leads (name, email, phone, city, stage, description, subtitle, entity_type, custom_fields, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, '{}', ?)`,
+      `INSERT INTO leads (name, email, phone, city, stage, description, subtitle, entity_type, custom_fields, created_at, layout_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, '{}', ?, ?)`,
     )
     .run(
       input.name.trim(),
@@ -115,6 +165,7 @@ export function createLead(
       (input.subtitle || '').trim() || null,
       (input.entityType || 'PF').trim() || 'PF',
       now,
+      layoutId ?? null,
     );
   return conn.prepare('SELECT * FROM leads WHERE id = ?').get(Number(info.lastInsertRowid)) as Lead;
 }

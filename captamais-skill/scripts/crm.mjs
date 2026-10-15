@@ -2,7 +2,7 @@
 /**
  * CLI do CRM local (ações por conversa/snapshot). Usa o mesmo motor do app: ./db.mjs.
  * Uso: node crm.mjs <comando> [--chave valor ...]
- * Comandos: board | render | list | add-lead | set-stage | activity | agenda | done | show
+ * Comandos: board | render | list | layouts | add-layout | add-lead | set-stage | activity | agenda | done | show
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -48,10 +48,23 @@ try {
       out({ ok: true, count: leads.length, leads });
       break;
     }
-    case 'add-lead':
+    case 'layouts': out({ ok: true, layouts: db.listLayouts() }); break;
+    case 'add-layout':
       if (!a.name || a.name === true) fail('Informe --name.');
-      out({ ok: true, lead: db.createLead({ name: a.name, email: a.email, phone: a.phone, city: a.city, stage: a.stage, subtitle: a.subtitle, description: a.description, entityType: a.entityType }) });
+      out({ ok: true, layout: db.createLayout(a.name) });
       break;
+    case 'add-lead': {
+      if (!a.name || a.name === true) fail('Informe --name.');
+      // Sem destino silencioso: o usuário escolhe o funil (ou manda criar um) antes de o lead entrar.
+      if (!a.layout && !a['new-layout']) {
+        out({ ok: false, needsLayout: true, error: 'Pergunte ao usuário em qual funil o lead deve entrar (ou se quer criar um novo) e repita com --layout <id|nome> ou --new-layout "Nome".', layouts: db.listLayouts() });
+        process.exit(1);
+      }
+      const layoutId = db.resolveLayoutTarget({ layout: a.layout === true ? '' : a.layout, newLayout: a['new-layout'] === true ? '' : a['new-layout'] });
+      if (!layoutId) fail('Funil não encontrado. Use o comando layouts para ver as opções.');
+      out({ ok: true, lead: db.createLead({ name: a.name, email: a.email, phone: a.phone, city: a.city, stage: a.stage, subtitle: a.subtitle, description: a.description, entityType: a.entityType, layout_id: layoutId }) });
+      break;
+    }
     case 'set-stage':
       if (!a.id || !a.stage || a.stage === true) fail('Informe --id e --stage.');
       { const l = db.moveStage(Number(a.id), String(a.stage)); l ? out({ ok: true, lead: l }) : fail('Lead não encontrado.'); }
@@ -64,7 +77,7 @@ try {
     case 'done': if (!a.activity) fail('Informe --activity N.'); out({ ok: db.doneActivity(Number(a.activity)) }); break;
     case 'show': { if (!a.id) fail('Informe --id N.'); const r = db.getLead(Number(a.id)); r.lead ? out({ ok: true, ...r }) : fail('Lead não encontrado.'); break; }
     default:
-      out({ ok: false, error: `Comando desconhecido: ${cmd || '(vazio)'}`, comandos: ['board', 'render', 'list', 'add-lead', 'set-stage', 'activity', 'agenda', 'done', 'show'] });
+      out({ ok: false, error: `Comando desconhecido: ${cmd || '(vazio)'}`, comandos: ['board', 'render', 'list', 'layouts', 'add-layout', 'add-lead', 'set-stage', 'activity', 'agenda', 'done', 'show'] });
       process.exit(1);
   }
 } catch (e) { fail(e.message || String(e)); }

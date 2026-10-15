@@ -3,14 +3,14 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { loadConfig } from './config.js';
-import { createActivity, createLead, DEFAULT_STAGES, getLead, listLeads, moveStage, setActivityGoogleEvent } from './db.js';
+import { createActivity, createLead, DEFAULT_STAGES, getLead, listLayouts, listLeads, moveStage, resolveLayoutTarget, setActivityGoogleEvent } from './db.js';
 import { createGoogleCalendarEvent, googleStatus, prepareMeeting } from './cloud.js';
 import { buyLeads, creditsSpendingReport, enrichLeadFromPurchase, exportLeadList, redeemCreditsCode, importLeadList, leadCredits, leadLists, searchLeads } from './leads.js';
 import { importLeadFile, readLeadFile } from './leadImport.js';
 
 const config = loadConfig();
 
-const server = new McpServer({ name: 'captamais', version: '1.0.5' });
+const server = new McpServer({ name: 'captamais', version: '1.0.6' });
 
 const text = (s: string) => ({ content: [{ type: 'text' as const, text: s }] });
 const jsonText = (obj: unknown) => text(JSON.stringify(obj, null, 2));
@@ -31,19 +31,47 @@ server.tool(
   },
 );
 
+const layoutParams = {
+  layout: z.string().optional().describe('Funil (layout) de destino: id ou nome de um existente. PERGUNTE ao usuário antes — veja captamais_list_layouts.'),
+  newLayoutName: z.string().optional().describe('Para criar um funil novo e mandar os leads para ele (use quando o usuário pedir um novo).'),
+};
+
+/** Resolve o funil escolhido; sem escolha (ou inexistente) devolve a orientação para perguntar ao usuário. */
+function pickLayout(args: { layout?: string; newLayoutName?: string }): { id: number } | { ask: ReturnType<typeof text> } {
+  const id = resolveLayoutTarget(config, { layout: args.layout, newLayoutName: args.newLayoutName });
+  if (id) return { id };
+  return {
+    ask: text(
+      `Antes de gravar, pergunte ao usuário em qual funil estes leads devem entrar (ou se quer criar um novo) e repita a chamada com "layout" ou "newLayoutName". Funis atuais: ${JSON.stringify(
+        listLayouts(config).map((l) => ({ id: l.id, name: l.name })),
+      )}`,
+    ),
+  };
+}
+
+server.tool(
+  'captamais_list_layouts',
+  'Lista os funis (layouts) do CRM local. Use para perguntar ao usuário em qual funil os leads devem entrar. Não gasta tokens.',
+  {},
+  async () => jsonText({ layouts: listLayouts(config).map((l) => ({ id: l.id, name: l.name })) }),
+);
+
 server.tool(
   'captamais_create_lead',
-  'Cria um novo lead no CRM local. Não gasta tokens (é local).',
+  'Cria um novo lead no CRM local, no funil que o usuário escolher (pergunte antes; veja captamais_list_layouts). Não gasta tokens (é local).',
   {
     name: z.string().min(1).describe('Nome do lead (obrigatório).'),
     email: z.string().optional(),
     phone: z.string().optional(),
     city: z.string().optional(),
-    stage: z.string().optional().describe(`Etapa inicial (padrão NEW LEAD). Opções comuns: ${DEFAULT_STAGES.join(', ')}.`),
+    stage: z.string().optional().describe(`Etapa inicial (padrão: 1ª coluna do funil). Opções comuns: ${DEFAULT_STAGES.join(', ')}.`),
     description: z.string().optional(),
+    ...layoutParams,
   },
-  async (args) => {
-    const lead = createLead(config, args);
+  async ({ layout, newLayoutName, ...args }) => {
+    const target = pickLayout({ layout, newLayoutName });
+    if ('ask' in target) return target.ask;
+    const lead = createLead(config, { ...args, layoutId: target.id });
     return jsonText({ created: true, lead });
   },
 );
@@ -54,12 +82,15 @@ server.tool(
   {
     filePath: z.string().min(1).describe('Caminho completo do arquivo local escolhido pelo usuário.'),
     previewOnly: z.boolean().optional().describe('Se true, mostra o mapeamento e uma amostra sem gravar nada.'),
+    ...layoutParams,
   },
-  async ({ filePath, previewOnly }) => {
+  async ({ filePath, previewOnly, layout, newLayoutName }) => {
     try {
       const parsed = await readLeadFile(filePath);
       if (previewOnly) return jsonText({ preview: true, total: parsed.total, valid: parsed.leads.length, skipped: parsed.skipped, mapping: parsed.mapping, warnings: parsed.warnings, sample: parsed.leads.slice(0, 3) });
-      return jsonText({ success: true, ...importLeadFile(config, parsed) });
+      const target = pickLayout({ layout, newLayoutName });
+      if ('ask' in target) return target.ask;
+      return jsonText({ success: true, ...importLeadFile(config, parsed, target.id) });
     } catch (error) {
       return text(`Não foi possível importar a planilha: ${(error as Error)?.message || 'arquivo inválido'}`);
     }
@@ -251,9 +282,13 @@ server.tool(
 
 server.tool(
   'captamais_import_lead_list',
-  'Importa uma lista comprada para o CRM (cria os leads no funil, sem duplicar e-mail/telefone). Não gasta créditos.',
-  { listId: z.number().int() },
-  async ({ listId }) => jsonText(importLeadList(config, listId)),
+  'Importa uma lista comprada para o CRM no funil que o usuário escolher (pergunte antes; veja captamais_list_layouts), sem duplicar e-mail/telefone. Não gasta créditos.',
+  { listId: z.number().int(), ...layoutParams },
+  async ({ listId, layout, newLayoutName }) => {
+    const target = pickLayout({ layout, newLayoutName });
+    if ('ask' in target) return target.ask;
+    return jsonText(importLeadList(config, listId, target.id));
+  },
 );
 
 server.tool(
