@@ -51,8 +51,12 @@ if errorlevel 1 (
   exit /b 1
 )
 
-rem Na primeira vez, oferece um atalho na Area de Trabalho (so pergunta uma vez; nunca no modo silencioso).
-if "%SILENT%"=="0" node scripts\atalho.mjs --oferecer
+rem Atalho CaptaMais na Area de Trabalho e no Menu Iniciar: pergunta uma vez no duplo clique; cria sozinho quando o Claude instala.
+if "%SILENT%"=="0" (
+  node scripts\atalho.mjs --oferecer
+) else (
+  node scripts\atalho.mjs --instalar
+)
 exit /b 0
 
 :node_ok

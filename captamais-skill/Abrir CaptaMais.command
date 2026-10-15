@@ -50,3 +50,6 @@ if ! node scripts/server.mjs; then
   pausa
   exit 1
 fi
+
+# Atalho CaptaMais na Área de Trabalho: cria sozinho quando o Claude instala; no duplo clique pergunta uma vez.
+if [ "$SILENCIOSO" = 1 ]; then node scripts/atalho.mjs --instalar; else node scripts/atalho.mjs --oferecer; fi

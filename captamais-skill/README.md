@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.12-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.13-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />
@@ -65,7 +65,7 @@ Na primeira vinculação de uma conta completa à skill/MCP, ela recebe **10.000
 - Dados de ativos, montagem de carteira, enriquecimento, sincronização. Ver [status](INTEGRATION.md#status-dos-recursos).
 
 ## Requisitos
-- **Node.js 18+** — só se for usar pelo Claude/terminal. Pelo duplo clique (`Abrir CaptaMais`), o Node portátil é baixado sozinho para dentro da pasta da skill, sem instalar nada.
+- **Node.js 18+** — só se for usar pelo Claude/terminal. Pelo ícone **CaptaMais**, o Node portátil é baixado sozinho para dentro da pasta da skill, sem instalar nada.
 - Um cliente de IA compatível (ex.: Claude Desktop) — a skill vai na sua pasta de skills.
 - (Opcional) Conta CaptaMais para os recursos de nuvem.
 
@@ -82,11 +82,11 @@ npm install
 > Windows: a pasta costuma ser `%USERPROFILE%\.claude\skills\`.
 
 ## Como usar
-No Claude, chame:
+No Claude, digite o comando:
 ```
 /captamais
 ```
-…ou peça em linguagem natural: **"abre meu CRM"**, **"cria um lead"**, **"marca uma reunião com o
+…ou peça em linguagem natural, por exemplo **"abrir o Capta+"**, **"abre meu CRM"**, **"cria um lead"**, **"marca uma reunião com o
 lead 3 e cria o Meet"**, **"o que tenho na agenda?"**.
 
 O Claude **sobe o app local** (`http://127.0.0.1:…`, só na sua máquina), que **abre sozinho numa janela própria do seu Chrome/Edge** (como um aplicativo, sem abas nem barra de endereço) e continua rodando mesmo que você feche o editor. A partir
@@ -94,22 +94,24 @@ daí você trabalha direto: arrastar cards, criar/editar leads, registrar atendi
 importar/exportar.
 
 ### Instalar pedindo ao Claude (o mais simples)
-Cole no Claude Code (ou no Claude com acesso ao computador):
+Cole no Claude **instalado no seu computador** (Claude Desktop ou Claude Code). Em sessões na nuvem a instalação não funciona,
+porque o app abre uma janela e guarda os dados no seu computador:
 ```
 Instale a skill CaptaMais deste repositório e abra o CRM quando terminar:
 https://github.com/Tasca2/captamais-local
 ```
 O Claude baixa o repositório, copia a skill para a pasta de skills, **baixa o Node.js portátil se o computador não tiver**
-(sem instalar nada no sistema), prepara as dependências e já abre o CaptaMais. Não precisa instalar o Node antes.
+(sem instalar nada no sistema), prepara as dependências, **cria o ícone "CaptaMais" na Área de Trabalho e no Menu Iniciar** e já abre o CRM.
+Não precisa instalar o Node antes nem rodar nenhum comando.
 
-### Abrir sem o Claude (duplo clique)
-O CRM não depende do assistente para abrir. Na pasta da skill:
-- **Windows:** dê duplo clique em **`Abrir CaptaMais.bat`**.
-- **Mac:** dê duplo clique em **`Abrir CaptaMais.command`** (na primeira vez, se o Mac reclamar, clique com o botão direito → Abrir).
+### Abrir sem o Claude
+O CRM não depende do assistente para abrir. Depois de instalado:
+- **Windows:** abra o ícone **CaptaMais** na Área de Trabalho, ou aperte a tecla Windows e digite *CaptaMais*.
+- **Mac:** abra o atalho **CaptaMais** na Área de Trabalho (na primeira vez, se o Mac reclamar, clique com o botão direito → Abrir).
 
-Na **primeira vez** o arquivo instala o que falta sozinho (leva cerca de um minuto, precisa de internet) e, no Windows,
-oferece um **atalho "CaptaMais" na Área de Trabalho** com o ícone. Depois é só abrir o atalho — a janela do CRM aparece sozinha.
-**Não precisa instalar o Node.js:** se o computador não tiver, o arquivo baixa o Node portátil oficial (com conferência de
+Se o ícone ainda não existir (instalação manual), abra a pasta da skill e clique em **Abrir CaptaMais** — ele prepara o que falta
+(leva alguns minutos na primeira vez, precisa de internet) e oferece criar o ícone.
+**Não precisa instalar o Node.js:** se o computador não tiver, o CaptaMais baixa o Node portátil oficial (com conferência de
 checksum) para a pasta `runtime/` da skill, sem instalar nada no sistema nem alterar o PATH.
 
 ## Privacidade e segurança

@@ -10,13 +10,20 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.13] — 2026-10-15 (identificação: 1.13)
+### Alterado
+- **Instalação mais amigável:** ao instalar pelo Claude, o app cria sozinho o ícone **CaptaMais** (Área de Trabalho e Menu Iniciar; Mac: Área de Trabalho) e abre o CRM. O Claude passa a falar em "abrir o ícone CaptaMais", sem mandar a pessoa dar duplo clique em arquivo `.bat`/`.command`.
+- **Como abrir:** além do ícone, é só digitar `/captamais` no Claude ou pedir "abrir o Capta+" / "abrir meu CRM".
+- **Sessão na nuvem:** o Claude detecta que não alcança o computador da pessoa e explica, em linguagem simples, que precisa abrir o Claude no computador e pedir a instalação de novo.
+
 ## [1.0.12] — 2026-10-15 (identificação: 1.12)
 ### Adicionado
 - **Node.js embutido no duplo clique:** `Abrir CaptaMais.bat` / `.command` baixam um Node.js portátil oficial
   (nodejs.org, checksum SHA-256 conferido) para `runtime/node` quando o computador não tem Node 18+. Não instala nada
   no sistema nem mexe no PATH — acaba o pré-requisito de instalar o Node.
 - **Instalação pelo link do GitHub:** o `SKILL.md` ensina o Claude a instalar a skill, preparar o Node portátil e já
-  abrir o CRM (`Abrir CaptaMais.bat|.command --silencioso`, sem pausas nem perguntas).
+  abrir o CRM (`Abrir CaptaMais.bat|.command --silencioso`, sem pausas nem perguntas) e **criar sozinho o ícone "CaptaMais"** na Área de
+  Trabalho e no Menu Iniciar. Se a sessão for na nuvem, o Claude explica que precisa estar no computador da pessoa, sem falar de arquivos técnicos.
 - **Funil de destino explícito:** importar planilha/lista, `crm.mjs add-lead` e as ferramentas do MCP perguntam em
   qual funil os leads entram (ou criam um novo); novos `layouts`/`add-layout` e `captamais_list_layouts`.
 - MCP 1.0.6: `captamais_create_lead`, `captamais_import_leads_file` e `captamais_import_lead_list` exigem o funil de destino (`layout`/`newLayoutName`); nova ferramenta `captamais_list_layouts`.
