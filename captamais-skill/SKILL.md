@@ -11,7 +11,7 @@ description: >-
 
 # CaptaMais — seu CRM local no Claude
 
-**Versão 1.13** (metadados npm: `1.0.13`).
+**Versão 1.14** (metadados npm: `1.0.14`).
 
 Isto é um **CRM que roda na máquina do usuário**. Os dados (leads, atividades) ficam num banco local
 em `~/.captamais/captamais.db` — **privado**. Só saem do computador se a pessoa sincronizar ou abrir
@@ -27,12 +27,12 @@ chamando o motor `scripts/crm.mjs` e mostra um **display local** (arquivo HTML a
 
 **0. Confira onde você está rodando.** A instalação só funciona se este Claude estiver **no computador da pessoa** (Claude Desktop ou Claude Code local), porque o app abre uma janela e guarda os dados no computador dela. Se a sessão for **na nuvem** (comandos rodam numa máquina remota, sem acesso à pasta `.claude` da pessoa), **não tente instalar**. Diga, com simplicidade: "Este Claude está rodando na nuvem e não alcança o seu computador. Abra o Claude no seu computador (Claude Desktop ou Claude Code) e peça de novo: *Instale o CaptaMais: https://github.com/Tasca2/captamais-local*. Aí eu instalo, preparo tudo e abro para você."
 
-1. Baixe o repositório oficial (`git clone`; se não houver git, baixe o ZIP do GitHub e extraia) e **copie a pasta `captamais-skill`** para `~/.claude/skills/captamais` (Windows: `%USERPROFILE%\.claude\skills\captamais`). Se a pasta já existir, **não apague** nada do usuário — os dados ficam em `~/.captamais`, fora da skill.
+1. Baixe o repositório oficial (`git clone`; se não houver git, baixe o ZIP do GitHub e extraia) e **copie a pasta `captamais-skill`** para `~/.claude/skills/captamais` (Windows: `%USERPROFILE%\.claude\skills\captamais`). Copie o **conteúdo** de `captamais-skill` para dentro de `captamais` (nunca a pasta inteira por cima de uma pasta existente, que cria `captamais/captamais-skill/`). Se a pasta já existir, **não apague** nada do usuário — os dados ficam em `~/.captamais`, fora da skill. **Confira que o arquivo `~/.claude/skills/captamais/SKILL.md` existe exatamente nesse caminho** (Windows: `Test-Path "$env:USERPROFILE\.claude\skills\captamais\SKILL.md"`); se estiver aninhado em `captamais/captamais-skill/`, mova o conteúdo para cima.
 2. **Prepare e abra numa única chamada.** Ela confere o Node 18+, baixa o Node portátil oficial para `runtime/node` dentro da skill se o computador não tiver, instala as dependências, **cria o ícone "CaptaMais" na Área de Trabalho e no Menu Iniciar** (Mac: na Área de Trabalho) e sobe o app:
    - **Windows (PowerShell):** `& "$env:USERPROFILE\.claude\skills\captamais\Abrir CaptaMais.bat" --silencioso`
    - **Mac/Linux:** `bash ~/.claude/skills/captamais/"Abrir CaptaMais.command" --silencioso`
    O primeiro uso baixa o Node e as dependências (alguns minutos, precisa de internet): avise que está preparando e aguarde.
-3. Ao terminar, o CRM **já está aberto** (janela própria). Confirme em uma frase e diga como abrir depois: "Da próxima vez, é só abrir o ícone **CaptaMais** (Área de Trabalho, ou digite *CaptaMais* na busca do Windows), digitar **/captamais** aqui no Claude ou me pedir "abrir o Capta+"." Não reinstale nada e não abra a `url` por conta própria.
+3. Depois, rode `node scripts/verificar-instalacao.mjs` dentro da pasta da skill: se apontar problema (pasta aninhada, nome errado), corrija e rode de novo — é isso que faz o `/captamais` aparecer. Ao terminar, o CRM **já está aberto** (janela própria). Confirme em uma frase e diga como abrir depois: "Da próxima vez, é só abrir o ícone **CaptaMais** (Área de Trabalho, ou digite *CaptaMais* na busca do Windows). Para o comando **/captamais** aparecer, feche e abra o Claude Code de novo (o comando só é carregado em sessão nova); depois disso também dá para digitar /captamais ou pedir "abrir o Capta+"." Não reinstale nada e não abra a `url` por conta própria.
 4. Se o Node portátil **não** for baixado (sem internet), diga para conferir a conexão e pedir de novo; só como último recurso sugira instalar o Node.js LTS em https://nodejs.org.
 5. Depois de instalada, se `node` não existir no PATH, use o Node embutido: `runtime/node/node.exe` (Windows) ou `runtime/node/bin/node` (Mac/Linux) no lugar de `node` em todos os comandos desta skill.
 

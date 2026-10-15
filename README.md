@@ -21,7 +21,7 @@
   <a href="https://github.com/Tasca2/captamais-local/releases/latest"><strong>⬇️ Baixar a última versão</strong></a>
 </p>
 
-**Versão 1.13** (metadados npm: `1.0.13`).
+**Versão 1.14** (metadados npm: `1.0.14`).
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 
@@ -106,23 +106,36 @@ git clone https://github.com/Tasca2/captamais-local.git
 No PowerShell (Windows), ajuste o caminho se você extraiu o ZIP em outro lugar:
 
 ```powershell
-$origem = "$env:USERPROFILE\Documents\CaptaMais-local\captamais-skill"
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-Copy-Item -Recurse -Force $origem "$env:USERPROFILE\.claude\skills\captamais"
-cd "$env:USERPROFILE\.claude\skills\captamais"
+$origem  = "$env:USERPROFILE\Documents\CaptaMais-local\captamais-skill"
+$destino = "$env:USERPROFILE\.claude\skills\captamais"
+New-Item -ItemType Directory -Force -Path $destino | Out-Null
+Copy-Item -Recurse -Force "$origem\*" $destino      # copia o CONTEÚDO (não cria pasta dentro de pasta)
+Set-Location $destino
 npm install
+Test-Path "$destino\SKILL.md"                       # precisa mostrar True
 ```
 
 No Mac / Linux:
 
 ```bash
-mkdir -p ~/.claude/skills
-cp -R captamais-skill ~/.claude/skills/captamais
+mkdir -p ~/.claude/skills/captamais
+cp -R captamais-skill/. ~/.claude/skills/captamais/   # copia o CONTEÚDO (não cria pasta dentro de pasta)
 cd ~/.claude/skills/captamais
 npm install
+ls SKILL.md                                           # precisa existir aqui
 ```
 
-Reinicie o Claude Desktop. Peça **"abre meu CRM"** ou use `/captamais`.
+**Feche e abra o Claude Code de novo** — o comando `/captamais` só aparece em uma sessão nova. Depois peça **"abrir o Capta+"** ou digite `/captamais`.
+
+> A skill funciona no **Claude Code** (terminal ou aba **Code** do app Claude Desktop), que lê a pasta `.claude/skills` do seu computador.
+> Ela **não** aparece no chat comum do Claude nem em sessões na nuvem — nesses casos use o ícone **CaptaMais** da Área de Trabalho.
+
+### O /captamais não aparece?
+1. **Feche e abra o Claude Code** (ou inicie uma sessão nova): skills instaladas durante uma conversa só são lidas ao iniciar.
+2. Digite `/` e procure **captamais** na lista. Se não estiver, siga os passos abaixo.
+3. Confira que existe **exatamente** `.claude/skills/captamais/SKILL.md` (Windows: `%USERPROFILE%\.claude\skills\captamais\SKILL.md`). Se o arquivo estiver em `captamais/captamais-skill/SKILL.md`, a pasta foi copiada aninhada: mova o conteúdo de `captamais-skill` para a pasta `captamais`.
+4. Confirme que está no **Claude Code** no seu computador (não no chat comum nem na nuvem).
+5. Enquanto isso, o ícone **CaptaMais** (Área de Trabalho ou busca do Windows) abre o CRM normalmente.
 
 ---
 

@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.13-f59e0b" />
+  <img alt="versão" src="https://img.shields.io/badge/vers%C3%A3o-1.14-f59e0b" />
   <img alt="plataforma" src="https://img.shields.io/badge/Node-18%2B-3c873a" />
   <img alt="licença" src="https://img.shields.io/badge/licen%C3%A7a-Source--Available-blue" />
   <img alt="privacidade" src="https://img.shields.io/badge/dados-100%25%20locais-10b981" />
@@ -66,14 +66,15 @@ Na primeira vinculação de uma conta completa à skill/MCP, ela recebe **10.000
 
 ## Requisitos
 - **Node.js 18+** — só se for usar pelo Claude/terminal. Pelo ícone **CaptaMais**, o Node portátil é baixado sozinho para dentro da pasta da skill, sem instalar nada.
-- Um cliente de IA compatível (ex.: Claude Desktop) — a skill vai na sua pasta de skills.
+- **Claude Code** no seu computador (terminal ou aba **Code** do app Claude Desktop) — a skill vai na sua pasta `.claude/skills`. Não funciona no chat comum nem em sessões na nuvem.
 - (Opcional) Conta CaptaMais para os recursos de nuvem.
 
 ## Instalação
 ```bash
 # 1) Baixe o repositório (skill + MCP) e copie a skill para o Claude
 git clone https://github.com/Tasca2/captamais-local.git
-cp -R captamais-local/captamais-skill ~/.claude/skills/captamais
+mkdir -p ~/.claude/skills/captamais
+cp -R captamais-local/captamais-skill/. ~/.claude/skills/captamais/
 
 # 2) Instale a dependência local (uma vez)
 cd ~/.claude/skills/captamais
@@ -86,6 +87,8 @@ No Claude, digite o comando:
 ```
 /captamais
 ```
+> Se o `/captamais` não aparecer: feche e abra o Claude Code (skills instaladas durante uma conversa só são lidas em sessão nova) e confira se está no **Claude Code** do seu computador. O ícone **CaptaMais** da Área de Trabalho abre o CRM de qualquer jeito.
+
 …ou peça em linguagem natural, por exemplo **"abrir o Capta+"**, **"abre meu CRM"**, **"cria um lead"**, **"marca uma reunião com o
 lead 3 e cria o Meet"**, **"o que tenho na agenda?"**.
 
