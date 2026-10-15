@@ -10,6 +10,10 @@ versionamento conforme [SemVer](https://semver.org/lang/pt-BR/).
 - Analisar ativo (Tier 1), consolidador/montagem de carteira (Tier 2), BYO IA, sincronizar atividades,
   cifra do banco local em repouso.
 
+## [1.0.15] — 2026-10-15 (identificação: 1.15)
+### Alterado
+- **Instalação pelo pacote da Release:** o Claude passa a baixar `captamais-skill.zip` (arquivo de nome fixo, em `/releases/latest/download/`) em vez de clonar o repositório. É a versão publicada, mais leve, e **cada instalação conta como download** no GitHub — antes, `git clone` e "Download ZIP" não apareciam nesse contador. O `git clone` fica só como alternativa se o download falhar.
+
 ## [1.0.14] — 2026-10-15 (identificação: 1.14)
 ### Corrigido
 - **`/captamais` não aparecia** para quem instalou: o README mandava copiar a pasta por cima de uma pasta existente (ficava `captamais/captamais-skill/`, que o Claude Code não enxerga) e dizia para reiniciar o "Claude Desktop". Agora copia o **conteúdo**, confere o caminho, explica que o comando só aparece em **sessão nova do Claude Code** e traz um passo a passo "O /captamais não aparece?".

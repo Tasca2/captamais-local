@@ -21,7 +21,7 @@
   <a href="https://github.com/Tasca2/captamais-local/releases/latest"><strong>⬇️ Baixar a última versão</strong></a>
 </p>
 
-**Versão 1.14** (metadados npm: `1.0.14`).
+**Versão 1.15** (metadados npm: `1.0.15`).
 
 Os dados dos seus leads ficam **na sua máquina**. Recursos de IA (opcional) passam pela nuvem [CaptaMais](https://captamais.me) e seguem as políticas oficiais da plataforma.
 
@@ -76,7 +76,7 @@ Instale a skill CaptaMais deste repositório e abra o CRM quando terminar:
 https://github.com/Tasca2/captamais-local
 ```
 
-O Claude baixa o repositório, copia a skill para a pasta de skills, baixa o Node.js portátil se o computador não tiver,
+O Claude baixa o pacote oficial da Release (`captamais-skill.zip`), copia a skill para a pasta de skills, baixa o Node.js portátil se o computador não tiver,
 prepara as dependências, cria o ícone "CaptaMais" na Área de Trabalho e já abre o CRM. Se preferir fazer à mão, siga os passos abaixo.
 
 ---
